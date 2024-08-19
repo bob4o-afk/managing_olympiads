@@ -7,6 +7,7 @@ import { Content, Header } from 'antd/es/layout/layout';
 import Sidebar from './components/Sidebar';
 import ToggleThemeButton from './components/ToggleThemeButton';
 import PDFViewer from './components/PDFViewer';
+import Login from './components/Login';
 
 const { Sider } = Layout;
 
@@ -78,7 +79,8 @@ function App() {
             {selectedKey === 'documents' && <div>Documents</div>}
             {selectedKey === 'for-me' && <div>For Me</div>}
             {selectedKey === 'settings' && <div>Settings Content</div>}
-            {selectedKey === 'my-profile' && <div>My Profile Content</div>}
+            {selectedKey === 'my-profile' && <div>My Profile Content              
+              <Login /></div>}
           </Content>
         </Layout>
       </Layout>

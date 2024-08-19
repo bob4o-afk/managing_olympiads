@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import './ui/PDFViewer.css';
-
+import { createClient } from "@supabase/supabase-js";
 import { Viewer, Worker } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin, DefaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+
+// Initialize Supabase client
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL!;
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 function PDFViewer(): JSX.Element {
     const [viewPdf, setViewPdf] = useState<string | null>(null);
@@ -12,12 +17,31 @@ function PDFViewer(): JSX.Element {
     // Initialize PDF viewer plugin
     const newPlugin: DefaultLayoutPlugin = defaultLayoutPlugin();
 
-    // Load the PDF file from the public folder when the component mounts
+    // Fetch the PDF file from Supabase
     useEffect(() => {
-        // Set the view PDF to a file from the public folder
-        setViewPdf('/pdfs/zap2049_olimpiadi_01092023.pdf');  // Adjust the file name as needed
-    }, []);
+        const fetchPdf = async () => {
+            const currentYear = new Date().getFullYear();
+            const folderPath = `${currentYear - 1}-${currentYear}`;
+            const fileName = "zap2049_olimpiadi_01092023.pdf";
+            
+            const { data, error } = await supabase
+                .storage
+                .from('olympiads')
+                .download(`${folderPath}/${fileName}`);
 
+            if (error) {
+                console.error("Error fetching PDF:", error.message);
+                return;
+            }
+
+            if (data) {
+                const url = URL.createObjectURL(data);
+                setViewPdf(url);
+            }
+        };
+
+        fetchPdf();
+    }, []);
 
     return (
         <div className="container">
