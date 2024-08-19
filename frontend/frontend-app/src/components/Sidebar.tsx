@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Menu } from 'antd';
 import { 
   HomeOutlined,  
-  EditOutlined, 
+  FormOutlined, 
   InfoCircleOutlined, 
   SettingOutlined,
   UserOutlined,
-  BuildOutlined,
-  BranchesOutlined,
+  BarChartOutlined,
+  SnippetsOutlined,
   DatabaseOutlined,
 } from '@ant-design/icons';
 
@@ -31,17 +31,17 @@ const Sidebar: React.FC<SidebarProps> = ({ darkTheme, onSelect }) => {
     },
     {
       key: 'olympiads',
-      icon: <EditOutlined />,
+      icon: <SnippetsOutlined />,
       label: 'Olympiads',
       children: [
         {
           key: 'all-olympiads',
-          icon: <BuildOutlined />,
+          icon: <BarChartOutlined />,
           label: 'All olympiads',
         },
         {
           key: 'enrollment',
-          icon: <BranchesOutlined />,
+          icon: <FormOutlined />,
           label: 'Enrollment',
         },
         {
