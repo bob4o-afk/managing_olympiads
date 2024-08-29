@@ -51,7 +51,7 @@ function PDFViewer(): JSX.Element {
                     {viewPdf ? (
                         <Viewer fileUrl={viewPdf} plugins={[newPlugin]} />
                     ) : (
-                        <p>No PDF</p>
+                        <p>No PDF. Log in to be able to access them!</p>
                     )}
                 </Worker>
             </div>

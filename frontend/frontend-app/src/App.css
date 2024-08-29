@@ -1,16 +1,51 @@
-.App {
-  text-align: center;
+/* Light Theme */
+.light-theme {
+  --background-color: #ffffff;
+  --text-color: #000000;
+  --card-background-color: #f0f2f5;
+  --button-background-color: #1890ff;
+  --button-text-color: #ffffff;
+  --header-background-color: #ffffff;
+  --navigation-button-color: #ffffff;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Dark Theme */
+.dark-theme {
+  --background-color: #0a0d1d;
+  --text-color: #ffffff;
+  --card-background-color: #1f1e1e;
+  --button-background-color: #4a90e2;
+  --button-text-color: #ffffff;
+  --header-background-color: #001529;
+  --navigation-button-color: #ddddddce;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.ant-layout-header, .ant-layout-content {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.card {
+  background-color: var(--card-background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.button {
+  background-color: var(--button-background-color);
+  color: var(--button-text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar {
+  background-color: var(--header-background-color);
 }
 
 .App-header {
