@@ -24,9 +24,20 @@ body {
   background-color: var(--background-color);
   color: var(--text-color);
   transition: background-color 0.3s, color 0.3s;
+  margin: 0;
 }
 
-.ant-layout-header, .ant-layout-content {
+.ant-layout {
+  background-color: var(--background-color);
+}
+
+.ant-layout-header {
+  background-color: var(--header-background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.ant-layout-content {
   background-color: var(--background-color);
   color: var(--text-color);
   transition: background-color 0.3s, color 0.3s;
@@ -46,17 +57,26 @@ body {
 
 .sidebar {
   background-color: var(--header-background-color);
+  transition: width 0.3s ease, margin-left 1.5s ease;
+}
+
+.header {
+  transition: width 0.3s ease;
+}
+
+.layout-content {
+  transition: margin-left 0.3s ease;
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: var(--background-color);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  color: var(--text-color);
 }
 
 .App-link {

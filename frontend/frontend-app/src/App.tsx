@@ -43,7 +43,7 @@ function App() {
                 trigger={null}
                 theme={darkTheme ? 'dark' : 'light'}
                 className="sidebar"
-                width={250}
+                width={collapsed ? 80 : 250}
                 style={{
                     position: 'fixed',
                     height: '100vh',
@@ -57,7 +57,12 @@ function App() {
                 <ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} />
             </Sider>
 
-            <Layout style={{ marginLeft: collapsed ? 80 : 250 }}>
+            <Layout
+                style={{
+                    marginLeft: collapsed ? 80 : 250,
+                }}
+                className="layout-content"
+            >
                 <Header
                     style={{
                         padding: 0,
@@ -66,6 +71,7 @@ function App() {
                         zIndex: 1000,
                         backgroundColor: 'var(--header-background-color)',
                     }}
+                    className="header"
                 >
                     <Button
                         type="text"
