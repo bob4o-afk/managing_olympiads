@@ -16,7 +16,7 @@ const { Sider, Header, Content } = Layout;
 function App() {
     const [darkTheme, setDarkTheme] = useState(true);
     const [collapsed, setCollapsed] = useState(true);
-    const [selectedKey, setSelectedKey] = useState('home');
+    const [, setSelectedKey] = useState('home');
     const navigate = useNavigate();
 
     const toggleTheme = () => {

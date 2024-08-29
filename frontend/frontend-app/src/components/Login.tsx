@@ -1,24 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "./supabaseClient";
 import { useNavigate } from "react-router-dom";
-import './ui/Login.css'; // Import the CSS file
+
+import { supabase } from "./supabaseClient";
+import './ui/Login.css';
 
 function Login(): JSX.Element {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
     const [session, setSession] = useState<any>(null);
-    // const [showRecovery, setShowRecovery] = useState<boolean>(false);
-    // const [recoveryEmail, setRecoveryEmail] = useState<string>("");
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Check the current session when the component mounts
-        const fetchSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setSession(session);
-        };
-        fetchSession();
+        // Check localStorage for session data when the component mounts
+        const storedSession = localStorage.getItem("supabaseSession");
+        if (storedSession) {
+            setSession(JSON.parse(storedSession));
+        } else {
+            // Fetch the session from Supabase if not found in localStorage
+            const fetchSession = async () => {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    setSession(session);
+                    localStorage.setItem("supabaseSession", JSON.stringify(session));
+                }
+            };
+            fetchSession();
+        }
     }, []);
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -33,6 +41,7 @@ function Login(): JSX.Element {
             console.error("Login error:", error.message);
         } else {
             setSession(data?.session);
+            localStorage.setItem("supabaseSession", JSON.stringify(data?.session));
             setError(null);
             console.log("Logged in:", data.user);
         }
@@ -44,6 +53,7 @@ function Login(): JSX.Element {
             console.error("Logout error:", error.message);
         } else {
             setSession(null);
+            localStorage.removeItem("supabaseSession"); // Clear session from localStorage
             console.log("Logged out successfully");
         }
     };

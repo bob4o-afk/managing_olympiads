@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import './ui/PDFViewer.css';
 import { createClient } from "@supabase/supabase-js";
 import { Viewer, Worker } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin, DefaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
+
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import './ui/PDFViewer.css';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL!;
