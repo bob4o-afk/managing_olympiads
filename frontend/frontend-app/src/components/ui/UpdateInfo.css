@@ -1,0 +1,51 @@
+.update-info-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--card-background-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.update-info-title {
+    text-align: center;
+    color: var(--text-color) !important;
+    margin-bottom: 24px;
+}
+
+.ant-form-item-label > label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-color) !important;
+}
+
+.ant-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--text-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color) !important;
+}
+
+.ant-input:hover,
+.ant-input:focus  {
+    background-color: var(--navigation-button-color);
+}
+
+.ant-btn-primary {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--button-background-color);
+    color: var(--button-text-color);
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.ant-btn-primary:hover {
+    opacity: 0.9;
+}
+

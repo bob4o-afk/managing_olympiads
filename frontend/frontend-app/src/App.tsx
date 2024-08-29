@@ -6,9 +6,11 @@ import './App.css';
 
 import Sidebar from './components/Sidebar';
 import ToggleThemeButton from './components/ToggleThemeButton';
-import PDFViewer from './components/PDFViewer';
-import Login from './components/Login';
 import HomePage from './components/HomePage';
+import PDFViewer from './components/PDFViewer';
+import Settings from './components/Settings';
+import MyProfile from './components/MyProfile';
+import UpdateInfo from './components/UpdateInfo';
 import PasswordReset from './components/PasswordReset';
 
 const { Sider, Header, Content } = Layout;
@@ -95,9 +97,10 @@ function App() {
                         <Route path="/all-olympiads" element={<PDFViewer />} />
                         <Route path="/documents" element={<div>Documents</div>} />
                         <Route path="/for-me" element={<div>For Me</div>} />
-                        <Route path="/settings" element={<div>Settings Content</div>} />
-                        <Route path="/my-profile" element={<Login />} />
+                        <Route path="/settings" element={<Settings />} />
+                        <Route path="/my-profile" element={<MyProfile />} />
                         <Route path="/reset-password" element={<PasswordReset />} />
+                        <Route path="/update-info" element={<UpdateInfo />} />
                         <Route path="/" element={<HomePage onNavigate={handleMenuSelect} />} />
                     </Routes>
                 </Content>
