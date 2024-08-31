@@ -24,9 +24,7 @@ roman_to_arabic = {
 translation_dict = {
     "ЗНАМ И МОГА": "know_and_can",
     "МАТЕМАТИКА": "math",
-
-    "ЛИТЕРАТУРА": "bulgarian_language_and_literature",
-
+    "БЪЛГАРСКИ ЕЗИК И ЛИТЕРАТУРА": "bulgarian_language_and_literature",
     "АНГЛИЙСКИ ЕЗИК": "english",
     "НЕМСКИ ЕЗИК": "german",
     "ИСПАНСКИ ЕЗИК": "spanish",
@@ -34,35 +32,46 @@ translation_dict = {
     "РУСКИ ЕЗИК": "russian",
     "ФРЕНСКИ ЕЗИК": "french",
     "ИНФОРМАТИКА": "informatics",
-
-    "ИНФОРМАЦИОННИ ТЕХНОЛОГИИ": "information_technologies",
-    "ТЕXНОЛОГИИ": "information_technologies",
-
+    "ИНФОРМАЦИОННИ ТЕXНОЛОГИИ": "information_technologies",
     "ЛИНГВИСТИКА": "linguistics",
     "ФИЛОСОФИЯ": "philosophy",
-
     "ИСТОРИЯ И ЦИВИЛИЗАЦИИ": "history_and_civilizations",
-    "ЦИВИЛИЗАЦИИ": "history_and_civilizations",
     "ГЕОГРАФИЯ И ИКОНОМИКА": "geography_and_economics",
-    "ИКОНОМИКА": "geography_and_economics",
     "ГРАЖДАНСКО ОБРАЗОВАНИЕ": "civic_education",
-    "ОБРАЗОВАНИЕ": "civic_education",
-
     "ФИЗИКА": "physics",
     "АСТРОНОМИЯ": "astronomy",
-
-    "ХИМИЯ И ОПАЗВАНЕ НА ОКОЛНАТА СРЕДА": "chemistry_and_environmental_protection",
-    "ОКОЛНАТА СРЕДА": "chemistry_and_environmental_protection",
-
+    "XИМИЯ И ОПАЗВАНЕ НА ОКОЛНАТА СРЕДА": "chemistry_and_environmental_protection",
     "БИОЛОГИЯ И ЗДРАВНО ОБРАЗОВАНИЕ": "biology_and_health_education",
     "ТЕXНИЧЕСКО ЧЕРТАНЕ": "technical_drawing"
 }
+
+
+def expand_range(start, end):
+    return ' '.join(map(str, range(start, end + 1)))
+
+
+# Function to process the entire text and expand all ranges
+def expand_ranges_in_text(text):
+    # Regex pattern to find ranges
+    pattern = re.compile(r'(\d+)\s*-\s*(\d+)')
+
+    # Find all ranges and expand them
+    matches = pattern.finditer(text)
+    expanded_text = text
+
+    for match in matches:
+        start, end = map(int, match.groups())
+        expanded_text = expanded_text.replace(match.group(0), expand_range(start, end))
+
+    return expanded_text
+
 
 def normalize_text(text):
     # Normalize the text to handle Cyrillic letters and case differences
     text = text.upper()
     text = text.replace("Х", "X").replace("І", "I").replace("–", "-")
     return text
+
 
 def convert_roman_to_arabic(text):
     text = normalize_text(text)
@@ -71,10 +80,12 @@ def convert_roman_to_arabic(text):
         text = re.sub(rf'\b{roman}\b', str(arabic), text)
     return text
 
+
 def clean_date(date_str):
     # Remove "ДО" and "Г." and keep only the date in format DD.MM.YYYY
     date_str = date_str.replace("ДО", "").replace("Г.", "").strip()
     return date_str
+
 
 def extract_and_process_text():
     # Load and process the text file
@@ -128,6 +139,7 @@ def extract_and_process_text():
         json.dump(olympiad_data, json_file, ensure_ascii=False, indent=4)
     print(f"JSON file saved successfully: {OUTPUT_JSON_PATH}")
 
+
 def pdf_to_word_and_extract_table():
     # Open the PDF file
     with pdfplumber.open(PDF_FILE_PATH) as pdf:
@@ -165,9 +177,24 @@ def pdf_to_word_and_extract_table():
 
             # Save the table to a text file with better formatting
             with open(OUTPUT_TXT_PATH, 'w', encoding='utf-8') as txt_file:
-                for row in target_table:
-                    formatted_row = "\t".join([convert_roman_to_arabic(cell).strip() for cell in row])
-                    txt_file.write(formatted_row + '\n')
+                buffer = ""
+                for row in target_table[1:]:  # Skip the first row which is the header
+                    for cell in row:
+                        # Convert Roman to Arabic and expand ranges
+                        formatted_cell = convert_roman_to_arabic(cell).strip().replace('\n', ' ')
+                        # Removing the "-" symbol
+                        expanded_cell = expand_ranges_in_text(formatted_cell)
+
+                        buffer += expanded_cell + "\t"
+                        # Only after "Г." there must be a new line
+                        if "Г." in expanded_cell:
+                            txt_file.write(buffer.strip() + '\n')
+                            buffer = ""
+
+                # Ensure the last line is written if not already
+                if buffer.strip():
+                    txt_file.write(buffer.strip() + '\n')
+
             print(f"Text file saved successfully: {OUTPUT_TXT_PATH}")
 
             # Process the text file and create the JSON
