@@ -56,9 +56,20 @@ def download_pdf():
         print(f"PDF downloaded successfully: {pdf_filename}")
 
         # Upload the file to Supabase
-        folder_name = f"{start_year}-{end_year}"
-        supabase_client = SupabaseClient()
-        supabase_client.upload_file(pdf_filename, folder_name)
+        upload_file_to_supabase(pdf_filename, start_year, end_year)
 
     else:
         print("Iframe not found on the page.")
+
+
+def upload_file_to_supabase(pdf_filename, start_year, end_year):
+    folder_name = f"{start_year}-{end_year}"
+
+    print(f"Uploading file: {pdf_filename} to folder: {folder_name}")
+    supabase_client = SupabaseClient()
+
+    try:
+        # Upload the file to Supabase
+        supabase_client.upload_file(pdf_filename, folder_name)
+    except Exception as e:
+        print(f"Failed to upload file: {e}")

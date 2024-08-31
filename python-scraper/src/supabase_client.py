@@ -18,21 +18,19 @@ class SupabaseClient:
 
     def upload_file(self, file_path: str, folder: str) -> None:
         """Upload a file to a specific folder in a Supabase bucket."""
-        try:
-            with open(file_path, "rb") as file:
-                file_data = file.read()
+        if not os.path.isfile(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
 
-            # Ensure file_data is properly encoded if needed
-            response = self.client.storage.from_(self.bucket_name).upload(f"{folder}/{os.path.basename(file_path)}", file_data)
+        with open(file_path, "rb") as file:
+            file_data = file.read()
 
-            # Check response status
-            if response.status_code == 200:
-                print(f"File uploaded successfully to folder '{folder}' in Supabase bucket '{self.bucket_name}'.")
-            else:
-                print(f"Failed to upload file: {response.error_message}")
+        # Perform the file upload
+        response = self.client.storage.from_(self.bucket_name).upload(
+            f"{folder}/{os.path.basename(file_path)}", file_data
+        )
 
-        except FileNotFoundError:
-            print(f"File not found: {file_path}")
-        except Exception as e:
-            print(f"An error occurred: {e}")
-
+        # Check response status and handle specific errors
+        if response.status_code == 200:
+            print(f"File uploaded successfully to folder '{folder}' in Supabase bucket '{self.bucket_name}'.")
+        else:
+            raise RuntimeError(f"Upload failed with status code {response.status_code}. Response: {response.text}")
