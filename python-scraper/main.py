@@ -20,8 +20,3 @@ if __name__ == "__main__":
     main()
 
 #note: pip install --upgrade supabase gotrue
-
-
-#TODO:
-#1. Better error handling
-#2. Saving into a db in supabase
