@@ -12,6 +12,7 @@ import Settings from './components/Settings';
 import MyProfile from './components/MyProfile';
 import UpdateInfo from './components/UpdateInfo';
 import PasswordReset from './components/PasswordReset';
+import EnrollmentPage from './components/EnrollmentPage';
 
 const { Sider, Header, Content } = Layout;
 
@@ -99,7 +100,7 @@ function App() {
                 >
                     <Routes>
                         <Route path="/home" element={<HomePage onNavigate={handleMenuSelect} />} />
-                        <Route path="/enrollment" element={<div>Enrollment</div>} />
+                        <Route path="/enrollment" element={<EnrollmentPage />} />
                         <Route path="/all-olympiads" element={<PDFViewer />} />
                         <Route path="/documents" element={<div>Documents</div>} />
                         <Route path="/for-me" element={<div>For Me</div>} />
