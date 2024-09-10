@@ -1,7 +1,7 @@
 import React, { useState, FormEvent } from 'react';
 import { Button, Form, Select, Typography, notification } from 'antd';
 
-import './ui/EnrollmentPage.css'; // Ensure you have this CSS file for custom styles
+import './ui/EnrollmentPage.css';
 
 const { Title } = Typography;
 const { Option } = Select;
