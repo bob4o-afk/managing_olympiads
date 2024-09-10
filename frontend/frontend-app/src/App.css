@@ -7,6 +7,11 @@
   --button-text-color: #ffffff;
   --header-background-color: #ffffff;
   --navigation-button-color: #ffffff;
+  --cv-widgets: #73acee;
+  --cv-text: #ffffff;
+  --cv-devider: #2300ec;
+  --cv-sub-text: #000000;
+  --cv-bar: #173ad6;
 }
 
 /* Dark Theme */
@@ -18,6 +23,11 @@
   --button-text-color: #ffffff;
   --header-background-color: #001529;
   --navigation-button-color: #ddddddce;
+  --cv-widgets: #93addde3;
+  --cv-text: #42b9fdfb;
+  --cv-devider: #ffffff;
+  --cv-sub-text: #8bb8f1;
+  --cv-bar: #3f57c2;
 }
 
 body {

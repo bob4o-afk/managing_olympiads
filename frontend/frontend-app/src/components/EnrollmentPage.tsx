@@ -32,10 +32,10 @@ const EnrollmentPage: React.FC = () => {
     }
 
     const emailData = {
-      toEmail: '##############',
+      toEmail: 'borislav.b.milanov.2020@elsys-bg.org',
       subject: selectedOlympiad,
       body: `Dear Student, \n\nYou have successfully enrolled in the ${selectedOlympiad} Olympiad.`,
-      ccEmail: '###############',
+      ccEmail: 'penkapenka64@gmail.com',
     };
 
     try {

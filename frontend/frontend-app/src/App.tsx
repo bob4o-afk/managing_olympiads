@@ -8,6 +8,7 @@ import Sidebar from './components/Sidebar';
 import ToggleThemeButton from './components/ToggleThemeButton';
 import HomePage from './components/HomePage';
 import PDFViewer from './components/PDFViewer';
+import CVTemplate from './components/CVTemplate';
 import Settings from './components/Settings';
 import MyProfile from './components/MyProfile';
 import UpdateInfo from './components/UpdateInfo';
@@ -103,7 +104,7 @@ function App() {
                         <Route path="/enrollment" element={<EnrollmentPage />} />
                         <Route path="/all-olympiads" element={<PDFViewer />} />
                         <Route path="/documents" element={<div>Documents</div>} />
-                        <Route path="/for-me" element={<div>For Me</div>} />
+                        <Route path="/for-me" element={<div><CVTemplate /></div>} />
                         <Route path="/settings" element={<Settings />} />
                         <Route path="/my-profile" element={<MyProfile />} />
                         <Route path="/reset-password" element={<PasswordReset />} />
