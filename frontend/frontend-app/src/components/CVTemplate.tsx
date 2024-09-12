@@ -3,6 +3,7 @@ import { Button, Typography, Divider, Row, Col, Progress } from 'antd';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { MailOutlined, PhoneOutlined, HomeOutlined, InstagramOutlined, GithubOutlined } from '@ant-design/icons';
+import { PieChart, Pie, Tooltip } from 'recharts';
 
 import './ui/CVTemplate.css';
 
@@ -10,6 +11,13 @@ const { Title, Text } = Typography;
 
 const CVTemplate: React.FC = () => {
   const exportButtonRef = useRef<HTMLButtonElement>(null);
+
+    const personalityData = [
+      { name: "Problem Solver", value: 95 },
+      { name: "Ambitious", value: 80 },
+      { name: "Team Player", value: 85 },
+      { name: "Creative Thinker", value: 90 }
+    ];
 
   const exportToPDF = async () => {
     const element = document.getElementById('cv');
@@ -249,14 +257,27 @@ const CVTemplate: React.FC = () => {
             <div className="cv-section">
               <Title level={3}>Personality</Title>
               <Divider className="section-divider" />
-              <Text>Problem Solver</Text>
-              <Progress className='progress' strokeColor="var(--cv-bar)" percent={95} showInfo={false} />
-              <Text>Creative Thinker</Text>
-              <Progress className='progress' strokeColor="var(--cv-bar)" percent={90} showInfo={false} />
-              <Text>Team Player</Text>
-              <Progress className='progress' strokeColor="var(--cv-bar)" percent={85} showInfo={false} />
-              <Text>Ambitious</Text>
-              <Progress className='progress' strokeColor="var(--cv-bar)" percent={80} showInfo={false} />
+              <PieChart width={400} height={300}>
+                <Pie
+                  data={personalityData}
+                  dataKey="value"
+                  cx={200}
+                  cy={150}
+                  outerRadius={100}
+                  fill="var(--cv-bar)"
+                  label={(entry) => entry.name}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#fff',
+                    borderRadius: '50px',
+                    border: '2px solid var(--cv-bar)',
+                    textAlign: 'center',
+                    padding: '10px'
+                  }}
+                  cursor={false}
+                />
+              </PieChart>
             </div>
 
             {/* Languages Section */}
