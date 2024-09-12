@@ -46,10 +46,10 @@ const CVTemplate: React.FC = () => {
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: [210, 400]
+      format: [210, 410]
     });
 
-    pdf.addImage(dataURL, 'PNG', 0, 0, 210, 400);
+    pdf.addImage(dataURL, 'PNG', 0, 0, 210, 410);
     pdf.save('CV.pdf');
 
     if (exportButtonRef.current) {
