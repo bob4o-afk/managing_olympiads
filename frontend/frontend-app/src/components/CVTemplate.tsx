@@ -38,10 +38,10 @@ const CVTemplate: React.FC = () => {
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: [210, 297]
+      format: [210, 400]
     });
 
-    pdf.addImage(dataURL, 'PNG', 0, 0, 210, 297);
+    pdf.addImage(dataURL, 'PNG', 0, 0, 210, 400);
     pdf.save('CV.pdf');
 
     if (exportButtonRef.current) {
@@ -94,11 +94,76 @@ const CVTemplate: React.FC = () => {
             <div className="cv-section">
               <Title level={3} style={{ color: "var(--text-color)" }}>Experience</Title>
               <Divider className="section-divider" />
-              <Text strong style={{ color: "var(--text-color)" }}>Appolica | Intership | 01.07.2024 - 30.07.2024</Text>
-              <p>Responsible for leading front-end development, collaborating with UX/UI designers, and optimizing application performance.</p> {/* TODO: write real stuff */}
-              
-              <Text strong style={{ color: "var(--text-color)" }}>Codbex | Senior Developer | 01.06.2024 - Present</Text>
-              <p>Worked on building scalable web applications, implementing modern JavaScript frameworks, and improving site performance.</p>
+
+              <Text strong style={{ color: "var(--text-color)" }}>
+                <a href="https://github.com/bob4o-afk/smart_car" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
+                  "InnoAir Challenge: Fair Green Transition and Urban Mobility" hackathon | Fourth Place | 07.11.2022 - 11.11.2022
+                </a>
+              </Text>
+              <p>Secured 4th place at the "InnoAir Challenge: Fair Green Transition and Urban Mobility" hackathon with a project
+                 focused on autonomous vehicles and smart roads.</p>
+
+              <Text strong style={{ color: "var(--text-color)" }}>
+                <a href="https://github.com/bob4o-afk/wall-e" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
+                  "Robodays '23" - TU-Sofia hackathon | First Place | 28.04.2023 - 09.04.2023
+                </a>
+              </Text>
+              <p>Won first place in the "Hardware Projects" category at the "Robodays '23" hackathon with the project "Wall-E," an autonomous
+                 robot designed to detect and collect trash using a robotic arm.</p>
+
+              <Text strong style={{ color: "var(--text-color)" }}>
+                <a href="https://github.com/bob4o-afk/SparkBot" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
+                  "InnoAir & Europeana: Sustainability and Social Justice" hackathon | First Place | 05.05.2023 - 08.06.2023
+                </a>
+              </Text>
+              <p>Won first place at the "InnoAir & Europeana: Sustainability and Social Justice" hackathon with the project "SparkBot," an
+                 automated robot designed to locate dangers, collect trash, and send alerts when necessary.</p>
+
+              <Text strong style={{ color: "var(--text-color)" }}>
+                <a href="https://github.com/bob4o-afk/Wall-E-2.0" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
+                  "Engineers in Action" hackathon - Sofia | Third place | 11.05.2024 - 12.05.2024
+                </a>
+              </Text>
+              <p>Along with fellow students from TUES, I participated in the "Engineers in Action" hackathon in Sofia, where our teams collectively
+                 won third place with several innovative projects.</p>
+
+              <Text strong style={{ color: "var(--text-color)" }}>
+                <a href="https://github.com/Ne-Se-Chete/hacktues2024" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
+                  "Hacktues X" hackathon | First place | 13.05.2024 - 16.05.2024
+                </a>
+              </Text>
+              <p>My team, "Ne se chete," and I won the honorary first place at the 10th anniversary edition of HackTUES, a hackathon organized
+                 by TUES. Our project, which impressed the jury, was a set of sensors that can be mounted in various locations to detect underwater
+                  and surface trash and send alerts. This victory also marked the foundation of our team, "Ne se chete".</p>
+
+              <Text strong style={{ color: "var(--text-color)" }}>
+                <a href="https://github.com/Ne-Se-Chete/AppolicaInternSmartBBQ" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
+                  Appolica | Internship | 01.07.2024 - 30.07.2024
+                </a>
+              </Text>
+              <p>During my internship at Appolica, I developed a Slack bot for automated receipt recognition and food ordering. I assisted my team as needed, 
+                focusing primarily on frontend in the first week before transitioning to hardware tasks.</p>
+
+              <Text strong style={{ color: "var(--text-color)" }}>
+                <a href="https://www.codbex.com/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
+                  Codbex | Senior Developer | 01.06.2024 - Present
+                </a>
+              </Text>
+              <p>Working on diverse real-world projects using the cutting-edge technology "Eclipse Dirigible."</p>
+            </div>
+
+
+            {/* Certificates Section */}
+            {/* cisco + c1 soon */}
+            <div className="cv-section">
+              <Title level={3} style={{ color: "var(--text-color)" }}>Certificates</Title>
+              <Divider className="section-divider" />
+
+              <Text strong style={{ color: "var(--text-color)" }}>Robotica Certificate - 10th Class</Text>
+              <p>Certificate awarded for participation in a robotics competition during the 10th grade.</p>
+
+              <Text strong style={{ color: "var(--text-color)" }}>Startup Weekend Participation - 25.06.2023</Text>
+              <p>Participated in Startup Weekend, gaining experience in startup development and entrepreneurship.</p>
             </div>
 
             {/* Education Section */}
@@ -114,9 +179,14 @@ const CVTemplate: React.FC = () => {
             <div className="cv-section">
               <Title level={3} style={{ color: "var(--text-color)" }}>Hobbies</Title>
               <Divider className="section-divider" />
-              <p>Enjoy writing and listening to music, reading, and participating in local hackathons.</p>
+              <p>I enjoy writing and listening to music, reading and participating in local hackathons. I also 
+                love creating things, such as origami and web riddles. Additionally, I play games and have experience in game development.
+                You can check out one of my games <a href="https://bobinkata.itch.io/escape2-0" target="_blank" rel="noopener noreferrer">here </a>
+                and you can check my <a href="https://riddle-1.free.bg/" target="_blank" rel="noopener noreferrer">first</a> and 
+                <a href="https://riddle-2.free.bg/" target="_blank" rel="noopener noreferrer"> second</a> riddle.</p>
             </div>
           </Col>
+
 
           {/* Right Column */}
           <Col span={12} className="cv-right">
@@ -124,22 +194,56 @@ const CVTemplate: React.FC = () => {
             <div className="cv-section">
               <Title level={3}>Profile</Title>
               <Divider className="section-divider" />
-              <p style={{ color: "black" }}>Passionate web developer with over 10 years of experience in creating responsive, user-friendly websites and web applications. Strong expertise in JavaScript, React, and Node.js.</p>
+              <p style={{ color: "black" }}>Passionate web developer and hardware enthusiast with over 5 years of experience creating responsive, user-friendly websites
+                and web applications, as well as innovative hardware projects and robust backend solutions. Expertise in Python, React, C, Golang, and Arduino.</p>
             </div>
 
             {/* Skills Section */}
             <div className="cv-section">
               <Title level={3}>Skills</Title>
               <Divider className="section-divider" />
-              <Text>JavaScript</Text>
-              <Progress className='progress' strokeColor="var(--cv-bar)" percent={95} showInfo={false} />
-              <Text>React</Text>
-              <Progress className='progress' strokeColor="var(--cv-bar)" percent={90} showInfo={false} />
-              <Text>Node.js</Text>
-              <Progress className='progress' strokeColor="var(--cv-bar)" percent={85} showInfo={false} />
-              <Text>HTML/CSS</Text>
-              <Progress className='progress' strokeColor="var(--cv-bar)" percent={90} showInfo={false} />
+
+              {/* Frontend */}
+              <div className="cv-subsection">
+                <Title level={4}>Frontend</Title>
+                <Text>React</Text>
+                <Progress className='progress' strokeColor="var(--cv-bar)" percent={83} showInfo={false} />
+                <Text>HTML/CSS</Text>
+                <Progress className='progress' strokeColor="var(--cv-bar)" percent={70} showInfo={false} />
+              </div>
+
+              {/* Backend */}
+              <div className="cv-subsection">
+                <Title level={4}>Backend</Title>
+                <Text>Python</Text>
+                <Progress className='progress' strokeColor="var(--cv-bar)" percent={100} showInfo={false} />
+                <Text>GoLang</Text>
+                <Progress className='progress' strokeColor="var(--cv-bar)" percent={87} showInfo={false} />
+                <Text>.NET</Text>
+                <Progress className='progress' strokeColor="var(--cv-bar)" percent={78} showInfo={false} />
+                <Text>SpringBoot</Text>
+                <Progress className='progress' strokeColor="var(--cv-bar)" percent={67} showInfo={false} />
+              </div>
+
+              {/* Hardware */}
+              <div className="cv-subsection">
+                <Title level={4}>Hardware</Title>
+                <Text>Arduino</Text>
+                <Progress className='progress' strokeColor="var(--cv-bar)" percent={80} showInfo={false} />
+                <Text>ESP</Text>
+                <Progress className='progress' strokeColor="var(--cv-bar)" percent={75} showInfo={false} />
+                <Text>Raspberry Pi</Text>
+                <Progress className='progress' strokeColor="var(--cv-bar)" percent={70} showInfo={false} />
+              </div>
+
+              {/* Networks */}
+              <div className="cv-subsection">
+                <Title level={4}>Networks</Title>
+                <Text>Cisco</Text>
+                <Progress className='progress' strokeColor="var(--cv-bar)" percent={35} showInfo={false} />
+              </div>
             </div>
+
 
             {/* Personality Section */}
             <div className="cv-section">
