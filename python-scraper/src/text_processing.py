@@ -30,21 +30,43 @@ translation_dict = {
     "ТЕXНИЧЕСКО ЧЕРТАНЕ": "technical_drawing"
 }
 
+competition_levels = {
+    "ОБЛАСТЕН КРЪГ": "district_ring",
+    "РЕГИОНАЛЕН КРЪГ": "regional_ring",
+    "НАЦИОНАЛЕН КРЪГ": "national_ring"
+}
+
 
 def expand_range(start, end):
     return ' '.join(map(str, range(start, end + 1)))
 
 
+def is_date_range(text):
+    return bool(re.search(r'\d{2}\.\d{2}\s*-\s*\d{2}\.\d{2}', text))
+
+
 def expand_ranges_in_text(text):
-    pattern = re.compile(r'(\d+)\s*-\s*(\d+)')
-    matches = pattern.finditer(text)
-    expanded_text = text
+    # Separate text by potential date ranges and class ranges
+    parts = re.split(r'(\d{2}\.\d{2}\s*-\s*\d{2}\.\d{2})', text)
+    expanded_parts = []
 
-    for match in matches:
-        start, end = map(int, match.groups())
-        expanded_text = expanded_text.replace(match.group(0), expand_range(start, end))
+    for part in parts:
+        if is_date_range(part):
+            # Leave date ranges as they are
+            expanded_parts.append(part)
+        else:
+            # Expand class ranges
+            pattern = re.compile(r'(\d+)\s*-\s*(\d+)')
+            expanded_part = part
+            matches = pattern.finditer(expanded_part)
 
-    return expanded_text
+            for match in matches:
+                start, end = map(int, match.groups())
+                expanded_part = expanded_part.replace(match.group(0), expand_range(start, end))
+
+            expanded_parts.append(expanded_part)
+
+    return ''.join(expanded_parts)
 
 
 def normalize_text(text):
@@ -58,3 +80,4 @@ def convert_roman_to_arabic(text):
     for roman, arabic in roman_to_arabic.items():
         text = re.sub(rf'\b{roman}\b', str(arabic), text)
     return text
+
