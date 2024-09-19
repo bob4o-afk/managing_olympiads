@@ -52,7 +52,6 @@ def parse_date_range(date_range):
     return []
 
 def format_date_range(date_range):
-    # Removes the space and dot between ". -" and returns the formatted date range
     return re.sub(r'\.\s*-\s*', ' - ', date_range)
 
 def clean_date_range(text):
@@ -62,12 +61,17 @@ def clean_date_range(text):
     # Use format_date_range() to clean and format the date range
     formatted_text = format_date_range(text)
 
-    # Find and format the date range into two dates, separated by a comma
     match = re.search(r'(\d{2})\.(\d{2})\s*-\s*(\d{2})\.(\d{2})\.(\d{4})', formatted_text)
     if match:
         day1, month1, day2, month2, year = match.groups()
-        formatted_range = f"{day1}.{month1}.{year}, {day2}.{month2}.{year}"
-        return formatted_range
+        start_date = datetime.strptime(f"{day1}.{month1}.{year}", "%d.%m.%Y")
+        end_date = datetime.strptime(f"{day2}.{month2}.{year}", "%d.%m.%Y")
+
+        date_range = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
+
+        formatted_dates = ', '.join(date.strftime("%d.%m.%Y") for date in date_range)
+        return formatted_dates
+
     return text
 
 def expand_ranges_in_text(text):
