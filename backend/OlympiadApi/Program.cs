@@ -1,6 +1,13 @@
 using OlympiadApi.Services;
+using MySQLRandomNumberApp.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Load configuration from appsettings.json
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Add DatabaseHelper as a singleton and pass the connection string
+builder.Services.AddSingleton(new DatabaseHelper(connectionString));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
