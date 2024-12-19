@@ -1,4 +1,6 @@
+using OlympiadApi.Data;
 using OlympiadApi.Services;
+using Microsoft.EntityFrameworkCore;
 using MySQLRandomNumberApp.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Add DatabaseHelper as a singleton and pass the connection string
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
 builder.Services.AddSingleton(new DatabaseHelper(connectionString));
 
 builder.Services.AddControllers();
