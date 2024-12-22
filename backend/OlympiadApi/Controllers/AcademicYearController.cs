@@ -10,7 +10,6 @@ namespace OlympiadApi.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        // Inject ApplicationDbContext via constructor
         public AcademicYearController(ApplicationDbContext context)
         {
             _context = context;

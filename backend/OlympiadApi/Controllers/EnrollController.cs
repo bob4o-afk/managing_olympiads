@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Services;
+using OlympiadApi.Models;
 
 namespace OlympiadApi.Controllers
 {
@@ -20,13 +21,5 @@ namespace OlympiadApi.Controllers
             await _emailService.SendEmailAsync(request.ToEmail, request.Subject, request.Body, request.CcEmail);
             return Ok("Email sent successfully.");
         }
-    }
-
-    public class EmailRequest
-    {
-        public required string ToEmail { get; set; }
-        public required string Subject { get; set; }
-        public required string Body { get; set; }
-        public required string CcEmail { get; set; }
     }
 }
