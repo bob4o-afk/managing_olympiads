@@ -8,6 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Load configuration from appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("The connection string 'DefaultConnection' was not found or is empty. Please check your configuration.");
+}
+
 // Add DatabaseHelper as a singleton and pass the connection string
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));

@@ -13,9 +13,10 @@ namespace OlympiadApi.Data
         {
         }
 
-        public DbSet<AcademicYear>? AcademicYear { get; set; }
-        public DbSet<Olympiad>? Olympiads { get; set; }
-        public DbSet<Role>? Roles { get; set; }
+        public DbSet<AcademicYear> AcademicYear { get; set; } = null!;
+        public DbSet<Olympiad> Olympiads { get; set; } = null!;
+        //public DbSet<Olympiad>? Olympiads { get; set; }
+        public DbSet<Role> Roles { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

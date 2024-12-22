@@ -10,7 +10,7 @@ namespace OlympiadApi.Models
         public int OlympiadId  { get; set; }
 
         public required string Subject { get; set; }
-        public string Description { get; set; }
+        public string? Description { get; set; }
         public required DateTime DateOfOlympiad { get; set; }
         public required string Round { get; set; }
         public required string Location { get; set; }
