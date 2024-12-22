@@ -19,5 +19,9 @@ namespace OlympiadApi.Models
 
         // Foreign Key to AcademicYear
         public int AcademicYearId { get; set; }
+
+        // Navigation property to AcademicYear
+        public AcademicYear? AcademicYear { get; set; }
+
     }
 }

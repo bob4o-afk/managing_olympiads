@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using OlympiadApi.Data;
 using OlympiadApi.Models;
+using OlympiadApi.Services;
 
 namespace OlympiadApi.Controllers
 {
@@ -9,11 +8,12 @@ namespace OlympiadApi.Controllers
     [Route("api/[controller]")]
     public class RoleController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly RoleService _roleService;
 
-        public RoleController(ApplicationDbContext context)
+        // Inject the RoleService via constructor
+        public RoleController(RoleService roleService)
         {
-            _context = context;
+            _roleService = roleService;
         }
 
         // GET: api/role
@@ -22,7 +22,7 @@ namespace OlympiadApi.Controllers
         {
             try
             {
-                var roles = await _context.Roles.ToListAsync();
+                var roles = await _roleService.GetRolesAsync();
                 return Ok(roles);
             }
             catch (Exception ex)
@@ -37,15 +37,13 @@ namespace OlympiadApi.Controllers
         {
             try
             {
-                if (string.IsNullOrEmpty(role.RoleName))
+                var createdRole = await _roleService.CreateRoleAsync(role);
+                if (createdRole == null)
                 {
                     return BadRequest(new { message = "RoleName is required." });
                 }
 
-                _context.Roles.Add(role);
-                await _context.SaveChangesAsync();
-
-                return Ok(new { message = "Role created successfully", role });
+                return Ok(new { message = "Role created successfully", role = createdRole });
             }
             catch (Exception ex)
             {
