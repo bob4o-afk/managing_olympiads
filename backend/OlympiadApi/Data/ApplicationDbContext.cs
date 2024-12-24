@@ -13,6 +13,8 @@ namespace OlympiadApi.Data
         public DbSet<Olympiad> Olympiads { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
         public DbSet<User> Users { get; set; } = null!;
+        public DbSet<UserRoleAssignment> UserRoleAssignments { get; set; } = null!;
+        public DbSet<StudentOlympiadEnrollment> StudentOlympiadEnrollment { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,19 +33,12 @@ namespace OlympiadApi.Data
                 entity.Property(r => r.RoleName).IsRequired().HasMaxLength(255);
                 entity.Property(r => r.Permissions)
                     .HasColumnType("JSON")
-                    .HasConversion(new ValueConverter<Dictionary<string, object>?, string?>(
+                    .HasConversion(
                         v => JsonSerializationHelper.SerializeToJson(v),
-                        v => JsonSerializationHelper.DeserializeFromJson(v)));
+                        v => JsonSerializationHelper.DeserializeFromJson(v));
             });
 
-            // Configure User entity
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.AcademicYear)
-                .WithMany()
-                .HasForeignKey(u => u.AcademicYearId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // PersonalSettings and Notifications as JSON
+            // Configure User entity with JSON fields and relationships
             var jsonConverter = new ValueConverter<Dictionary<string, object>?, string?>(
                 v => JsonSerializationHelper.SerializeToJson(v),
                 v => JsonSerializationHelper.DeserializeFromJson(v));
@@ -52,6 +47,52 @@ namespace OlympiadApi.Data
                 .Property(u => u.PersonalSettings).HasColumnType("JSON").HasConversion(jsonConverter);
             modelBuilder.Entity<User>()
                 .Property(u => u.Notifications).HasColumnType("JSON").HasConversion(jsonConverter);
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.AcademicYear)
+                .WithMany()
+                .HasForeignKey(u => u.AcademicYearId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Configure UserRoleAssignment Relationships
+            modelBuilder.Entity<UserRoleAssignment>()
+                .HasOne(ura => ura.User)
+                .WithMany()
+                .HasForeignKey(ura => ura.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserRoleAssignment>()
+                .HasOne(ura => ura.Role)
+                .WithMany()
+                .HasForeignKey(ura => ura.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure StudentOlympiadEnrollment Relationships
+            modelBuilder.Entity<StudentOlympiadEnrollment>()
+                .HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<StudentOlympiadEnrollment>()
+                .HasOne(e => e.Olympiad)
+                .WithMany()
+                .HasForeignKey(e => e.OlympiadId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<StudentOlympiadEnrollment>()
+                .HasOne(e => e.AcademicYear)
+                .WithMany()
+                .HasForeignKey(e => e.AcademicYearId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure JSONB for StatusHistory in StudentOlympiadEnrollment
+            modelBuilder.Entity<StudentOlympiadEnrollment>()
+                .Property(e => e.StatusHistory)
+                .HasColumnType("JSONB")
+                .HasConversion(
+                    v => JsonSerializationHelper.SerializeToJson(v),
+                    v => JsonSerializationHelper.DeserializeFromJson(v));
         }
     }
 }

@@ -23,6 +23,8 @@ builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AcademicYearService>();
 builder.Services.AddScoped<OlympiadService>(); 
+builder.Services.AddScoped<UserRoleAssignmentService>();
+builder.Services.AddScoped<StudentOlympiadEnrollmentService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
