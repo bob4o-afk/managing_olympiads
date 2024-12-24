@@ -20,7 +20,7 @@ namespace OlympiadApi.Models
 
         [Column(TypeName = "jsonb")]
         public Dictionary<string, object>? Notifications { get; set; }
-        public required DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
         // Navigation property for AcademicYear
         public AcademicYear? AcademicYear { get; set; }
