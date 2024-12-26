@@ -20,6 +20,7 @@ namespace OlympiadApi.Helpers
             var secretKey = _configuration["JWT_SECRET_KEY"];
             var issuer = _configuration["JWT_ISSUER"];
             var audience = _configuration["JWT_AUDIENCE"];
+            var tokenExpiryHours = _configuration["JWT_EXPIRATION_HOURS"];
 
             if (string.IsNullOrWhiteSpace(secretKey))
                 throw new InvalidOperationException("JWT_SECRET_KEY is not configured in the environment.");
@@ -29,6 +30,9 @@ namespace OlympiadApi.Helpers
 
             if (string.IsNullOrWhiteSpace(audience))
                 throw new InvalidOperationException("JWT_AUDIENCE is not configured in the environment.");
+
+            if (string.IsNullOrWhiteSpace(tokenExpiryHours) || !int.TryParse(tokenExpiryHours, out var expiryHours))
+                throw new InvalidOperationException("JWT_EXPIRATION_HOURS is not configured correctly in the environment.");
 
             // Generate the token
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
@@ -44,7 +48,7 @@ namespace OlympiadApi.Helpers
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.Now.AddHours(expiryHours),
                 signingCredentials: credentials
             );
 

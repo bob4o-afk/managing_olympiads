@@ -69,6 +69,7 @@ builder.Services.AddScoped<OlympiadService>();
 builder.Services.AddScoped<UserRoleAssignmentService>();
 builder.Services.AddScoped<StudentOlympiadEnrollmentService>();
 builder.Services.AddScoped<JwtHelper>();
+builder.Services.AddScoped<AuthService>();
 
 
 builder.Services.AddControllers();

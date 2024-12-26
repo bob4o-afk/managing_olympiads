@@ -15,6 +15,7 @@ namespace OlympiadApi.Data
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<UserRoleAssignment> UserRoleAssignments { get; set; } = null!;
         public DbSet<StudentOlympiadEnrollment> StudentOlympiadEnrollment { get; set; } = null!;
+        public DbSet<UserToken> UserToken { get; set; }  = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -93,6 +94,12 @@ namespace OlympiadApi.Data
                 .HasConversion(
                     v => JsonSerializationHelper.SerializeToJson(v),
                     v => JsonSerializationHelper.DeserializeFromJson(v));
+
+            modelBuilder.Entity<UserToken>()
+                .HasOne(ut => ut.User)
+                .WithMany()
+                .HasForeignKey(ut => ut.UserId);
+
         }
     }
 }

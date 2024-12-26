@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Models;
 using OlympiadApi.Services;
-using OlympiadApi.Helpers; 
-using BCrypt.Net;
+using OlympiadApi.Helpers;
 
 namespace OlympiadApi.Controllers
 {
@@ -58,37 +57,6 @@ namespace OlympiadApi.Controllers
         {
             _userService.DeleteUser(id);
             return NoContent();
-        }
-
-        [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginDto loginDto)
-        {
-            // Validate the input
-            if (string.IsNullOrWhiteSpace(loginDto.Username) || string.IsNullOrWhiteSpace(loginDto.Password))
-            {
-                return BadRequest(new { message = "Username and password are required." });
-            }
-
-            // Check if the user exists
-            var user = _userService.GetUserByUsername(loginDto.Username);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
-            {
-                return Unauthorized(new { message = "Invalid username or password." });
-            }
-
-            var token = _jwtHelper.GenerateJwtToken(user);
-
-            return Ok(new
-            {
-                token,
-                user = new
-                {
-                    user.UserId,
-                    user.Name,
-                    user.Username,
-                    user.Email
-                }
-            });
         }
     }
 }
