@@ -15,7 +15,6 @@ namespace OlympiadApi.Models
 
         public required int AcademicYearId { get; set; }
 
-        [MaxLength(50)]
         public required string EnrollmentStatus { get; set; } = string.Empty;
 
         [Column(TypeName = "jsonb")]
