@@ -10,6 +10,7 @@ def main():
         pdf_to_word_and_extract_table()
         extract_and_process_text()
 
+
     except EnvironmentVariableError as e:
         print(f"Configuration error: {e}")
     except Exception as e:
@@ -19,4 +20,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-#note: pip install --upgrade supabase gotrue
