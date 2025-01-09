@@ -67,34 +67,40 @@ namespace OlympiadApi.Services
                 u.Username == usernameOrEmail || u.Email == usernameOrEmail);
         }
 
-        public bool ChangePasswordWithToken(string token, string oldPassword, string newPassword)
+        public bool ResetPasswordWithToken(string token, string newPassword)
         {
-            var userToken = _context.UserToken.FirstOrDefault(ut => ut.Token == token);
-
-            if (userToken == null || userToken.Expiration < DateTime.UtcNow)
+            using var transaction = _context.Database.BeginTransaction();
+            try
             {
+                var userToken = _context.UserToken.FirstOrDefault(ut => ut.Token == token);
+
+                if (userToken == null || userToken.Expiration < DateTime.UtcNow)
+                {
+                    return false;
+                }
+
+                var user = _context.Users.FirstOrDefault(u => u.UserId == userToken.UserId);
+                if (user == null)
+                {
+                    return false;
+                }
+
+                user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                _context.Users.Update(user);
+                _context.SaveChanges();
+
+                RemoveUserToken(user.UserId);
+
+                transaction.Commit();
+                return true;
+            }
+            catch
+            {
+                // Rollback the transaction in case of error
+                transaction.Rollback();
                 return false;
             }
-
-            var user = _context.Users.FirstOrDefault(u => u.UserId == userToken.UserId);
-            if (user == null)
-            {
-                throw new ArgumentException("User not found.");
-            }
-
-            if (!BCrypt.Net.BCrypt.Verify(oldPassword, user.Password))
-            {
-                return false;
-            }
-
-            user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
-            _context.Users.Update(user);
-            _context.SaveChanges();
-
-            // Remove the token after the password change
-            RemoveUserToken(user.UserId);
-
-            return true;
         }
+
     }
 }

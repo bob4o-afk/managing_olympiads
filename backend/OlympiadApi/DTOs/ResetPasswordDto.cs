@@ -1,9 +1,8 @@
 namespace OlympiadApi.DTOs
 {
-    public class ChangePasswordDto
+    public class ResetPasswordDto
     {
         public required string Username { get; set; }
-        public required string OldPassword { get; set; }
         public required string NewPassword { get; set; }
     }
 

@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Services;
 using OlympiadApi.DTOs;
 using OlympiadApi.Helpers;
-using OlympiadApi.Models;
 
 namespace OlympiadApi.Controllers
 {
@@ -13,13 +12,16 @@ namespace OlympiadApi.Controllers
         private readonly AuthService _authService;
         private readonly JwtHelper _jwtHelper;
         private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(AuthService authService, JwtHelper jwtHelper, IEmailService emailService)
+        public AuthController(AuthService authService, JwtHelper jwtHelper, IEmailService emailService, IConfiguration configuration)
         {
             _authService = authService;
             _jwtHelper = jwtHelper;
             _emailService = emailService;
+            _configuration = configuration;
         }
+
 
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginDto loginDto)
@@ -60,7 +62,8 @@ namespace OlympiadApi.Controllers
             _authService.StorePasswordResetToken(user.UserId, resetToken, expiration);
 
             // Create the reset password link
-            var resetLink = $"{Request.Scheme}://{Request.Host}/api/auth/reset-password?token={resetToken}";
+            var frontendUrl = _configuration["FrontendUrl"];
+            var resetLink = $"{frontendUrl}/reset-password?token={resetToken}";
             var emailSubject = "Password Reset Request";
             var emailBody = $"To reset your password, click the link below:\n{resetLink}";
 
@@ -70,29 +73,39 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost("reset-password")]
-        public IActionResult ResetPassword([FromBody] ChangePasswordDto changePasswordDto, [FromQuery] string token)
+        public IActionResult ResetPassword([FromBody] ResetPasswordDto resetPasswordDto, [FromQuery] string token)
         {
-            var userToken = _authService.GetUserTokenByToken(token);
-            if (userToken == null || userToken.Expiration < DateTime.UtcNow)
+            if (resetPasswordDto == null || string.IsNullOrWhiteSpace(resetPasswordDto.Username) || string.IsNullOrWhiteSpace(resetPasswordDto.NewPassword))
             {
-                return BadRequest(new { message = "Invalid or expired reset token." });
+                return BadRequest(new { message = "Invalid request. Username and new password are required." });
             }
 
-            var user = _authService.GetUserByEmailOrUsername(changePasswordDto.Username);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(changePasswordDto.OldPassword, user.Password))
+            try
             {
-                return Unauthorized(new { message = "Incorrect old password." });
-            }
+                var userToken = _authService.GetUserTokenByToken(token);
+                if (userToken == null || userToken.Expiration < DateTime.UtcNow)
+                {
+                    return BadRequest(new { message = "Invalid or expired reset token." });
+                }
 
-            var passwordChanged = _authService.ChangePasswordWithToken(token, changePasswordDto.OldPassword, changePasswordDto.NewPassword);
-            if (!passwordChanged)
+                var user = _authService.GetUserByEmailOrUsername(resetPasswordDto.Username);
+                if (user == null)
+                {
+                    return NotFound(new { message = "User not found." });
+                }
+
+                var passwordChanged = _authService.ResetPasswordWithToken(token, resetPasswordDto.NewPassword);
+                if (!passwordChanged)
+                {
+                    return StatusCode(500, new { message = "Failed to update password." });
+                }
+
+                return Ok(new { message = "Password updated successfully." });
+            }
+            catch
             {
-                return Unauthorized(new { message = "Failed to update password." });
+                return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
             }
-
-            return Ok(new { message = "Password updated successfully." });
         }
-
-
     }
 }
