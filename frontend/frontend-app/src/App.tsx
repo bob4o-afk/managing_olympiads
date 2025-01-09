@@ -12,8 +12,10 @@ import CVTemplate from './components/CVTemplate';
 import Settings from './components/Settings';
 import MyProfile from './components/MyProfile';
 import UpdateInfo from './components/UpdateInfo';
-import PasswordReset from './components/PasswordReset';
 import EnrollmentPage from './components/EnrollmentPage';
+import ResetPassword from './components/ResetPassword';
+import RequestPasswordReset from './components/RequestPasswordReset';
+
 
 const { Sider, Header, Content } = Layout;
 
@@ -107,7 +109,8 @@ function App() {
                         <Route path="/for-me" element={<div><CVTemplate /></div>} />
                         <Route path="/settings" element={<Settings />} />
                         <Route path="/my-profile" element={<MyProfile />} />
-                        <Route path="/reset-password" element={<PasswordReset />} />
+                        <Route path="/request-password-change" element={<RequestPasswordReset />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/update-info" element={<UpdateInfo />} />
                         <Route path="/" element={<HomePage onNavigate={handleMenuSelect} />} />
                     </Routes>
