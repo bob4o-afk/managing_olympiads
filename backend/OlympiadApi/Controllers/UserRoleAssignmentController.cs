@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using OlympiadApi.Filters;
 using OlympiadApi.Models;
 using OlympiadApi.Services;
 
@@ -16,6 +17,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpGet]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public async Task<IActionResult> GetAllAssignments()
         {
             var assignments = await _service.GetAllAssignmentsAsync();
@@ -23,6 +25,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public async Task<IActionResult> GetAssignmentById(int id)
         {
             var assignment = await _service.GetAssignmentByIdAsync(id);
@@ -34,6 +37,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public async Task<IActionResult> CreateAssignment([FromBody] UserRoleAssignment assignment)
         {
             if (!ModelState.IsValid)
@@ -46,6 +50,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public async Task<IActionResult> DeleteAssignment(int id)
         {
             var success = await _service.DeleteAssignmentAsync(id);

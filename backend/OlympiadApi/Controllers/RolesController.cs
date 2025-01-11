@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using OlympiadApi.Filters;
 using OlympiadApi.Models;
 using OlympiadApi.Services;
 
@@ -18,6 +19,7 @@ namespace OlympiadApi.Controllers
 
         // GET: api/role
         [HttpGet]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public async Task<IActionResult> GetRoles()
         {
             try
@@ -33,6 +35,7 @@ namespace OlympiadApi.Controllers
 
         // POST: api/role
         [HttpPost]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public async Task<IActionResult> CreateRole([FromBody] Role role)
         {
             try

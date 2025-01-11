@@ -3,6 +3,8 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using OlympiadApi.Models;
+using Newtonsoft.Json;
+
 
 namespace OlympiadApi.Helpers
 {
@@ -15,7 +17,7 @@ namespace OlympiadApi.Helpers
             _configuration = configuration;
         }
 
-        public string GenerateJwtToken(User user)
+        public string GenerateJwtToken(User user, Dictionary<string, Dictionary<string, bool>> rolesWithPermissions)
         {
             var secretKey = _configuration["JWT_SECRET_KEY"];
             var issuer = _configuration["JWT_ISSUER"];
@@ -38,22 +40,24 @@ namespace OlympiadApi.Helpers
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString())
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim("Roles", JsonConvert.SerializeObject(rolesWithPermissions))
             };
 
             var token = new JwtSecurityToken(
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(expiryHours),
+                expires: DateTime.Now.AddHours(expiryHours),
                 signingCredentials: credentials
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
 
         public bool ValidateJwtToken(string token)
         {
@@ -90,5 +94,16 @@ namespace OlympiadApi.Helpers
                 return false;
             }
         }
+
+        public IEnumerable<Claim>? GetClaimsFromJwt(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            if (!handler.CanReadToken(token))
+                return null;
+
+            var jwtToken = handler.ReadJwtToken(token);
+            return jwtToken?.Claims;
+        }
+
     }
 }

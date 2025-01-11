@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Data;
+using OlympiadApi.Filters;
 using OlympiadApi.Models;
 
 namespace OlympiadApi.Controllers
@@ -17,6 +18,7 @@ namespace OlympiadApi.Controllers
 
         // GET: api/academicyear
         [HttpGet]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public IActionResult GetAllAcademicYear()
         {
             try
@@ -32,6 +34,7 @@ namespace OlympiadApi.Controllers
 
         // GET: api/academicyear/{id}
         [HttpGet("{id}")]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public IActionResult GetAcademicYearById(int id)
         {
             try
@@ -51,6 +54,7 @@ namespace OlympiadApi.Controllers
 
         // POST: api/academicyear
         [HttpPost]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public IActionResult CreateAcademicYear([FromBody] AcademicYear academicYear)
         {
             try

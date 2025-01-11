@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Models;
 using OlympiadApi.Services;
 using OlympiadApi.Helpers;
+using OlympiadApi.Filters;
 
 namespace OlympiadApi.Controllers
 {
@@ -19,6 +20,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpGet]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public IActionResult GetAllUsers()
         {
             var users = _userService.GetAllUsers();
@@ -26,6 +28,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public IActionResult GetUserById(int id)
         {
             var user = _userService.GetUserById(id);
@@ -36,6 +39,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public IActionResult CreateUser([FromBody] User user)
         {
             _userService.CreateUser(user);
@@ -43,6 +47,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public IActionResult UpdateUser(int id, [FromBody] User user)
         {
             if (id != user.UserId)
@@ -53,6 +58,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public IActionResult DeleteUser(int id)
         {
             _userService.DeleteUser(id);

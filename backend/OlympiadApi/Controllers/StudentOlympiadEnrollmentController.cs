@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using OlympiadApi.Filters;
 using OlympiadApi.Models;
 using OlympiadApi.Services;
 
@@ -16,6 +17,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpGet]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public async Task<IActionResult> GetAllEnrollments()
         {
             var enrollments = await _service.GetAllEnrollmentsAsync();
@@ -23,6 +25,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public async Task<IActionResult> GetEnrollmentById(int id)
         {
             var enrollment = await _service.GetEnrollmentByIdAsync(id);
@@ -34,6 +37,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public async Task<IActionResult> CreateEnrollment([FromBody] StudentOlympiadEnrollment enrollment)
         {
             if (!ModelState.IsValid)
@@ -46,6 +50,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public async Task<IActionResult> UpdateEnrollment(int id, [FromBody] StudentOlympiadEnrollment updatedEnrollment)
         {
             if (!ModelState.IsValid)
@@ -62,6 +67,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public async Task<IActionResult> DeleteEnrollment(int id)
         {
             var success = await _service.DeleteEnrollmentAsync(id);

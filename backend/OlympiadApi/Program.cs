@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using DotNetEnv; 
+using OlympiadApi.Filters;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,6 +71,7 @@ builder.Services.AddScoped<UserRoleAssignmentService>();
 builder.Services.AddScoped<StudentOlympiadEnrollmentService>();
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AdminRoleAuthorizeAttribute>();
 
 
 builder.Services.AddControllers();

@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Services;
 using OlympiadApi.Models;
 
+
+//SHOULD HAVE THE SAME FILTER as admins but for students 
+
 namespace OlympiadApi.Controllers
 {
     [ApiController]

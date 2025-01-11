@@ -3,6 +3,7 @@ using OlympiadApi.Services;
 using OlympiadApi.DTOs;
 using OlympiadApi.Helpers;
 
+
 namespace OlympiadApi.Controllers
 {
     [ApiController]
@@ -12,19 +13,24 @@ namespace OlympiadApi.Controllers
         private readonly AuthService _authService;
         private readonly JwtHelper _jwtHelper;
         private readonly IEmailService _emailService;
+        private readonly RoleService _roleService;
+        private readonly UserRoleAssignmentService _userRoleAssignmentService;
+
         private readonly IConfiguration _configuration;
 
-        public AuthController(AuthService authService, JwtHelper jwtHelper, IEmailService emailService, IConfiguration configuration)
+        public AuthController(AuthService authService, JwtHelper jwtHelper, IEmailService emailService, IConfiguration configuration, RoleService roleService, UserRoleAssignmentService userRoleAssignmentService)
         {
             _authService = authService;
             _jwtHelper = jwtHelper;
             _emailService = emailService;
             _configuration = configuration;
+            _roleService = roleService;
+            _userRoleAssignmentService = userRoleAssignmentService;
         }
 
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             var user = _authService.AuthenticateUser(loginDto.UsernameOrEmail, loginDto.Password);
             if (user == null)
@@ -32,7 +38,26 @@ namespace OlympiadApi.Controllers
                 return Unauthorized(new { message = "Invalid username or password." });
             }
 
-            var token = _jwtHelper.GenerateJwtToken(user);
+            var assignments = await _userRoleAssignmentService.GetAllAssignmentsAsync();
+            var roles = await _roleService.GetRolesAsync();
+
+            var userRoleIds = assignments
+                .Where(a => a.UserId == user.UserId)
+                .Select(a => a.RoleId)
+                .ToList();
+
+            var userRolesWithPermissions = roles
+            .Where(r => userRoleIds.Contains(r.RoleId))
+            .ToDictionary(
+                r => r.RoleName,
+                r => r.Permissions?.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value is bool b && b
+                ) ?? new Dictionary<string, bool>()
+            );
+
+
+            var token = _jwtHelper.GenerateJwtToken(user, userRolesWithPermissions);
 
             return Ok(new
             {
