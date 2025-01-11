@@ -10,18 +10,18 @@ function Login(): JSX.Element {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Check localStorage for token
-        const storedToken = localStorage.getItem("authToken");
-        if (storedToken) {
-            setToken(storedToken);
+        const storedSession = localStorage.getItem("userSession");
+        if (storedSession) {
+            setToken(storedSession);
+            navigate('/my-profile');
         }
-    }, []);
+    }, [navigate]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
     
         try {
-            const response = await fetch("http://localhost:5138/api/auth/login", {
+            const authResponse = await fetch("http://localhost:5138/api/auth/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -29,28 +29,44 @@ function Login(): JSX.Element {
                 body: JSON.stringify({ usernameOrEmail, password }),
             });
     
-            if (!response.ok) {
-                const errorText = await response.text();
+            if (!authResponse.ok) {
+                const errorText = await authResponse.text();
                 console.error("API Error Response:", errorText);
                 throw new Error("Login failed. Please check your credentials and try again.");
             }
     
-            const data = await response.json();
-            setToken(data.token);
-            localStorage.setItem("authToken", data.token);
+            const authData = await authResponse.json();
+            setToken(authData.token);
+            localStorage.setItem("authToken", authData.token);
+
+            const userDetails = authData.user;
+
+            const roleResponse = await fetch("http://localhost:5138/api/UserRoleAssignment/");
+            if (!roleResponse.ok) {
+                const errorText = await roleResponse.text();
+                console.error("Role Fetch Error:", errorText);
+                throw new Error("Failed to retrieve user role.");
+            }
+
+            const roleData = await roleResponse.json();
+            const userRoleAssignment = roleData.find((assignment: any) => assignment.userId === userDetails.userId);
+            const role = userRoleAssignment ? userRoleAssignment.role.roleName : "Student"; 
+
+            const userSession = {
+                full_name: userDetails.name,
+                email: userDetails.email,
+                role: role,
+            };
+
+            localStorage.setItem("userSession", JSON.stringify(userSession));
             setError(null);
-            console.log("Logged in successfully", data);
+            console.log("Logged in successfully", userSession);
+
+            navigate("/my-profile");
         } catch (err: any) {
             setError(err.message);
             console.error("Login error:", err);
         }
-    };
-    
-
-    const handleLogout = () => {
-        setToken(null);
-        localStorage.removeItem("authToken"); // Clear token from localStorage
-        console.log("Logged out successfully");
     };
 
     const handlePasswordRecovery = () => {
@@ -93,7 +109,6 @@ function Login(): JSX.Element {
             ) : (
                 <div className="session-info">
                     <p>Logged in successfully</p>
-                    <button onClick={handleLogout}>Logout</button>
                 </div>
             )}
         </div>

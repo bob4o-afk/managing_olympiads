@@ -1,20 +1,42 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { Button, Form, Select, Typography, notification } from 'antd';
-
 import './ui/EnrollmentPage.css';
 
 const { Title } = Typography;
 const { Option } = Select;
+const { Text } = Typography;
+
 
 const EnrollmentPage: React.FC = () => {
   const [selectedOlympiad, setSelectedOlympiad] = useState<string>('');
+  const [olympiads, setOlympiads] = useState<any[]>([]);
   const [, setEmailSent] = useState<boolean>(false);
 
-  const olympiads = [
-    { id: 1, subject: 'Mathematics' },
-    { id: 2, subject: 'Mathematics - International' },
-    { id: 3, subject: 'Mathematics - National' }
-  ];
+  useEffect(() => {
+    const fetchOlympiads = async () => {
+      try {
+        const response = await fetch("http://localhost:5138/api/olympiad");
+        
+        if (response.ok) {
+          const data = await response.json();
+          setOlympiads(data);
+        } else {
+          notification.error({
+            message: 'Error',
+            description: 'Failed to load Olympiad data.',
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching Olympiads:', error);
+        notification.error({
+          message: 'Network Error',
+          description: 'There was an issue fetching the Olympiad data.',
+        });
+      }
+    };
+
+    fetchOlympiads();
+  }, []);
 
   const handleSelectChange = (value: string) => {
     setSelectedOlympiad(value);
@@ -39,8 +61,8 @@ const EnrollmentPage: React.FC = () => {
     };
 
     try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL!}/api/email/send`, {
-            method: 'POST',
+      const response = await fetch("http://localhost:5138/api/email/send", {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -72,18 +94,34 @@ const EnrollmentPage: React.FC = () => {
   return (
     <div className="enrollment-page">
       <Title level={2}>Olympiad Enrollment</Title>
+
+      {/* Styled Select Olympiad Text */}
+      <Text style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+        Please select an Olympiad from the list below:
+      </Text>
+
       <Form onSubmitCapture={handleSubmit} className="enrollment-form">
         <Form.Item label="Select an Olympiad">
-          <Select value={selectedOlympiad} onChange={handleSelectChange} placeholder="Select an Olympiad">
-            {olympiads.map(olympiad => (
-              <Option key={olympiad.id} value={olympiad.subject}>
-                {olympiad.subject}
+          <Select 
+            value={selectedOlympiad} 
+            onChange={handleSelectChange} 
+            placeholder="Select an Olympiad"
+            style={{ width: '100%', height: '100%' }}
+          >
+            {olympiads.map((olympiad) => (
+              <Option key={olympiad.olympiadId} value={olympiad.subject}>
+                <div>
+                  <strong>{olympiad.subject}</strong>
+                  <p>{`Location: ${olympiad.location}`}</p>
+                  <p>{`Date: ${new Date(olympiad.dateOfOlympiad).toLocaleDateString()}`}</p>
+                  <p>{`Start Time: ${new Date(olympiad.startTime).toDateString()}`}</p>
+                </div>
               </Option>
             ))}
           </Select>
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" disabled={!selectedOlympiad}>
             Submit Enrollment
           </Button>
         </Form.Item>

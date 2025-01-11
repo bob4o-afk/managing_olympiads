@@ -15,6 +15,7 @@ import UpdateInfo from './components/UpdateInfo';
 import EnrollmentPage from './components/EnrollmentPage';
 import ResetPassword from './components/ResetPassword';
 import RequestPasswordReset from './components/RequestPasswordReset';
+import Login from './components/Login';
 
 
 const { Sider, Header, Content } = Layout;
@@ -112,6 +113,7 @@ function App() {
                         <Route path="/request-password-change" element={<RequestPasswordReset />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/update-info" element={<UpdateInfo />} />
+                        <Route path="/login" element={<Login />} />
                         <Route path="/" element={<HomePage onNavigate={handleMenuSelect} />} />
                     </Routes>
                 </Content>
