@@ -48,11 +48,47 @@ namespace OlympiadApi.Helpers
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
-                expires: DateTime.Now.AddHours(expiryHours),
+                expires: DateTime.Now.AddMinutes(expiryHours),
                 signingCredentials: credentials
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public bool ValidateJwtToken(string token)
+        {
+            var secretKey = _configuration["JWT_SECRET_KEY"];
+            var issuer = _configuration["JWT_ISSUER"];
+            var audience = _configuration["JWT_AUDIENCE"];
+
+            if (string.IsNullOrWhiteSpace(secretKey))
+                throw new InvalidOperationException("JWT_SECRET_KEY is not configured in the environment.");
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            try
+            {
+                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = issuer,
+                    ValidAudience = audience,
+                    IssuerSigningKey = key,
+                    ClockSkew = TimeSpan.Zero
+                }, out SecurityToken validatedToken);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Token validation failed: {ex.Message}");
+                return false;
+            }
         }
     }
 }

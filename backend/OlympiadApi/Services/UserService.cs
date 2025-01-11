@@ -51,6 +51,8 @@ namespace OlympiadApi.Services
             existingUser.Email = user.Email;
             existingUser.Username = user.Username;
             existingUser.Gender = user.Gender;
+            existingUser.PersonalSettings = user.PersonalSettings;
+            existingUser.Notifications = user.Notifications;
 
             _context.Users.Update(existingUser);
             _context.SaveChanges();

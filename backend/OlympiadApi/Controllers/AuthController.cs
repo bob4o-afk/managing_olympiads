@@ -107,5 +107,36 @@ namespace OlympiadApi.Controllers
                 return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
             }
         }
+
+
+        [HttpPost("validate-token")]
+        public IActionResult ValidateToken()
+        {
+            try
+            {
+                var authHeader = Request.Headers["Authorization"].ToString();
+                if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
+                {
+                    return Unauthorized(new { message = "Token is missing or invalid." });
+                }
+
+                var token = authHeader.Substring("Bearer ".Length).Trim();
+
+                var isValid = _jwtHelper.ValidateJwtToken(token);
+
+                if (!isValid)
+                {
+                    return Unauthorized(new { message = "Token is invalid or expired." });
+                }
+
+                return Ok(new { message = "Token is valid." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error validating token: {ex.Message}");
+                return StatusCode(500, new { message = "An unexpected error occurred." });
+            }
+        }
+
     }
 }
