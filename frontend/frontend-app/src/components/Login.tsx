@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { HiEye, HiEyeOff } from "react-icons/hi"; // Import icons for password visibility toggle
 import './ui/Login.css';
 
 function Login(): JSX.Element {
@@ -7,6 +8,7 @@ function Login(): JSX.Element {
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
     const [token, setToken] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState<boolean>(false); // State for toggling password visibility
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -53,6 +55,7 @@ function Login(): JSX.Element {
             const role = userRoleAssignment ? userRoleAssignment.role.roleName : "Student"; 
 
             const userSession = {
+                userId: userDetails.userId,
                 full_name: userDetails.name,
                 email: userDetails.email,
                 role: role,
@@ -90,12 +93,20 @@ function Login(): JSX.Element {
                         </div>
                         <div className="form-group">
                             <label>Password</label>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
+                            <div className="password-container">
+                                <input
+                                    type={showPassword ? 'text' : 'password'} // Toggle password visibility
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                                <span
+                                    className="password-toggle"
+                                    onClick={() => setShowPassword(!showPassword)} // Toggle the showPassword state
+                                >
+                                    {showPassword ? <HiEyeOff /> : <HiEye />} {/* Toggle icon */}
+                                </span>
+                            </div>
                         </div>
                         <button type="submit">Login</button>
                     </form>

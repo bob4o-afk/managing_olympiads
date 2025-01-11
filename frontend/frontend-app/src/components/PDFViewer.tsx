@@ -22,7 +22,10 @@ function PDFViewer(): JSX.Element {
     useEffect(() => {
         const fetchPdf = async () => {
             const currentYear = new Date().getFullYear();
-            const folderPath = `${currentYear - 1}-${currentYear}`;
+            const currentMonth = new Date().getMonth() + 1;
+
+            const folderPath = currentMonth < 9 ? `${currentYear - 2}-${currentYear-1}` : `${currentYear-1}-${currentYear}`;
+
             const fileName = "zap2049_olimpiadi_01092023.pdf";
             
             const { data, error } = await supabase
