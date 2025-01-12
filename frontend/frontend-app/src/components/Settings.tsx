@@ -50,6 +50,43 @@ const Settings: React.FC = () => {
         validateSession();
     }, []);
 
+    useEffect(() => {
+        if (session) {
+            const fetchUserData = async () => {
+                try {
+                    const token = localStorage.getItem("authToken");
+                    const userResponse = await fetch("http://localhost:5138/api/user", {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`,
+                        },
+                    });
+
+                    if (!userResponse.ok) {
+                        alert("Failed to fetch users. Please try again.");
+                        return;
+                    }
+
+                    const users = await userResponse.json();
+                    const user = users.find((u: { email: any; }) => u.email === session.email);
+
+                    if (user) {
+                        setNotificationsEnabled(user.notifications?.emailNotifications ?? true);
+                        setAutoFillDocs(user.personalSettings?.autoFilling ?? true);
+                    } else {
+                        alert("User not found.");
+                    }
+                } catch (error) {
+                    console.error("An error occurred while fetching user data:", error);
+                    alert("An error occurred. Please try again.");
+                }
+            };
+
+            fetchUserData();
+        }
+    }, [session]);
+
     const handleSavePreferences = async () => {
         if (!session) {
             alert("You must be logged in to save preferences.");
@@ -141,10 +178,6 @@ const Settings: React.FC = () => {
             console.error("An error occurred while saving preferences:", error);
             alert("An error occurred. Please try again.");
         }
-    };
-
-    const handlePasswordToggle = () => {
-        setShowPassword(!showPassword);
     };
 
     const handleResetPreferences = () => {
