@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { HiEye, HiEyeOff } from 'react-icons/hi';
-import { useSearchParams, useNavigate} from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import './ui/ResetPassword.css';
 
 const ResetPassword: React.FC = () => {
@@ -27,7 +27,7 @@ const ResetPassword: React.FC = () => {
 
         try {
             const usernameOrEmail = localStorage.getItem('resetInfo'); 
-            
+
             const response = await fetch(`http://localhost:5138/api/auth/reset-password?token=${token}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -41,13 +41,17 @@ const ResetPassword: React.FC = () => {
 
             setMessage({ text: 'Password updated successfully!', type: 'success' });
             setTimeout(() => {
-              navigate('/my-profile');
-          }, 2000); 
+                navigate('/my-profile');
+            }, 2000); 
         } catch (error: any) {
             setMessage({ text: `Error updating password: ${error.message}`, type: 'error' });
         }
 
         setLoading(false);
+    };
+
+    const handleCancel = () => {
+        navigate('/login');
     };
 
     return (
@@ -83,6 +87,10 @@ const ResetPassword: React.FC = () => {
             </div>
             <button onClick={handleUpdatePassword} disabled={loading}>
                 {loading ? 'Updating...' : 'Update Password'}
+            </button>
+
+            <button onClick={handleCancel} style={{ marginTop: '10px' }}>
+                Cancel
             </button>
 
             {message && (

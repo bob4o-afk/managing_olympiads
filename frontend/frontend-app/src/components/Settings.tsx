@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Switch, Button, Typography } from 'antd';
+import { Card, Switch, Button, Typography, Modal, Input } from 'antd';
+import { HiEye, HiEyeOff } from 'react-icons/hi'; 
 
 const { Title, Text } = Typography;
 
@@ -8,6 +9,10 @@ const Settings: React.FC = () => {
     const [autoFillDocs, setAutoFillDocs] = useState<boolean>(true);
     const [session, setSession] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [showPasswordModal, setShowPasswordModal] = useState<boolean>(false);
+    const [currentPassword, setCurrentPassword] = useState<string>('');
+    const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
     const validateSession = async () => {
         const storedSession = localStorage.getItem("userSession");
@@ -45,57 +50,42 @@ const Settings: React.FC = () => {
         validateSession();
     }, []);
 
-    useEffect(() => {
-        if (session) {
-            const fetchUserData = async () => {
-                try {
-                    const token = localStorage.getItem("authToken");
-                    const userResponse = await fetch("http://localhost:5138/api/user", {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`,
-                        },
-                    });
-
-                    if (!userResponse.ok) {
-                        alert("Failed to fetch users. Please try again.");
-                        return;
-                    }
-
-                    const users = await userResponse.json();
-                    const user = users.find((u: { email: any; }) => u.email === session.email);
-
-                    if (user) {
-                        setNotificationsEnabled(user.notifications?.emailNotifications ?? true);
-                        setAutoFillDocs(user.personalSettings?.autoFilling ?? true);
-                    } else {
-                        alert("User not found.");
-                    }
-                } catch (error) {
-                    console.error("An error occurred while fetching user data:", error);
-                    alert("An error occurred. Please try again.");
-                }
-            };
-
-            fetchUserData();
-        }
-    }, [session]);
-
-    const handleNotificationsToggle = (checked: boolean) => {
-        setNotificationsEnabled(checked);
-    };
-
-    const handleAutoFillToggle = (checked: boolean) => {
-        setAutoFillDocs(checked);
-    };
-
     const handleSavePreferences = async () => {
         if (!session) {
             alert("You must be logged in to save preferences.");
             return;
         }
+        setShowPasswordModal(true);
+    };
 
+    const handlePasswordValidation = async () => {
+        const token = localStorage.getItem("authToken");
+
+        try {
+            const response = await fetch("http://localhost:5138/api/auth/validate-password", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify({ password: currentPassword }),
+            });
+
+            if (!response.ok) {
+                setError("Invalid password. Please try again.");
+                return;
+            }
+
+            setError(null);
+            await savePreferences();
+            setShowPasswordModal(false);
+        } catch (error) {
+            setError("An error occurred while validating your password.");
+            console.error("Error validating password:", error);
+        }
+    };
+
+    const savePreferences = async () => {
         try {
             const token = localStorage.getItem("authToken");
 
@@ -130,6 +120,7 @@ const Settings: React.FC = () => {
                     ...user.PersonalSettings,
                     autoFilling: autoFillDocs,
                 },
+                Password: currentPassword
             };
 
             const updateResponse = await fetch(`http://localhost:5138/api/user/${user.userId}`, {
@@ -150,6 +141,10 @@ const Settings: React.FC = () => {
             console.error("An error occurred while saving preferences:", error);
             alert("An error occurred. Please try again.");
         }
+    };
+
+    const handlePasswordToggle = () => {
+        setShowPassword(!showPassword);
     };
 
     const handleResetPreferences = () => {
@@ -180,7 +175,7 @@ const Settings: React.FC = () => {
                 <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Switch
                         checked={notificationsEnabled}
-                        onChange={handleNotificationsToggle}
+                        onChange={(checked) => setNotificationsEnabled(checked)}
                         style={{ marginRight: '8px', fontSize: '14px', width: '40px' }}
                     />
                     <Text>{notificationsEnabled ? 'Enabled' : 'Disabled'}</Text>
@@ -192,7 +187,7 @@ const Settings: React.FC = () => {
                 <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Switch
                         checked={autoFillDocs}
-                        onChange={handleAutoFillToggle}
+                        onChange={(checked) => setAutoFillDocs(checked)}
                         style={{ marginRight: '8px', fontSize: '14px', width: '40px' }}
                     />
                     <Text>{autoFillDocs ? 'Enabled' : 'Disabled'}</Text>
@@ -214,6 +209,41 @@ const Settings: React.FC = () => {
                     Reset Preferences
                 </Button>
             </div>
+
+            <Modal
+                title="Verify Password"
+                open={showPasswordModal}
+                onCancel={() => setShowPasswordModal(false)}
+                footer={[
+                    <Button key="submit" type="primary" onClick={handlePasswordValidation} style={{ 
+                        width: '150px', margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center', marginBottom: '10px' }}>
+                        Verify
+                    </Button>, 
+                    <Button key="cancel" onClick={() => setShowPasswordModal(false)} style={{ 
+                        width: '150px', margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+                        Cancel
+                    </Button>
+                ]}
+            >
+                <div className="password-container">
+                    <Input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Enter your password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                    />
+                    <span
+                        className="password-toggle"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        {showPassword ? <HiEyeOff /> : <HiEye />}
+                    </span>
+                </div>
+
+                {error && <Text style={{ color: 'black' }} type="danger">{error}</Text>}
+            </Modal>
+
         </div>
     );
 };
