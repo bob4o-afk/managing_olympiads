@@ -17,7 +17,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpGet]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        //Check for studens only
         public async Task<IActionResult> GetAllAssignments()
         {
             var assignments = await _service.GetAllAssignmentsAsync();

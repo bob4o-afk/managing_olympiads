@@ -47,7 +47,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPut("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        //check for matching emails
         public IActionResult UpdateUser(int id, [FromBody] User user)
         {
             if (id != user.UserId)

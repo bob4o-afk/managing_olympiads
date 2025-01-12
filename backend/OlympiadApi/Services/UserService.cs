@@ -41,8 +41,9 @@ namespace OlympiadApi.Services
             if (existingUser == null)
                 throw new ArgumentException("User not found.");
 
-            // Check if the password is being updated and hash the new password
-            if (!string.IsNullOrEmpty(user.Password) && !BCrypt.Net.BCrypt.Verify(user.Password, existingUser.Password))
+            // Check if the password is being updated and hash the new password but maybe it should be like that
+            // if (!string.IsNullOrEmpty(user.Password) && !BCrypt.Net.BCrypt.Verify(user.Password, existingUser.Password))
+            if (!string.IsNullOrEmpty(user.Password))
             {
                 existingUser.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             }

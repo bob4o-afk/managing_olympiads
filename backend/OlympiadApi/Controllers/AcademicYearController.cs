@@ -18,7 +18,7 @@ namespace OlympiadApi.Controllers
 
         // GET: api/academicyear
         [HttpGet]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        //students checking
         public IActionResult GetAllAcademicYear()
         {
             try

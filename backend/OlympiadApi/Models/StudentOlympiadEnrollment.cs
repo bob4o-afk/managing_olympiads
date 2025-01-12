@@ -24,7 +24,7 @@ namespace OlympiadApi.Models
 
         public required DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public required DateTime? UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
 
         // Navigation Properties
         public User? User { get; set; }

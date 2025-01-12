@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using OlympiadApi.Models;
+using OlympiadApi.Services;
 using Newtonsoft.Json;
 
 
@@ -11,10 +12,12 @@ namespace OlympiadApi.Helpers
     public class JwtHelper
     {
         private readonly IConfiguration _configuration;
+        private readonly UserService _userService;
 
-        public JwtHelper(IConfiguration configuration)
+        public JwtHelper(IConfiguration configuration, UserService userService)
         {
             _configuration = configuration;
+            _userService = userService;
         }
 
         public string GenerateJwtToken(User user, Dictionary<string, Dictionary<string, bool>> rolesWithPermissions)
@@ -93,6 +96,17 @@ namespace OlympiadApi.Helpers
                 Console.WriteLine($"Token validation failed: {ex.Message}");
                 return false;
             }
+        }
+
+        public bool ValidatePassword(int userId, string password)
+        {
+            var user = _userService.GetUserById(userId);
+            if (user == null)
+            {
+                return false;
+            }
+
+            return BCrypt.Net.BCrypt.Verify(password, user.Password);
         }
 
         public IEnumerable<Claim>? GetClaimsFromJwt(string token)

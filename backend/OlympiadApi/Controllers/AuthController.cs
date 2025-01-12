@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Services;
 using OlympiadApi.DTOs;
 using OlympiadApi.Helpers;
-
+using System.Security.Claims;
 
 namespace OlympiadApi.Controllers
 {
@@ -15,10 +15,10 @@ namespace OlympiadApi.Controllers
         private readonly IEmailService _emailService;
         private readonly RoleService _roleService;
         private readonly UserRoleAssignmentService _userRoleAssignmentService;
-
+        private readonly UserService _userService;
         private readonly IConfiguration _configuration;
 
-        public AuthController(AuthService authService, JwtHelper jwtHelper, IEmailService emailService, IConfiguration configuration, RoleService roleService, UserRoleAssignmentService userRoleAssignmentService)
+        public AuthController(AuthService authService, JwtHelper jwtHelper, IEmailService emailService, IConfiguration configuration, RoleService roleService, UserRoleAssignmentService userRoleAssignmentService, UserService userService)
         {
             _authService = authService;
             _jwtHelper = jwtHelper;
@@ -26,6 +26,7 @@ namespace OlympiadApi.Controllers
             _configuration = configuration;
             _roleService = roleService;
             _userRoleAssignmentService = userRoleAssignmentService;
+            _userService = userService;
         }
 
 
@@ -55,7 +56,6 @@ namespace OlympiadApi.Controllers
                     kvp => kvp.Value is bool b && b
                 ) ?? new Dictionary<string, bool>()
             );
-
 
             var token = _jwtHelper.GenerateJwtToken(user, userRolesWithPermissions);
 
@@ -163,5 +163,51 @@ namespace OlympiadApi.Controllers
             }
         }
 
+        [HttpPost("validate-password")]
+        public IActionResult ValidatePassword([FromBody] ValidatePasswordDto validatePasswordDto)
+        {
+            if (validatePasswordDto == null || string.IsNullOrWhiteSpace(validatePasswordDto.Password))
+            {
+                return BadRequest(new { message = "Password is required." });
+            }
+
+            try
+            {
+                var authHeader = Request.Headers["Authorization"].ToString();
+                if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
+                {
+                    return Unauthorized(new { message = "Token is missing or invalid." });
+                }
+
+                var token = authHeader.Substring("Bearer ".Length).Trim();
+                var claims = _jwtHelper.GetClaimsFromJwt(token);
+
+                if (claims == null || !claims.Any())
+                {
+                    return Unauthorized(new { message = "Token is invalid." });
+                }
+
+                var userIdClaim = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+                if (userIdClaim == null)
+                {
+                    return Unauthorized(new { message = "User ID claim not found in token." });
+                }
+
+                int userId = int.Parse(userIdClaim.Value);
+
+                var isPasswordValid = _jwtHelper.ValidatePassword(userId, validatePasswordDto.Password);  //TO DO: check where should this be
+                if (!isPasswordValid)
+                {
+                    return Unauthorized(new { message = "Invalid password." });
+                }
+
+                return Ok(new { message = "Password validated successfully." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error validating password: {ex.Message}");
+                return StatusCode(500, new { message = "An unexpected error occurred." });
+            }
+        }
     }
 }

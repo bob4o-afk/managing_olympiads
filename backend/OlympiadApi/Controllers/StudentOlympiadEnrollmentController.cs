@@ -37,7 +37,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        //check for students only
         public async Task<IActionResult> CreateEnrollment([FromBody] StudentOlympiadEnrollment enrollment)
         {
             if (!ModelState.IsValid)
