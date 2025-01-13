@@ -1,10 +1,15 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import PyPDF2
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 from io import BytesIO
+import os
 
+app = Flask(__name__)
+CORS(app)
 
 def add_text_to_pdf(input_pdf, output_pdf, texts, coordinates, font_size=12, font_path=None):
     with open(input_pdf, "rb") as infile:
@@ -34,59 +39,74 @@ def add_text_to_pdf(input_pdf, output_pdf, texts, coordinates, font_size=12, fon
 
         with open(output_pdf, "wb") as output_file:
             writer.write(output_file)
-        print("PDF was filled!")
 
-def main():
+@app.route('/fill_pdf', methods=['POST'])
+def fill_pdf():
+    data = request.json
+
+    parent_name = data.get('parentName', '')
+    address = data.get('address', '')
+    telephone = data.get('telephone', '')
+    student_name = data.get('studentName', '')
+    grade = data.get('grade', '')
+    school = data.get('school', '')
+    gender = data.get('gender', '').lower()
+    test = data.get('test', '')
+
+    max_length = 32
+    if len(school) > max_length:
+        last_space = school[:max_length].rfind(' ')
+        first_line = school[:last_space] if last_space != -1 else school[:max_length]
+        second_line = school[last_space + 1:] if last_space != -1 else school[max_length:]
+    else:
+        first_line = school
+        second_line = ''
+
+    texts = [
+        parent_name,
+        address,
+        telephone,
+        student_name,
+        grade,
+        first_line,
+        second_line,
+        '--',
+        test
+    ]
+
+    # Coordinates for text placement
+    coordinates = [
+        [210, 615, 0],  # Parent name
+        [150, 575, 0],  # Address
+        [130, 545, 0],  # Telephone
+        [90, 520, 0],   # Student name
+        [250, 475, 0],  # Grade
+        [340, 475, 0],  # School first line
+        [75, 445, 0],   # School second line
+        [160, 365, 0],  # Placeholder
+        [0, 0, 1]       # Test (2nd page)
+    ]
+
+    gender_coordinates = {
+        "male": [170, 615, 0],
+        "female": [155, 615, 0]
+    }
+    if gender in gender_coordinates:
+        coordinates.append(gender_coordinates[gender])
+        texts.append('X')
+
     input_pdf = 'Deklaracia.pdf'
     output_pdf = 'filled_documents/Deklaracia_filled.pdf'
 
-    # Coordinates array
-    coordinates = [
-        [210, 615, 0],  # име, презиме, фамилия на родител/настойник
-        [150, 575, 0],  # адрес
-        [130, 545, 0],  # телефон
-        [90, 520, 0],  # име, презиме, фамилия на ученик
-        [250, 475, 0],  # клас
-        [340, 475, 0],     # начало на горното поле за училище
-        [75, 445, 0],  # долното поле за училище, населено място и област
-        [160, 365, 0],
-        [0, 0, 1]  # примерни координати за 2ра страница
-    ]
-
-    # '-----'
-    gender_coordinates = {
-        "male":[
-            [170, 615, 0],
-        ],
-        "female":[
-            [145, 615, 0],
-        ]
-    }
-
-    # '-----------'
-    additional_coordinates = [
-        [245, 545, 0],          # родител
-        [295, 545, 0],          # настойник
-        [350, 545, 0]           # попечител
-    ]
-
-
-    texts = [
-        'Борислав Боянов Миланов',  # Text for [210, 615, 0]
-        'Адрес на родител',  # Text for [150, 575, 0]
-        'Телефонен номер',  # Text for [130, 545, 0]
-        'Име на ученик',  # Text for [90, 520, 0]
-        '12Б',  # Text for [250, 475, 0]
-        'Аааааааааааааааааааааааааааааааа', #32 symbols max
-        'Аааааааааааааааааааааааааааааааа',  # the remaining symbols
-        '--',
-        'Тестово'  # Text for [0, 0, 1]
-    ]
-
+    # Font path
     font_path = r'C:\Windows\Fonts\Arial.ttf'
 
-    add_text_to_pdf(input_pdf, output_pdf, texts, coordinates, font_path=font_path)
+    try:
+        add_text_to_pdf(input_pdf, output_pdf, texts, coordinates, font_path=font_path)
+        return jsonify({"message": "PDF filled successfully!", "output_file": output_pdf})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    os.makedirs('filled_documents', exist_ok=True)
+    app.run(debug=True)
