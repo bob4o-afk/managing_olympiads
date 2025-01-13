@@ -1,0 +1,11 @@
+.idea
+.vs
+
+
+/frontend/frontend-app/node_modules
+
+/automatic_document_filling/filled_documents
+
+/python-scraper/.env
+/python-scraper/files/
+/python-scraper/src/__pycache__
