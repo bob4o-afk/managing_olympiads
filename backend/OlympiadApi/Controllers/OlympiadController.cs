@@ -52,6 +52,7 @@ namespace OlympiadApi.Controllers
 
         // POST: api/olympiad
         [HttpPost]
+        //check admin
         public IActionResult CreateOlympiad([FromBody] Olympiad olympiad)
         {
             try
