@@ -16,6 +16,7 @@ import EnrollmentPage from './components/EnrollmentPage';
 import ResetPassword from './components/ResetPassword';
 import RequestPasswordReset from './components/RequestPasswordReset';
 import Login from './components/Login';
+import Documents from './components/Documents';
 
 
 const { Sider, Header, Content } = Layout;
@@ -30,7 +31,6 @@ function App() {
         setDarkTheme(!darkTheme);
     };
 
-    // Apply the theme to the root element
     useEffect(() => {
         document.body.className = darkTheme ? 'dark-theme' : 'light-theme';
     }, [darkTheme]);
@@ -106,7 +106,7 @@ function App() {
                         <Route path="/home" element={<HomePage onNavigate={handleMenuSelect} />} />
                         <Route path="/enrollment" element={<EnrollmentPage />} />
                         <Route path="/all-olympiads" element={<PDFViewer />} />
-                        <Route path="/documents" element={<div>Documents</div>} />
+                        <Route path="/documents" element={<Documents/>} />
                         <Route path="/for-me" element={<div><CVTemplate /></div>} />
                         <Route path="/settings" element={<Settings />} />
                         <Route path="/my-profile" element={<MyProfile />} />
