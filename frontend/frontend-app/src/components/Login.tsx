@@ -1,27 +1,42 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { HiEye, HiEyeOff } from "react-icons/hi"; // Import icons for password visibility toggle
-import './ui/Login.css';
+import { HiEye, HiEyeOff } from "react-icons/hi";
+import "./ui/Login.css";
 
-function Login(): JSX.Element {
+const Login: React.FC = (): JSX.Element => {
     const [usernameOrEmail, setUsernameOrEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
     const [token, setToken] = useState<string | null>(null);
-    const [showPassword, setShowPassword] = useState<boolean>(false); // State for toggling password visibility
+    const [showPassword, setShowPassword] = useState<boolean>(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         const storedSession = localStorage.getItem("userSession");
         if (storedSession) {
-            setToken(storedSession);
-            navigate('/my-profile');
+            const parsedSession = JSON.parse(storedSession);
+            if (parsedSession?.email) {
+                setToken(parsedSession.email);
+                navigate("/my-profile");
+            } else {
+                clearStorage();
+            }
+        } else {
+            clearStorage();
         }
     }, [navigate]);
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const clearStorage = (): void => {
+        localStorage.clear();
+        setToken(null);
+        setUsernameOrEmail("");
+        setPassword("");
+        setError(null);
+    };
+
+    const handleLogin = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
-    
+
         try {
             const authResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
                 method: "POST",
@@ -30,13 +45,13 @@ function Login(): JSX.Element {
                 },
                 body: JSON.stringify({ usernameOrEmail, password }),
             });
-    
+
             if (!authResponse.ok) {
                 const errorText = await authResponse.text();
                 console.error("API Error Response:", errorText);
                 throw new Error("Login failed. Please check your credentials and try again.");
             }
-    
+
             const authData = await authResponse.json();
             setToken(authData.token);
             localStorage.setItem("authToken", authData.token);
@@ -50,9 +65,11 @@ function Login(): JSX.Element {
                 throw new Error("Failed to retrieve user role.");
             }
 
-            const roleData = await roleResponse.json();
-            const userRoleAssignment = roleData.find((assignment: any) => assignment.userId === userDetails.userId);
-            const role = userRoleAssignment ? userRoleAssignment.role.roleName : "Student"; 
+            const roleData: Array<{ userId: string; role: { roleName: string } }> = await roleResponse.json();
+            const userRoleAssignment = roleData.find(
+                (assignment) => assignment.userId === userDetails.userId
+            );
+            const role = userRoleAssignment ? userRoleAssignment.role.roleName : "Student";
 
             const userSession = {
                 userId: userDetails.userId,
@@ -66,14 +83,15 @@ function Login(): JSX.Element {
             console.log("Logged in successfully", userSession);
 
             navigate("/my-profile");
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+            setError(errorMessage);
             console.error("Login error:", err);
         }
     };
 
-    const handlePasswordRecovery = () => {
-        navigate('/request-password-change');
+    const handlePasswordRecovery = (): void => {
+        navigate("/request-password-change");
     };
 
     return (
@@ -95,16 +113,16 @@ function Login(): JSX.Element {
                             <label>Password</label>
                             <div className="password-container">
                                 <input
-                                    type={showPassword ? 'text' : 'password'} // Toggle password visibility
+                                    type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
                                 <span
                                     className="password-toggle"
-                                    onClick={() => setShowPassword(!showPassword)} // Toggle the showPassword state
+                                    onClick={() => setShowPassword(!showPassword)}
                                 >
-                                    {showPassword ? <HiEyeOff /> : <HiEye />} {/* Toggle icon */}
+                                    {showPassword ? <HiEyeOff /> : <HiEye />}
                                 </span>
                             </div>
                         </div>
@@ -112,9 +130,7 @@ function Login(): JSX.Element {
                     </form>
                     {error && <p className="error-message">{error}</p>}
                     <div className="recovery-section">
-                        <button onClick={handlePasswordRecovery}>
-                            Forgot Password?
-                        </button>
+                        <button onClick={handlePasswordRecovery}>Forgot Password?</button>
                     </div>
                 </>
             ) : (
@@ -124,6 +140,6 @@ function Login(): JSX.Element {
             )}
         </div>
     );
-}
+};
 
 export default Login;

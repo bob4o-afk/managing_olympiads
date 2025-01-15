@@ -1,16 +1,24 @@
 import React, { useState, FormEvent, useRef, useEffect } from "react";
-import { Typography, notification } from "antd";
+import { Card, Typography, notification } from "antd";
 import "./ui/Documents.css";
 
 const { Title } = Typography;
+const { Text } = Typography;
 
 const Documents: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const storedSession = localStorage.getItem("userSession");
+    if (storedSession) {
+      const parsedSession = JSON.parse(storedSession);
+      setEmail(parsedSession.email);
+    }
 
+    const canvas = canvasRef.current;
     if (!canvas) return;
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -107,56 +115,24 @@ const Documents: React.FC = () => {
       return acc;
     }, {} as Record<string, string>)
   );
-  const [schoolSuggestion, setSchoolSuggestion] = useState<string>("");
-
-  const predefinedSchool =
-    'Технологично училище "Електронни системи" към ТУ-София';
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleGradeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { value } = e.target;
-    setFormData((prev) => ({ ...prev, grade: value }));
-  };
-
-  const handleSchoolChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setFormData((prev) => ({ ...prev, school: value }));
-
-    // Show suggestion only if input matches correctly so far
-    if (predefinedSchool.startsWith(value) && value !== predefinedSchool) {
-      setSchoolSuggestion(predefinedSchool);
-    } else {
-      setSchoolSuggestion("");
-    }
-  };
-
-  const handleSchoolKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Tab") {
-      if (schoolSuggestion) {
-        setFormData((prev) => ({
-          ...prev,
-          school: predefinedSchool,
-        }));
-        setSchoolSuggestion("");
-      } else {
-        e.preventDefault();
-      }
-    }
-  };
-  
-
-  const handleSchoolBlur = () => {
-    setSchoolSuggestion("");
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    const data = { ...formData };
+    if (!email) {
+      notification.error({
+        message: "Login Required",
+        description: "You must log in to fill out the form.",
+      });
+      return;
+    }
+
+    const data = { ...formData, email };
 
     try {
       const response = await fetch(`${process.env.PYTHON_APP_API_URL}/fill_pdf`, {
@@ -174,8 +150,7 @@ const Documents: React.FC = () => {
       const result = await response.json();
       notification.success({
         message: "Form Submitted",
-        description:
-          result.message || "Your form has been submitted successfully!",
+        description: result.message || "Your form has been submitted successfully!",
       });
 
       setFormData(
@@ -197,89 +172,38 @@ const Documents: React.FC = () => {
     <div className="document-container">
       <div className="form-container">
         <Title level={3}>Document Form</Title>
-        <form onSubmit={handleSubmit}>
-          {formFields.map((field) => {
-            if (field.name === "grade") {
-              return (
-                <div key={field.name} className="form-group">
-                  <label htmlFor={field.name}>{field.label}</label>
-                  <select
-                    id={field.name}
-                    name={field.name}
-                    value={formData[field.name]}
-                    onChange={handleGradeChange}
-                    required
-                    className="custom-dropdown"
-                  >
-                    {[
-                      "8А",
-                      "8Б",
-                      "8В",
-                      "8Г",
-                      "9А",
-                      "9Б",
-                      "9В",
-                      "9Г",
-                      "10А",
-                      "10Б",
-                      "10В",
-                      "10Г",
-                      "11А",
-                      "11Б",
-                      "11В",
-                      "11Г",
-                      "12А",
-                      "12Б",
-                      "12В",
-                      "12Г",
-                    ].map((grade) => (
-                      <option key={grade} value={grade}>
-                        {grade}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              );
-            } else if (field.name === "school") {
-              return (
-                <div key={field.name} className="form-group">
-                  <label htmlFor={field.name}>{field.label}</label>
-                  <input
-                    type="text"
-                    id={field.name}
-                    name={field.name}
-                    value={formData[field.name]}
-                    onChange={handleSchoolChange}
-                    onKeyDown={handleSchoolKeyPress}
-                    onBlur={handleSchoolBlur}
-                    required
-                    placeholder="Enter school name"
-                  />
-                  {schoolSuggestion && (
-                    <div className="suggestion">{schoolSuggestion}</div>
-                  )}
-                </div>
-              );
-            } else {
-              return (
-                <div key={field.name} className="form-group">
-                  <label htmlFor={field.name}>{field.label}</label>
-                  <input
-                    type="text"
-                    id={field.name}
-                    name={field.name}
-                    value={formData[field.name]}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              );
-            }
-          })}
-          <button type="submit" className="submit-button">
-            Submit
-          </button>
-        </form>
+        {email ? (
+          <form onSubmit={handleSubmit}>
+            {formFields.map((field) => (
+              <div key={field.name} className="form-group">
+                <label htmlFor={field.name}>{field.label}</label>
+                <input
+                  type="text"
+                  id={field.name}
+                  name={field.name}
+                  value={formData[field.name]}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+            ))}
+            <button type="submit" className="submit-button">
+              Submit
+            </button>
+          </form>
+        ) : (
+          <Card
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "8px",
+            }}
+          >
+            <Text style={{ fontSize: "16px", fontWeight: "600", color: "#888" }}>
+              You need to log in to enroll in an Olympiad.
+            </Text>
+          </Card>
+        )}
       </div>
 
       <div className="cool-container">
