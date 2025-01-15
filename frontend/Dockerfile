@@ -9,6 +9,11 @@ RUN apt-get update && \
 
 WORKDIR /app
 
+# Install wait-for-it script
+COPY wait-for-it.sh /usr/local/bin/wait-for-it
+RUN chmod +x /usr/local/bin/wait-for-it
+
+
 # Install dependencies
 COPY frontend-app/package*.json ./
 RUN npm install

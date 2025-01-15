@@ -14,8 +14,6 @@ services:
     networks:
       - olympiad-network
     command: ["sh", "-c", "wait-for-it backend:5138 --timeout=60 && wait-for-it db:3306 --timeout=60 && npm start"]
-    volumes:
-      - ./shared:/shared
 
   backend:
     build:
@@ -73,9 +71,7 @@ services:
       - db
     networks:
       - olympiad-network
-    command: ["sh", "-c", "wait-for-it backend:5138 --timeout=60 && wait-for-it db:3306 --timeout=60 && npm start"]
-    volumes:
-      - ./shared:/shared
+    command: ["sh", "-c", "wait-for-it backend:5138 --timeout=60 && wait-for-it db:3306 --timeout=60 && gunicorn -b 0.0.0.0:5000 main:app"]
 
 networks:
   olympiad-network:
