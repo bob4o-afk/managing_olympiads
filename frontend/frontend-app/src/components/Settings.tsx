@@ -20,7 +20,7 @@ const Settings: React.FC = () => {
 
         if (storedSession && token) {
             try {
-                const response = await fetch("http://localhost:5138/api/auth/validate-token", {
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/validate-token`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -55,7 +55,7 @@ const Settings: React.FC = () => {
             const fetchUserData = async () => {
                 try {
                     const token = localStorage.getItem("authToken");
-                    const userResponse = await fetch("http://localhost:5138/api/user", {
+                    const userResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/user`, {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
@@ -99,7 +99,7 @@ const Settings: React.FC = () => {
         const token = localStorage.getItem("authToken");
 
         try {
-            const response = await fetch("http://localhost:5138/api/auth/validate-password", {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/validate-password`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -126,7 +126,7 @@ const Settings: React.FC = () => {
         try {
             const token = localStorage.getItem("authToken");
 
-            const userResponse = await fetch("http://localhost:5138/api/user", {
+            const userResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/user`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -160,7 +160,7 @@ const Settings: React.FC = () => {
                 Password: currentPassword
             };
 
-            const updateResponse = await fetch(`http://localhost:5138/api/user/${user.userId}`, {
+            const updateResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${user.userId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

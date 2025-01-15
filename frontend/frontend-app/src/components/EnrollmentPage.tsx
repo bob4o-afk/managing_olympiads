@@ -18,7 +18,7 @@ const EnrollmentPage: React.FC = () => {
   useEffect(() => {
     const fetchOlympiads = async () => {
       try {
-        const response = await fetch("http://localhost:5138/api/olympiad");
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/olympiad`);
 
         if (response.ok) {
           const data = await response.json();
@@ -40,7 +40,7 @@ const EnrollmentPage: React.FC = () => {
 
     const fetchAcademicYears = async () => {
       try {
-        const response = await fetch("http://localhost:5138/api/academicyear");
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/academicyear`);
         
         if (response.ok) {
           const data = await response.json();
@@ -162,8 +162,9 @@ const EnrollmentPage: React.FC = () => {
     };
 
     try {
+      
       const response = await fetch(
-        "http://localhost:5138/api/studentolympiadenrollment",
+      `${process.env.REACT_APP_API_URL}/api/studentolympiadenrollment`,
         {
           method: "POST",
           headers: {
@@ -209,7 +210,7 @@ const EnrollmentPage: React.FC = () => {
       };
 
       try {
-        const response = await fetch("http://localhost:5138/api/email/send", {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/email/send`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

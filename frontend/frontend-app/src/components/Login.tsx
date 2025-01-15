@@ -23,7 +23,7 @@ function Login(): JSX.Element {
         e.preventDefault();
     
         try {
-            const authResponse = await fetch("http://localhost:5138/api/auth/login", {
+            const authResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -43,7 +43,7 @@ function Login(): JSX.Element {
 
             const userDetails = authData.user;
 
-            const roleResponse = await fetch("http://localhost:5138/api/UserRoleAssignment/");
+            const roleResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/UserRoleAssignment/`);
             if (!roleResponse.ok) {
                 const errorText = await roleResponse.text();
                 console.error("Role Fetch Error:", errorText);

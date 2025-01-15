@@ -24,7 +24,7 @@ const MyProfile: React.FC = () => {
 
         if (storedSession && token) {
             try {
-                const response = await fetch("http://localhost:5138/api/auth/validate-token", {
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/validate-token`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

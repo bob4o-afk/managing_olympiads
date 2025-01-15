@@ -13,3 +13,4 @@
 /python-scraper/src/__pycache__
 
 /db/.env
+/db/Sample.sql

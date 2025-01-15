@@ -15,7 +15,7 @@ const RequestPasswordReset = () => {
 
     try {
         localStorage.setItem('resetInfo', usernameOrEmail);
-        const response = await fetch('http://localhost:5138/api/auth/request-password-change', {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/request-password-change`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ usernameOrEmail: usernameOrEmail }),
