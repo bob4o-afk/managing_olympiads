@@ -110,6 +110,7 @@ def fill_pdf():
     output_pdf = "filled_documents/Deklaracia_filled.pdf"
 
     # Font path
+    # font_path = r'C:\Windows\Fonts\Arial.ttf'
     font_path = os.path.join(os.path.dirname(__file__), "fonts", "Arial.ttf")
 
     try:
