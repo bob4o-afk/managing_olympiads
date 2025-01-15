@@ -159,7 +159,7 @@ const Documents: React.FC = () => {
     const data = { ...formData };
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/fill_pdf`, {
+      const response = await fetch(`${process.env.PYTHON_APP_API_URL}/fill_pdf`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

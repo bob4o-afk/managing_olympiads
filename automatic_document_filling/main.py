@@ -12,6 +12,9 @@ app = Flask(__name__)
 CORS(app)
 
 def add_text_to_pdf(input_pdf, output_pdf, texts, coordinates, font_size=12, font_path=None):
+    if not os.path.exists(font_path):
+        raise FileNotFoundError(f"Font file not found at: {font_path}")
+
     with open(input_pdf, "rb") as infile:
         reader = PyPDF2.PdfReader(infile)
         writer = PyPDF2.PdfWriter()
@@ -99,14 +102,18 @@ def fill_pdf():
     output_pdf = 'filled_documents/Deklaracia_filled.pdf'
 
     # Font path
-    font_path = r'C:\Windows\Fonts\Arial.ttf'
+    # font_path = r'C:\Windows\Fonts\Arial.ttf'
+    font_path = os.path.join(os.path.dirname(__file__), 'fonts', 'Arial.ttf')
 
     try:
         add_text_to_pdf(input_pdf, output_pdf, texts, coordinates, font_path=font_path)
         return jsonify({"message": "PDF filled successfully!", "output_file": output_pdf})
+    except FileNotFoundError as e:
+        return jsonify({"error": f"File not found: {e}"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     os.makedirs('filled_documents', exist_ok=True)
+    os.makedirs('fonts', exist_ok=True)
     app.run(debug=True)

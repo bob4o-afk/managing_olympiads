@@ -7,14 +7,17 @@ RUN apt-get update && \
     libcairo2-dev \
     pkg-config \
     python3-dev \
-    curl && \
+    curl \
+    fontconfig && \
     rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY fonts/ /app/fonts/
 
 # Install wait-for-it script
 COPY wait-for-it.sh /usr/local/bin/wait-for-it
 RUN chmod +x /usr/local/bin/wait-for-it
-
-WORKDIR /app
 
 # Install Python dependencies
 COPY requirements.txt ./
