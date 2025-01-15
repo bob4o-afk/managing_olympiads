@@ -1,90 +1,112 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { supabase } from "./supabaseClient";
+import { HiEye, HiEyeOff } from "react-icons/hi"; // Import icons for password visibility toggle
 import './ui/Login.css';
 
 function Login(): JSX.Element {
-    const [email, setEmail] = useState<string>("");
+    const [usernameOrEmail, setUsernameOrEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
-    const [session, setSession] = useState<any>(null);
+    const [token, setToken] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState<boolean>(false); // State for toggling password visibility
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Check localStorage for session data when the component mounts
-        const storedSession = localStorage.getItem("supabaseSession");
+        const storedSession = localStorage.getItem("userSession");
         if (storedSession) {
-            setSession(JSON.parse(storedSession));
-        } else {
-            // Fetch the session from Supabase if not found in localStorage
-            const fetchSession = async () => {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session) {
-                    setSession(session);
-                    localStorage.setItem("supabaseSession", JSON.stringify(session));
-                }
-            };
-            fetchSession();
+            setToken(storedSession);
+            navigate('/my-profile');
         }
-    }, []);
+    }, [navigate]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
+    
+        try {
+            const authResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ usernameOrEmail, password }),
+            });
+    
+            if (!authResponse.ok) {
+                const errorText = await authResponse.text();
+                console.error("API Error Response:", errorText);
+                throw new Error("Login failed. Please check your credentials and try again.");
+            }
+    
+            const authData = await authResponse.json();
+            setToken(authData.token);
+            localStorage.setItem("authToken", authData.token);
 
-        if (error) {
-            setError(error.message);
-            console.error("Login error:", error.message);
-        } else {
-            setSession(data?.session);
-            localStorage.setItem("supabaseSession", JSON.stringify(data?.session));
+            const userDetails = authData.user;
+
+            const roleResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/UserRoleAssignment/`);
+            if (!roleResponse.ok) {
+                const errorText = await roleResponse.text();
+                console.error("Role Fetch Error:", errorText);
+                throw new Error("Failed to retrieve user role.");
+            }
+
+            const roleData = await roleResponse.json();
+            const userRoleAssignment = roleData.find((assignment: any) => assignment.userId === userDetails.userId);
+            const role = userRoleAssignment ? userRoleAssignment.role.roleName : "Student"; 
+
+            const userSession = {
+                userId: userDetails.userId,
+                full_name: userDetails.name,
+                email: userDetails.email,
+                role: role,
+            };
+
+            localStorage.setItem("userSession", JSON.stringify(userSession));
             setError(null);
-            console.log("Logged in:", data.user);
-        }
-    };
+            console.log("Logged in successfully", userSession);
 
-    const handleLogout = async () => {
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            console.error("Logout error:", error.message);
-        } else {
-            setSession(null);
-            localStorage.removeItem("supabaseSession"); // Clear session from localStorage
-            console.log("Logged out successfully");
+            navigate("/my-profile");
+        } catch (err: any) {
+            setError(err.message);
+            console.error("Login error:", err);
         }
     };
 
     const handlePasswordRecovery = () => {
-        navigate('/reset-password');
+        navigate('/request-password-change');
     };
 
     return (
         <div className="login-container">
-            {!session ? (
+            {!token ? (
                 <>
                     <h2>Login</h2>
                     <form onSubmit={handleLogin}>
                         <div className="form-group">
-                            <label>Email</label>
+                            <label>Username or Email</label>
                             <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                type="text"
+                                value={usernameOrEmail}
+                                onChange={(e) => setUsernameOrEmail(e.target.value)}
                                 required
                             />
                         </div>
                         <div className="form-group">
                             <label>Password</label>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
+                            <div className="password-container">
+                                <input
+                                    type={showPassword ? 'text' : 'password'} // Toggle password visibility
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                                <span
+                                    className="password-toggle"
+                                    onClick={() => setShowPassword(!showPassword)} // Toggle the showPassword state
+                                >
+                                    {showPassword ? <HiEyeOff /> : <HiEye />} {/* Toggle icon */}
+                                </span>
+                            </div>
                         </div>
                         <button type="submit">Login</button>
                     </form>
@@ -97,8 +119,7 @@ function Login(): JSX.Element {
                 </>
             ) : (
                 <div className="session-info">
-                    <p>Logged in as: {session.user.email}</p>
-                    <button onClick={handleLogout}>Logout</button>
+                    <p>Logged in successfully</p>
                 </div>
             )}
         </div>

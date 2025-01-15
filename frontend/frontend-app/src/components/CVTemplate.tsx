@@ -12,12 +12,12 @@ const { Title, Text } = Typography;
 const CVTemplate: React.FC = () => {
   const exportButtonRef = useRef<HTMLButtonElement>(null);
 
-    const personalityData = [
-      { name: "Problem Solver", value: 95 },
-      { name: "Ambitious", value: 80 },
-      { name: "Team Player", value: 85 },
-      { name: "Creative Thinker", value: 90 }
-    ];
+  const personalityData = [
+    { name: "Problem Solver", value: 95 },
+    { name: "Ambitious", value: 80 },
+    { name: "Team Player", value: 85 },
+    { name: "Creative Thinker", value: 90 }
+  ];
 
   const exportToPDF = async () => {
     const element = document.getElementById('cv');
@@ -46,10 +46,10 @@ const CVTemplate: React.FC = () => {
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: [210, 410]
+      format: [210, 450]
     });
 
-    pdf.addImage(dataURL, 'PNG', 0, 0, 210, 410);
+    pdf.addImage(dataURL, 'PNG', 0, 0, 210, 450);
     pdf.save('CV.pdf');
 
     if (exportButtonRef.current) {
@@ -64,7 +64,7 @@ const CVTemplate: React.FC = () => {
         <div className="cv-header">
           <div className="cv-header-text">
             <Title level={1} className="cv-name">Borislav Milanov</Title>
-            <Text className="cv-job-title">Senior Web Developer</Text>
+            <Text className="cv-job-title">Software Developer</Text>
           </div>
           <div className="cv-photo">
             <img src="./me.png" alt="Profile" />
@@ -100,7 +100,7 @@ const CVTemplate: React.FC = () => {
           <Col span={12} className="cv-left">
             {/* Experience Section */}
             <div className="cv-section">
-              <Title level={3} style={{ color: "var(--text-color)" }}>Experience</Title>
+              <Title level={3} style={{ color: "var(--text-color)" }}>Competitions & Hackathons</Title>
               <Divider className="section-divider" />
 
               <Text strong style={{ color: "var(--text-color)" }}>
@@ -109,7 +109,7 @@ const CVTemplate: React.FC = () => {
                 </a>
               </Text>
               <p>Secured 4th place at the "InnoAir Challenge: Fair Green Transition and Urban Mobility" hackathon with a project
-                 focused on autonomous vehicles and smart roads.</p>
+                focused on autonomous vehicles and smart roads.</p>
 
               <Text strong style={{ color: "var(--text-color)" }}>
                 <a href="https://github.com/bob4o-afk/wall-e" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
@@ -117,7 +117,7 @@ const CVTemplate: React.FC = () => {
                 </a>
               </Text>
               <p>Won first place in the "Hardware Projects" category at the "Robodays '23" hackathon with the project "Wall-E," an autonomous
-                 robot designed to detect and collect trash using a robotic arm.</p>
+                robot designed to detect and collect trash using a robotic arm.</p>
 
               <Text strong style={{ color: "var(--text-color)" }}>
                 <a href="https://github.com/bob4o-afk/SparkBot" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
@@ -125,7 +125,7 @@ const CVTemplate: React.FC = () => {
                 </a>
               </Text>
               <p>Won first place at the "InnoAir & Europeana: Sustainability and Social Justice" hackathon with the project "SparkBot," an
-                 automated robot designed to locate dangers, collect trash, and send alerts when necessary.</p>
+                automated robot designed to locate dangers, collect trash, and send alerts when necessary.</p>
 
               <Text strong style={{ color: "var(--text-color)" }}>
                 <a href="https://github.com/bob4o-afk/Wall-E-2.0" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
@@ -133,28 +133,45 @@ const CVTemplate: React.FC = () => {
                 </a>
               </Text>
               <p>Along with fellow students from TUES, I participated in the "Engineers in Action" hackathon in Sofia, where our teams collectively
-                 won third place with several innovative projects.</p>
+                won third place with several innovative projects.</p>
 
               <Text strong style={{ color: "var(--text-color)" }}>
                 <a href="https://github.com/Ne-Se-Chete/hacktues2024" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
                   "Hacktues X" hackathon | First place | 13.05.2024 - 16.05.2024
                 </a>
               </Text>
-              <p>My team, "Ne se chete," and I won the honorary first place at the 10th anniversary edition of HackTUES, a hackathon organized
-                 by TUES. Our project, which impressed the jury, was a set of sensors that can be mounted in various locations to detect underwater
-                  and surface trash and send alerts. This victory also marked the foundation of our team, "Ne se chete".</p>
+              <p>My team, "Ne se chete" and I won the honorary first place at the 10th anniversary edition of HackTUES, a hackathon organized
+                by TUES. Our project, which impressed the jury, was a set of sensors that can be mounted in various locations to detect underwater
+                and surface trash and send alerts. This victory also marked the foundation of our team, "Ne se chete".</p>
 
+              <Text strong style={{ color: "var(--text-color)" }}>
+                <a href="https://github.com/Ne-Se-Chete/CableUndefined-Application" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
+                  "Para Robotics Incubator Vol. 3" | First Place | 26.09.2024
+                </a>
+              </Text>
+              <p>As part of team "Ne se chete," we secured first place in the third edition of the "Para Robotics Incubator" competition with our project "CableUndefined".</p>
+
+              <Text strong style={{ color: "var(--text-color)" }}>
+                <a href="https://github.com/Ne-Se-Chete/CableUndefined-Application" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
+                  "Future Engineers in Bulgaria" | First Place | 26.09.2024
+                </a>
+              </Text>
+              <p>As part of team "Ne se chete," we secured first place in the national competition "Future Engineers in Bulgaria" with our project "CableUndefined".</p>
+
+              <br></br>
+              <Title level={3} style={{ color: "var(--text-color)" }}>Experience</Title>
+              <Divider className="section-divider" />
               <Text strong style={{ color: "var(--text-color)" }}>
                 <a href="https://github.com/Ne-Se-Chete/AppolicaInternSmartBBQ" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
                   Appolica | Internship | 01.07.2024 - 30.07.2024
                 </a>
               </Text>
-              <p>During my internship at Appolica, I developed a Slack bot for automated receipt recognition and food ordering. I assisted my team as needed, 
+              <p>During my internship at Appolica, I developed a Slack bot for automated receipt recognition and food ordering. I assisted my team as needed,
                 focusing primarily on frontend in the first week before transitioning to hardware tasks.</p>
 
               <Text strong style={{ color: "var(--text-color)" }}>
                 <a href="https://www.codbex.com/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-color)" }}>
-                  Codbex | Senior Developer | 01.06.2024 - Present
+                  Codbex | Intern Software Developer | 01.06.2024 - Present
                 </a>
               </Text>
               <p>Working on diverse real-world projects using the cutting-edge technology "Eclipse Dirigible."</p>
@@ -187,10 +204,10 @@ const CVTemplate: React.FC = () => {
             <div className="cv-section">
               <Title level={3} style={{ color: "var(--text-color)" }}>Hobbies</Title>
               <Divider className="section-divider" />
-              <p>I enjoy writing and listening to music, reading and participating in local hackathons. I also 
+              <p>I enjoy writing and listening to music, reading and participating in local hackathons. I also
                 love creating things, such as origami and web riddles. Additionally, I play games and have experience in game development.
                 You can check out one of my games <a href="https://bobinkata.itch.io/escape2-0" target="_blank" rel="noopener noreferrer">here </a>
-                and you can check my <a href="https://riddle-1.free.bg/" target="_blank" rel="noopener noreferrer">first</a> and 
+                and you can check my <a href="https://riddle-1.free.bg/" target="_blank" rel="noopener noreferrer">first</a> and
                 <a href="https://riddle-2.free.bg/" target="_blank" rel="noopener noreferrer"> second</a> riddle.</p>
             </div>
           </Col>
@@ -292,9 +309,9 @@ const CVTemplate: React.FC = () => {
           </Col>
         </Row>
 
-        <Button 
-          type="primary" 
-          onClick={exportToPDF} 
+        <Button
+          type="primary"
+          onClick={exportToPDF}
           className="export-btn"
           ref={exportButtonRef}
         >
