@@ -5,8 +5,15 @@
 /frontend/frontend-app/node_modules
 /frontend/frontend-app/private
 /frontend/frontend-app/.env
+/frontend/frontend-app/build
 
-/automatic_document_filling/filled_documents
+
+/backend/OlympiadApi/.env
+/backend/OlympiadApi/.env
+
+/automatic_document_filling/appsettings.json
+/automatic_document_filling/.env
+
 
 /python-scraper/.env
 /python-scraper/files/

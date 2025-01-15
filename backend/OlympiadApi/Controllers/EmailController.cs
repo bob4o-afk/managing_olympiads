@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Services;
 using OlympiadApi.Models;
-
-
-//SHOULD HAVE THE SAME FILTER as admins but for students 
+using OlympiadApi.DTOs;
 
 namespace OlympiadApi.Controllers
 {
@@ -24,5 +22,18 @@ namespace OlympiadApi.Controllers
             await _emailService.SendEmailAsync(request.ToEmail, request.Subject, request.Body, request.CcEmail);
             return Ok("Email sent successfully.");
         }
+
+        [HttpPost("send-document")]
+        public async Task<IActionResult> SendDocumentAsync([FromForm] SendEmailWithDocumentDto request)
+        {
+            if (request.Document == null || request.Document.Length == 0)
+            {
+                return BadRequest("Please provide a valid document to attach.");
+            }
+
+            await _emailService.SendEmailWithAttachmentAsync(request.ToEmail, request.Subject, request.Body, request.Document, request.CcEmail);
+            return Ok("Email with document sent successfully.");
+        }
+
     }
 }
