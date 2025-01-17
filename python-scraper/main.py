@@ -12,6 +12,7 @@ def main():
         process_and_send_data()
 
 
+
     except EnvironmentVariableError as e:
         print(f"Configuration error: {e}")
     except Exception as e:
