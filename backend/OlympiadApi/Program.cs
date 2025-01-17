@@ -1,4 +1,5 @@
 using OlympiadApi.Data;
+using OlympiadApi.DTos;
 using OlympiadApi.Services;
 using OlympiadApi.Helpers;
 using OlympiadApi.Repositories.Implementations;
@@ -76,6 +77,11 @@ builder.Services.AddScoped<AuthService>();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAcademicYearRepository, AcademicYearRepository>();
+builder.Services.AddScoped<IOlympiadRepository, OlympiadRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IStudentOlympiadEnrollmentRepository, StudentOlympiadEnrollmentRepository>();
+builder.Services.AddScoped<IUserRoleAssignmentRepository, UserRoleAssignmentRepository>();
+
 
 builder.Services.AddScoped<AdminRoleAuthorizeAttribute>();
 

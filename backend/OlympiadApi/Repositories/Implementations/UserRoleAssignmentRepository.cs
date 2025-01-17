@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using OlympiadApi.Data;
 using OlympiadApi.Models;
+using OlympiadApi.Repositories.Interfaces;
 
-namespace OlympiadApi.Repositories
+namespace OlympiadApi.Repositories.Implementations
 {
     public class UserRoleAssignmentRepository : IUserRoleAssignmentRepository
     {

@@ -1,6 +1,6 @@
 using OlympiadApi.Models;
 
-namespace OlympiadApi.Repositories
+namespace OlympiadApi.Repositories.Interfaces
 {
     public interface IRoleRepository
     {

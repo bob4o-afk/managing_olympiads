@@ -1,8 +1,9 @@
 using OlympiadApi.Data;
 using OlympiadApi.Models;
 using Microsoft.EntityFrameworkCore;
+using OlympiadApi.Repositories.Interfaces;
 
-namespace OlympiadApi.Repositories
+namespace OlympiadApi.Repositories.Implementations
 {
     public class RoleRepository : IRoleRepository
     {

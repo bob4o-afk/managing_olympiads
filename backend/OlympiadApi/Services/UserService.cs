@@ -1,4 +1,3 @@
-using OlympiadApi.Data;
 using OlympiadApi.DTOs;
 using OlympiadApi.Models;
 using OlympiadApi.Repositories.Interfaces;

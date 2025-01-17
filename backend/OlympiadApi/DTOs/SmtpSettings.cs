@@ -1,4 +1,4 @@
-namespace OlympiadApi.Services
+namespace OlympiadApi.DTos
 {
     public class SmtpSettings
     {

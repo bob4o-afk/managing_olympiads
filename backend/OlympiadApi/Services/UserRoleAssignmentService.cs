@@ -1,5 +1,5 @@
 using OlympiadApi.Models;
-using OlympiadApi.Repositories;
+using OlympiadApi.Repositories.Interfaces;
 
 namespace OlympiadApi.Services
 {
