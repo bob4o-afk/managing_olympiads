@@ -1,0 +1,79 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/frontend-app/.env
+    depends_on:
+      - backend
+    networks:
+      - olympiad-network
+    command: ["sh", "-c", "wait-for-it backend:5138 --timeout=60 && wait-for-it db:3306 --timeout=60 && npm start"]
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5138:5138"
+    env_file:
+      - ./backend/OlympiadApi/.env
+    depends_on:
+      - db
+    networks:
+      - olympiad-network
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+
+  db:
+    image: mysql:8.0
+    container_name: olympiad-db
+    env_file:
+      - ./db/.env
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./db/OlympiadDB.sql:/docker-entrypoint-initdb.d/OlympiadDB.sql:ro
+      - ./db/Sample.sql:/docker-entrypoint-initdb.d/Sample.sql:ro
+    networks:
+      - olympiad-network
+
+  python-scraper:
+    build:
+      context: ./python-scraper
+      dockerfile: Dockerfile
+    env_file:
+      - ./python-scraper/.env
+    volumes:
+      - ./python-scraper:/app
+    depends_on:
+      - backend
+      - db
+    networks:
+      - olympiad-network
+    command: ["sh", "-c", "wait-for-it backend:5138 --timeout=60 && wait-for-it db:3306 --timeout=60 && python main.py"]
+
+  automatic_document_filling:
+    build:
+      context: ./automatic_document_filling
+      dockerfile: Dockerfile
+    env_file:
+      - ./automatic_document_filling/.env
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+    depends_on:
+      - db
+    networks:
+      - olympiad-network
+    command: ["sh", "-c", "wait-for-it backend:5138 --timeout=60 && wait-for-it db:3306 --timeout=60 && gunicorn -b 0.0.0.0:5000 main:app"]
+
+networks:
+  olympiad-network:
+    driver: bridge

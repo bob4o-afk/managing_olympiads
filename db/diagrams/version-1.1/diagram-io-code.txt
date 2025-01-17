@@ -1,0 +1,41 @@
+Table user_profile {
+  user_profile_id integer [primary key]
+  username varchar [not null]
+  email varchar [not null]
+  password varchar [not null]
+  date_of_birth date [not null]
+  gender varchar
+  created_at timestamp
+}
+
+
+Table users {
+  user_id integer [primary key, increment]
+  name varchar [not null]
+  age integer [not null]  //can be calculated
+  class_number integer [not null]
+  class_letter char [not null]
+  role varchar [not null]
+  currently_entrolled_olympiad integer [ref: - olympiads.olympiads_id]
+  olympiads_attended integer [ref: > olympiads.olympiads_id]
+  // score_history   //to be checked
+  user_profile integer [ref: - user_profile.user_profile_id]
+  personal_settings integer [ref: - settings.settings_id]
+
+}
+
+
+Table olympiads{
+  olympiads_id integer [primary key, increment]
+  subject varchar [not null]
+  class_number integer [not null]
+  date_of_olympiad date
+}
+
+
+Table settings{
+  settings_id integer [primary key, increment]
+  notifications bool 
+  auto_fill bool
+  theme varchar //can be more than just light and dark
+}

@@ -34,6 +34,7 @@ def get_api_endpoints():
 
 
 def authenticate():
+
     login_url = os.getenv("LOGIN_URL")
     username = os.getenv("USERNAME")
     password = os.getenv("PASSWORD")
@@ -68,11 +69,18 @@ def send_to_endpoint(api_endpoint, token, payload):
     try:
         response = requests.post(api_endpoint, json=payload, headers=headers)
         response.raise_for_status()
+        print(f"Successfully sent: {payload}")
+
         return None
     except requests.RequestException as e:
         print(f"Error sending payload: {e}")
         return str(e)
 
+def process_and_send_data():
+    load_dotenv()
+    _, _, _, OUTPUT_JSON_PATH = load_environment_variables()
+    if not os.path.exists(OUTPUT_JSON_PATH):
+        raise FileNotFoundError(f"File not found: {OUTPUT_JSON_PATH}")
 
 def request_password_reset_for_user(api_endpoint, token, email_or_username):
     payload = {"UsernameOrEmail": email_or_username}
@@ -208,4 +216,4 @@ def process_and_send_data():
                 f"Subject: {err['subject']}, Ring: {err['ring']}, Date: {err['date']}, Class: {err['class']}, Error: {err['error']}"
             )
     else:
-        print("\nAll olympiad data uploaded successfully.")
+        print("\nAll data uploaded successfully!")

@@ -1,0 +1,116 @@
+Table user_profile {
+  user_profile_id integer [primary key]
+  username varchar [not null, unique]
+  email varchar [not null, unique]
+  password varchar [not null]
+  gender varchar
+  created_at timestamp
+  last_login timestamp  // Track when the user last logged in
+  email_verified boolean [default: false] // To verify the user email
+}
+
+Table users {
+  user_id integer [primary key, increment]
+  name varchar [not null]
+  date_of_birth date [not null]
+  academic_year_id integer [ref: > academic_year.academic_year_id]
+  user_profile_id integer [ref: > user_profile.user_profile_id]
+  personal_settings_id integer [ref: > settings.settings_id]
+}
+
+Table user_role_assignments {
+  assignment_id integer [primary key, increment]
+  user_id integer [ref: > users.user_id]
+  role_id integer [ref: > roles.role_id]
+  assigned_at timestamp
+}
+
+Table roles {
+  role_id integer [primary key, increment]
+  role_name varchar [not null, unique]
+}
+
+Table permissions {
+  permission_id integer [primary key, increment]
+  permission_name varchar [not null, unique]
+}
+
+Table role_permissions {
+  role_permission_id integer [primary key, increment]
+  role_id integer [ref: > roles.role_id]
+  permission_id integer [ref: > permissions.permission_id]
+  can_create boolean [default: false]
+  can_edit boolean [default: false]
+  can_view boolean [default: false]
+  can_delete boolean [default: false]
+  created_at timestamp
+}
+
+Table olympiads {
+  olympiad_id integer [primary key, increment]
+  subject varchar [not null]
+  description text
+  date_of_olympiad date
+  round varchar
+  start_time timestamp
+  academic_year_id integer [ref: > academic_year.academic_year_id]
+  class_number integer [not null]
+  organizer_id integer [ref: > users.user_id]
+}
+
+Table student_olympiad_enrollment {
+  enrollment_id integer [primary key, increment]
+  user_id integer [ref: > users.user_id]
+  olympiad_id integer [ref: > olympiads.olympiad_id]
+  academic_year_id integer [ref: > academic_year.academic_year_id]
+  enrollment_status varchar [not null, default: 'pending']
+  score integer
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table enrollment_status_history {
+  history_id integer [primary key, increment]
+  enrollment_id integer [ref: > student_olympiad_enrollment.enrollment_id]
+  previous_status varchar [not null]
+  new_status varchar [not null]
+  changed_at timestamp
+}
+
+Table document_templates {
+  document_template_id integer [primary key, increment]
+  template_name varchar [not null]
+  template_content text [not null]
+  olympiad_id integer [ref: > olympiads.olympiad_id]
+  created_at timestamp
+}
+
+Table generated_documents {
+  document_id integer [primary key, increment]
+  enrollment_id integer [ref: > student_olympiad_enrollment.enrollment_id]
+  document_url varchar [not null]
+  sent_to_email boolean [default: false]
+  created_at timestamp
+}
+
+Table settings {
+  settings_id integer [primary key, increment]
+  notifications bool
+  auto_fill bool
+  theme varchar
+}
+
+Table academic_year {
+  academic_year_id integer [primary key, increment]
+  start_year integer [not null]
+  end_year integer [not null]
+}
+
+Table notifications {
+  notification_id integer [primary key, increment]
+  user_id integer [ref: > users.user_id]
+  type varchar [not null]
+  message text [not null]
+  is_read boolean [default: false]
+  created_at timestamp
+}
