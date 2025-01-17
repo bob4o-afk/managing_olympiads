@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using MimeKit;
 using MailKit.Net.Smtp;
+using OlympiadApi.DTos;
 
 namespace OlympiadApi.Services
 {

@@ -1,66 +1,55 @@
-using Microsoft.EntityFrameworkCore;
-using OlympiadApi.Data;
 using OlympiadApi.Models;
+using OlympiadApi.Repositories.Interfaces;
 
 namespace OlympiadApi.Services
 {
     public class StudentOlympiadEnrollmentService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IStudentOlympiadEnrollmentRepository _repository;
 
-        public StudentOlympiadEnrollmentService(ApplicationDbContext context)
+        public StudentOlympiadEnrollmentService(IStudentOlympiadEnrollmentRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public async Task<List<StudentOlympiadEnrollment>> GetAllEnrollmentsAsync()
         {
-            return await _context.StudentOlympiadEnrollment
-                .Include(e => e.User)
-                .Include(e => e.Olympiad)
-                .Include(e => e.AcademicYear)
-                .ToListAsync();
+            return await _repository.GetAllEnrollmentsAsync();
         }
 
         public async Task<StudentOlympiadEnrollment?> GetEnrollmentByIdAsync(int id)
         {
-            return await _context.StudentOlympiadEnrollment
-                .Include(e => e.User)
-                .Include(e => e.Olympiad)
-                .Include(e => e.AcademicYear)
-                .FirstOrDefaultAsync(e => e.EnrollmentId == id);
+            return await _repository.GetEnrollmentByIdAsync(id);
         }
 
-        public async Task<StudentOlympiadEnrollment> CreateEnrollmentAsync(StudentOlympiadEnrollment enrollment)
+       public async Task<StudentOlympiadEnrollment> CreateEnrollmentAsync(StudentOlympiadEnrollment enrollment)
         {
-            enrollment.CreatedAt = DateTime.UtcNow;
-            _context.StudentOlympiadEnrollment.Add(enrollment);
-            await _context.SaveChangesAsync();
-            return enrollment;
+            if (enrollment == null)
+                throw new ArgumentNullException(nameof(enrollment));
+
+            var existingEnrollment = await _repository.GetAllEnrollmentsAsync();
+            var alreadyEnrolled = existingEnrollment
+                .Any(e => e.UserId == enrollment.UserId && e.OlympiadId == enrollment.OlympiadId && e.AcademicYearId == enrollment.AcademicYearId);
+
+            if (alreadyEnrolled)
+            {
+                throw new InvalidOperationException("Student is already enrolled in this Olympiad for the given academic year.");
+            }
+
+            return await _repository.CreateEnrollmentAsync(enrollment);
         }
 
         public async Task<StudentOlympiadEnrollment?> UpdateEnrollmentAsync(int id, StudentOlympiadEnrollment updatedEnrollment)
         {
-            var enrollment = await _context.StudentOlympiadEnrollment.FindAsync(id);
-            if (enrollment == null) return null;
+            if (updatedEnrollment == null)
+                throw new ArgumentNullException(nameof(updatedEnrollment));
 
-            enrollment.EnrollmentStatus = updatedEnrollment.EnrollmentStatus;
-            enrollment.StatusHistory = updatedEnrollment.StatusHistory;
-            enrollment.Score = updatedEnrollment.Score;
-            enrollment.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-            return enrollment;
+            return await _repository.UpdateEnrollmentAsync(id, updatedEnrollment);
         }
 
         public async Task<bool> DeleteEnrollmentAsync(int id)
         {
-            var enrollment = await _context.StudentOlympiadEnrollment.FindAsync(id);
-            if (enrollment == null) return false;
-
-            _context.StudentOlympiadEnrollment.Remove(enrollment);
-            await _context.SaveChangesAsync();
-            return true;
+            return await _repository.DeleteEnrollmentAsync(id);
         }
     }
 }

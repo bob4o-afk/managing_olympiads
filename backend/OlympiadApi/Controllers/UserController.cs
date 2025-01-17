@@ -11,12 +11,10 @@ namespace OlympiadApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserService _userService;
-        private readonly JwtHelper _jwtHelper;
 
         public UserController(UserService userService, JwtHelper jwtHelper)
         {
             _userService = userService;
-            _jwtHelper = jwtHelper;
         }
 
         [HttpGet]
