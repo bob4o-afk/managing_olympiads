@@ -1,35 +1,42 @@
 using OlympiadApi.Models;
-using OlympiadApi.Data;
-using Microsoft.EntityFrameworkCore;
+using OlympiadApi.Repositories;
 
 namespace OlympiadApi.Services
 {
     public class RoleService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IRoleRepository _roleRepository;
 
-        public RoleService(ApplicationDbContext context)
+        public RoleService(IRoleRepository roleRepository)
         {
-            _context = context;
+            _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
         }
 
         // Get all roles
         public async Task<List<Role>> GetRolesAsync()
         {
-            return await _context.Roles.ToListAsync();
+            return await _roleRepository.GetRolesAsync();
         }
 
         // Create a new role
         public async Task<Role?> CreateRoleAsync(Role role)
         {
-            if (string.IsNullOrEmpty(role.RoleName))
+            if (role == null || string.IsNullOrEmpty(role.RoleName))
             {
                 return null;
             }
 
-            _context.Roles.Add(role);
-            await _context.SaveChangesAsync();
-            return role;
+            // to do check this - maybe add default permissions but they are added from the db si maybe it is not needed 
+            // if (role.Permissions == null)
+            // {
+            //     role.Permissions = new Dictionary<string, object>
+            //     {
+            //         { PermissionType.Read.ToString(), true },
+            //         { PermissionType.Write.ToString(), false },
+            //     };
+            // }
+
+            return await _roleRepository.CreateRoleAsync(role);
         }
     }
 }

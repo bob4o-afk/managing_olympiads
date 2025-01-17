@@ -1,36 +1,40 @@
-using OlympiadApi.Data;
 using OlympiadApi.Models;
+using OlympiadApi.Repositories;
 
 namespace OlympiadApi.Services
 {
     public class OlympiadService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IOlympiadRepository _repository;
 
-        public OlympiadService(ApplicationDbContext context)
+        public OlympiadService(IOlympiadRepository repository)
         {
-            _context = context;
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
-        public void AddOlympiad(string subject, DateTime dateofolympiad, string round, string location, int classNumber, int academicYearId)
+        public void AddOlympiad(Olympiad olympiad)
         {
-            var olympiad = new Olympiad
-            {
-                Subject = subject,
-                DateOfOlympiad = dateofolympiad,
-                Round = round,
-                Location = location,
-                ClassNumber = classNumber,
-                AcademicYearId = academicYearId
-            };
+            if (olympiad == null)
+                throw new ArgumentNullException(nameof(olympiad));
 
-            _context.Olympiads.Add(olympiad);
-            _context.SaveChanges();
+            if (string.IsNullOrEmpty(olympiad.Subject))
+                throw new ArgumentException("Subject is required.", nameof(olympiad.Subject));
+
+            if (olympiad.DateOfOlympiad == default)
+                throw new ArgumentException("Date of Olympiad is required.", nameof(olympiad.DateOfOlympiad));
+
+            _repository.AddOlympiad(olympiad);
         }
+
 
         public IEnumerable<Olympiad> GetAllOlympiads()
         {
-            return _context.Olympiads.ToList();
+            return _repository.GetAllOlympiads();
+        }
+
+        public Olympiad GetOlympiadById(int id)
+        {
+            return _repository.GetOlympiadById(id);
         }
     }
 }

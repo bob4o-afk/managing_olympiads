@@ -1,6 +1,8 @@
 using OlympiadApi.Data;
 using OlympiadApi.Services;
 using OlympiadApi.Helpers;
+using OlympiadApi.Repositories.Implementations;
+using OlympiadApi.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -71,6 +73,10 @@ builder.Services.AddScoped<UserRoleAssignmentService>();
 builder.Services.AddScoped<StudentOlympiadEnrollmentService>();
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<AuthService>();
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAcademicYearRepository, AcademicYearRepository>();
+
 builder.Services.AddScoped<AdminRoleAuthorizeAttribute>();
 
 

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using OlympiadApi.Data;
+using OlympiadApi.Services;
 using OlympiadApi.Models;
+using OlympiadApi.Filters;
 
 namespace OlympiadApi.Controllers
 {
@@ -8,12 +9,11 @@ namespace OlympiadApi.Controllers
     [Route("api/[controller]")]
     public class OlympiadController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly OlympiadService _olympiadService;
 
-        // Inject ApplicationDbContext via constructor
-        public OlympiadController(ApplicationDbContext context)
+        public OlympiadController(OlympiadService olympiadService)
         {
-            _context = context;
+            _olympiadService = olympiadService;
         }
 
         // GET: api/olympiad
@@ -22,7 +22,7 @@ namespace OlympiadApi.Controllers
         {
             try
             {
-                var olympiads = _context.Olympiads.ToList();
+                var olympiads = _olympiadService.GetAllOlympiads();
                 return Ok(olympiads); // Return all Olympiads
             }
             catch (Exception ex)
@@ -37,7 +37,7 @@ namespace OlympiadApi.Controllers
         {
             try
             {
-                var olympiad = _context.Olympiads.FirstOrDefault(o => o.OlympiadId == id);
+                var olympiad = _olympiadService.GetOlympiadById(id);
                 if (olympiad == null)
                 {
                     return NotFound(new { message = "Olympiad not found." });
@@ -52,7 +52,7 @@ namespace OlympiadApi.Controllers
 
         // POST: api/olympiad
         [HttpPost]
-        //check admin
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public IActionResult CreateOlympiad([FromBody] Olympiad olympiad)
         {
             try
@@ -62,8 +62,8 @@ namespace OlympiadApi.Controllers
                     return BadRequest(new { message = "Invalid data." });
                 }
 
-                _context.Olympiads.Add(olympiad);
-                _context.SaveChanges();
+                _olympiadService.AddOlympiad(olympiad);
+
 
                 return CreatedAtAction(nameof(GetOlympiadById), new { id = olympiad.OlympiadId }, olympiad);
             }

@@ -1,28 +1,24 @@
-using Microsoft.EntityFrameworkCore;
-using OlympiadApi.Data;
 using OlympiadApi.Models;
+using OlympiadApi.Repositories;
 
 namespace OlympiadApi.Services
 {
     public class UserRoleAssignmentService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUserRoleAssignmentRepository _repository;
         private readonly ILogger<UserRoleAssignmentService> _logger;
 
-        public UserRoleAssignmentService(ApplicationDbContext context, ILogger<UserRoleAssignmentService> logger)
+        public UserRoleAssignmentService(IUserRoleAssignmentRepository repository, ILogger<UserRoleAssignmentService> logger)
         {
-            _context = context;
-            _logger = logger;
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<List<UserRoleAssignment>> GetAllAssignmentsAsync()
         {
             try
             {
-                return await _context.UserRoleAssignments
-                    .Include(ura => ura.User)
-                    .Include(ura => ura.Role)
-                    .ToListAsync();
+                return await _repository.GetAllAssignmentsAsync();
             }
             catch (Exception ex)
             {
@@ -35,10 +31,7 @@ namespace OlympiadApi.Services
         {
             try
             {
-                return await _context.UserRoleAssignments
-                    .Include(ura => ura.User)
-                    .Include(ura => ura.Role)
-                    .FirstOrDefaultAsync(ura => ura.AssignmentId == id);
+                return await _repository.GetAssignmentByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -51,72 +44,30 @@ namespace OlympiadApi.Services
         {
             try
             {
-                var userExists = await _context.Users.AnyAsync(u => u.UserId == assignment.UserId);
-                if (!userExists)
-                {
-                    throw new ArgumentException($"User with ID {assignment.UserId} does not exist.");
-                }
+                if (assignment == null)
+                    throw new ArgumentNullException(nameof(assignment));
 
-                var roleExists = await _context.Roles.AnyAsync(r => r.RoleId == assignment.RoleId);
-                if (!roleExists)
-                {
-                    throw new ArgumentException($"Role with ID {assignment.RoleId} does not exist.");
-                }
+                var userExists = await _repository.GetAllAssignmentsAsync();
+                if (userExists == null) throw new InvalidOperationException("User or Role does not exist.");
 
-
-                assignment.AssignedAt = DateTime.UtcNow;
-
-                _context.UserRoleAssignments.Add(assignment);
-
-                await _context.SaveChangesAsync();
-
-                return assignment;
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogError(ex, "Validation failed when creating user role assignment.");
-                throw new Exception(ex.Message);
-            }
-            catch (DbUpdateException ex)
-            {
-                _logger.LogError(ex, "Database update error occurred while creating user role assignment.");
-                throw new Exception("A database error occurred while creating the user role assignment.");
+                return await _repository.CreateAssignmentAsync(assignment);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An unexpected error occurred while creating user role assignment.");
-                throw new Exception("An unexpected error occurred while creating the user role assignment.");
+                _logger.LogError(ex, "Error creating user role assignment.");
+                throw new Exception("An error occurred while creating user role assignment.");
             }
         }
-
 
         public async Task<bool> DeleteAssignmentAsync(int id)
         {
             try
             {
-                var assignment = await _context.UserRoleAssignments.FindAsync(id);
-                if (assignment == null)
-                {
-                    throw new ArgumentException($"Assignment with ID {id} not found.");
-                }
-
-                _context.UserRoleAssignments.Remove(assignment);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogError(ex, "Validation failed when deleting user role assignment.");
-                throw new Exception(ex.Message);
-            }
-            catch (DbUpdateException ex)
-            {
-                _logger.LogError(ex, "Database update error occurred.");
-                throw new Exception("A database error occurred while deleting the user role assignment.");
+                return await _repository.DeleteAssignmentAsync(id);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while deleting user role assignment.");
+                _logger.LogError(ex, "Error deleting user role assignment.");
                 throw new Exception("An error occurred while deleting the user role assignment.");
             }
         }
