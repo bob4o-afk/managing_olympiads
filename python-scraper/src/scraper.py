@@ -5,19 +5,32 @@ from urllib.parse import urljoin
 import datetime
 from src.supabase_client import SupabaseClient
 from dotenv import load_dotenv
+from src.exceptions import EnvironmentVariableError
+
+def check_required_env_vars(required_vars):
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    if missing_vars:
+        raise EnvironmentVariableError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
 
 def download_pdf():
     # Load environment variables
     load_dotenv()
 
+    check_required_env_vars(["BASE_URL", "SUPABASE_URL", "SUPABASE_API_KEY", "SUPABASE_BUCKET_NAME"])
+
+
     # Get the base URL from environment variables
     base_url = os.getenv("BASE_URL")
 
     # Determine the current academic year
-    current_year = datetime.datetime.now().year
-    start_year = current_year - 1
-    end_year = current_year
+    current_date = datetime.datetime.now()
+    if current_date.month > 9 or (current_date.month == 9 and current_date.day >= 15):
+        start_year = current_date.year - 1
+        end_year = current_date.year
+    else:
+        start_year = current_date.year - 2
+        end_year = current_date.year - 1
 
     # Construct the URL based on the current academic year
     url = f"{base_url}/ol-{start_year}-{end_year}/"
