@@ -82,7 +82,7 @@ namespace OlympiadApi.Controllers
             }
 
             var resetToken = Guid.NewGuid().ToString();
-            var expiration = DateTime.UtcNow.AddHours(1);
+            var expiration = DateTime.Now.AddHours(1);
 
             _authService.StorePasswordResetToken(user.UserId, resetToken, expiration);
 
@@ -100,7 +100,7 @@ namespace OlympiadApi.Controllers
         [HttpPost("reset-password")]
         public IActionResult ResetPassword([FromBody] ResetPasswordDto resetPasswordDto, [FromQuery] string token)
         {
-            if (resetPasswordDto == null || string.IsNullOrWhiteSpace(resetPasswordDto.Username) || string.IsNullOrWhiteSpace(resetPasswordDto.NewPassword))
+            if (resetPasswordDto == null || string.IsNullOrWhiteSpace(resetPasswordDto.NewPassword))
             {
                 return BadRequest(new { message = "Invalid request. Username and new password are required." });
             }
@@ -111,12 +111,6 @@ namespace OlympiadApi.Controllers
                 if (userToken == null || userToken.Expiration < DateTime.UtcNow)
                 {
                     return BadRequest(new { message = "Invalid or expired reset token." });
-                }
-
-                var user = _authService.GetUserByEmailOrUsername(resetPasswordDto.Username);
-                if (user == null)
-                {
-                    return NotFound(new { message = "User not found." });
                 }
 
                 var passwordChanged = _authService.ResetPasswordWithToken(token, resetPasswordDto.NewPassword);

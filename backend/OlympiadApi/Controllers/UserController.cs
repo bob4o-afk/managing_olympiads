@@ -26,7 +26,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpGet("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        //check for matching emails
         public IActionResult GetUserById(int id)
         {
             var user = _userService.GetUserById(id);
@@ -37,7 +37,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+            [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public IActionResult CreateUser([FromBody] User user)
         {
             _userService.CreateUser(user);

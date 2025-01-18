@@ -84,7 +84,7 @@ def process_and_send_data():
 
 def request_password_reset_for_user(api_endpoint, token, email_or_username):
     payload = {"UsernameOrEmail": email_or_username}
-    return send_to_endpoint(f"{api_endpoint}/request-password-change", token, payload)
+    return send_to_endpoint(f"{api_endpoint}", token, payload)
 
 
 def process_and_send_data():
@@ -101,43 +101,60 @@ def process_and_send_data():
     academic_year = calculate_academic_year()
     token = authenticate()
 
-    users_data = [
-        {
-            "Name": "Borislav Milanov",
-            "DateOfBirth": "30.05.2006",
-            "AcademicYearId": academic_year,
-            "Username": "bob4o",
-            "Email": "borislav.b.milanov.2020@elsys-bg.org",
-            "Password": hash_password("somepassword123"),
-            "Gender": "Male",
-            "EmailVerified": False,
-            "CreatedAt": datetime.now().isoformat()
-        },
-        {
-            "Name": "Milan Borislavov",
-            "DateOfBirth": "05.30.2006",
-            "AcademicYearId": academic_year,
-            "Username": "bob4oo123",
-            "Email": "bobi06bobi@gmail.com",
-            "Password": hash_password("anotherpassword456"),
-            "Gender": "Male",
-            "EmailVerified": False,
-            "CreatedAt": datetime.now().isoformat()
-        }
-    ]
+    user1 = {
+        "Name": "Borislav Milanov",
+        "DateOfBirth": "2006-05-30",
+        "AcademicYearId": int(academic_year),
+        "Username": "bob4o",
+        "Email": "borislav.b.milanov.2020@elsys-bg.org",
+        "Password": "somepassword123",
+        "Gender": "Male",
+        "EmailVerified": False
+    }
 
+    user2 = {
+        "Name": "Milan Borislavov",
+        "DateOfBirth": "2006-06-30",
+        "AcademicYearId": int(academic_year),
+        "Username": "bob4oto",
+        "Email": "bobi06bobi@gmail.com",
+        "Password": "somepassword123",
+        "Gender": "Male",
+        "EmailVerified": False
+    }
+    
     errors = []
     reset_errors = []
 
-    for user in users_data:
+    for user in [user1, user2]:
         error = send_to_endpoint(endpoints["users_endpoint"], token, user)
         if error:
             errors.append({"user": user["Name"], "error": error})
 
-    for user in users_data:
-        reset_error = request_password_reset_for_user(endpoints["rpc_endpoint"], token, user["Email"])
-        if reset_error:
-            reset_errors.append({"user": user["Name"], "error": reset_error})
+    if errors:
+        print("\nErrors during user creation:")
+        for err in errors:
+            print(f"User: {err['user']}, Error: {err['error']}")
+    else:
+        print("\nUsers created successfully.")
+
+
+
+    for user in [user1, user2]:
+        try:
+            print(f"Sending password reset request for: {user['Email']}")
+            reset_error = request_password_reset_for_user(endpoints["rpc_endpoint"], token, user["Email"])
+            if reset_error:
+                reset_errors.append({"user": user["Name"], "error": reset_error})
+        except Exception as e:
+            reset_errors.append({"user": user["Name"], "error": str(e)})
+
+    if reset_errors:
+        print("\nErrors during password reset requests:")
+        for err in reset_errors:
+            print(f"User: {err['user']}, Error: {err['error']}")
+    else:
+        print("\nPassword reset requests sent successfully.")
 
     if errors:
         print("\nErrors occurred during user creation:")
@@ -166,6 +183,18 @@ def process_and_send_data():
 
             for class_num in classes:
                 for date in dates:
+                    if olympiad_count >= 10:
+                        print("\nLimit of 10 Olympiads reached. Stopping further uploads.")
+                        if olympiad_errors:
+                            print("\nErrors occurred during olympiad upload:")
+                            for err in olympiad_errors:
+                                print(
+                                    f"Subject: {err['subject']}, Ring: {err['ring']}, Date: {err['date']}, Class: {err['class']}, Error: {err['error']}"
+                                )
+                        else:
+                            print("\nAll data uploaded successfully!")
+                        
+                        return 0
                     try:
                         date_obj = datetime.strptime(date, "%d.%m.%Y")
                         formatted_date = date_obj.strftime("%Y-%m-%d")
@@ -197,7 +226,7 @@ def process_and_send_data():
                     if not start_time:
                         del payload["StartTime"]
 
-                    error = send_to_endpoint(payload)
+                    error = send_to_endpoint(endpoints["olympiad_endpoint"], token, payload)
                     if error:
                         olympiad_errors.append({
                             "subject": subject,
@@ -209,11 +238,4 @@ def process_and_send_data():
                     else:
                         olympiad_count += 1
 
-    if olympiad_errors:
-        print("\nErrors occurred during olympiad upload:")
-        for err in olympiad_errors:
-            print(
-                f"Subject: {err['subject']}, Ring: {err['ring']}, Date: {err['date']}, Class: {err['class']}, Error: {err['error']}"
-            )
-    else:
-        print("\nAll data uploaded successfully!")
+

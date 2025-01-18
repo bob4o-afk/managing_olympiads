@@ -54,8 +54,9 @@ const Settings: React.FC = () => {
         if (session) {
             const fetchUserData = async () => {
                 try {
+                    console.log(session);
                     const token = localStorage.getItem("authToken");
-                    const userResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/user`, {
+                    const userResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${session.userId}`, {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
@@ -68,8 +69,7 @@ const Settings: React.FC = () => {
                         return;
                     }
 
-                    const users = await userResponse.json();
-                    const user = users.find((u: { email: any; }) => u.email === session.email);
+                    const user = await userResponse.json();
 
                     if (user) {
                         setNotificationsEnabled(user.notifications?.emailNotifications ?? true);
@@ -126,7 +126,7 @@ const Settings: React.FC = () => {
         try {
             const token = localStorage.getItem("authToken");
 
-            const userResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/user`, {
+            const userResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${session.userId}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -139,8 +139,7 @@ const Settings: React.FC = () => {
                 return;
             }
 
-            const users = await userResponse.json();
-            const user = users.find((u: { email: any; }) => u.email === session.email);
+            const user = await userResponse.json();
 
             if (!user) {
                 alert("User not found.");
