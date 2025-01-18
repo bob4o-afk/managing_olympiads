@@ -37,7 +37,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost]
-            [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public IActionResult CreateUser([FromBody] User user)
         {
             _userService.CreateUser(user);

@@ -38,6 +38,10 @@ namespace OlympiadApi.Services
 
         public void UpdateUser(User user)
         {
+            if(!string.IsNullOrEmpty(user.Password))
+            {
+                user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            }
             _userRepository.UpdateUser(user);
         }
 
