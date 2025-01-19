@@ -68,5 +68,35 @@ namespace OlympiadApi.Services
 
             return _authRepository.ResetPasswordWithToken(token, resetPasswordDto.NewPassword);
         }
+
+        public bool ValidateToken(string token)
+        {
+            return _jwtHelper.ValidateJwtToken(token);
+        }
+
+        public (bool IsValid, string Message) ValidatePassword(string token, ValidatePasswordDto validatePasswordDto)
+        {
+            var claims = _jwtHelper.GetClaimsFromJwt(token);
+
+            if (claims == null || !claims.Any())
+            {
+                return (false, "Token is invalid.");
+            }
+
+            var userIdClaim = claims.FirstOrDefault(c => c.Type == "UserId");
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+            {
+                return (false, "User ID claim not found in token.");
+            }
+
+            var isPasswordValid = _authRepository.ValidateUserPassword(userId, validatePasswordDto.Password);
+            if (!isPasswordValid)
+            {
+                return (false, "Invalid password.");
+            }
+
+            return (true, "Password validated successfully.");
+        }
+
     }
 }

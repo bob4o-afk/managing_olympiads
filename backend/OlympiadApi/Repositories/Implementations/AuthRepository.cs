@@ -123,5 +123,11 @@ namespace OlympiadApi.Repositories
             var userToken = _context.UserToken.FirstOrDefault(ut => ut.Token == token);
             return userToken != null && userToken.Expiration >= DateTime.Now;
         }
+
+        public bool ValidateUserPassword(int userId, string password)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.UserId == userId);
+            return user != null && BCrypt.Net.BCrypt.Verify(password, user.Password);
+        }
     }
 }

@@ -50,5 +50,50 @@ namespace OlympiadApi.Controllers
 
             return Ok(new { message = "Password updated successfully." });
         }
+
+        [HttpPost("validate-token")]
+        public IActionResult ValidateToken()
+        {
+            var authHeader = Request.Headers["Authorization"].ToString();
+            if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
+            {
+                return Unauthorized(new { message = "Token is missing or invalid." });
+            }
+
+            var token = authHeader.Substring("Bearer ".Length).Trim();
+            var isValid = _authService.ValidateToken(token);
+
+            if (!isValid)
+            {
+                return Unauthorized(new { message = "Token is invalid or expired." });
+            }
+
+            return Ok(new { message = "Token is valid." });
+        }
+
+        [HttpPost("validate-password")]
+        public IActionResult ValidatePassword([FromBody] ValidatePasswordDto validatePasswordDto)
+        {
+            if (validatePasswordDto == null || string.IsNullOrWhiteSpace(validatePasswordDto.Password))
+            {
+                return BadRequest(new { message = "Password is required." });
+            }
+
+            var authHeader = Request.Headers["Authorization"].ToString();
+            if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
+            {
+                return Unauthorized(new { message = "Token is missing or invalid." });
+            }
+
+            var token = authHeader.Substring("Bearer ".Length).Trim();
+            var result = _authService.ValidatePassword(token, validatePasswordDto);
+
+            if (!result.IsValid)
+            {
+                return Unauthorized(new { message = result.Message });
+            }
+
+            return Ok(new { message = result.Message });
+        }
     }
 }
