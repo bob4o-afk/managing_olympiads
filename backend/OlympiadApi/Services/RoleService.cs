@@ -38,5 +38,11 @@ namespace OlympiadApi.Services
 
             return await _roleRepository.CreateRoleAsync(role);
         }
+
+        // Delete a role by id
+        public async Task<bool> DeleteRoleAsync(int id)
+        {
+            return await _roleRepository.DeleteRoleAsync(id);
+        }
     }
 }

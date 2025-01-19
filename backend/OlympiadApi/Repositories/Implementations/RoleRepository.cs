@@ -36,5 +36,16 @@ namespace OlympiadApi.Repositories.Implementations
             return await _context.Roles
                                  .FirstOrDefaultAsync(r => r.RoleId == id);
         }
+
+        public async Task<bool> DeleteRoleAsync(int id)
+        {
+            var role = await _context.Roles.FindAsync(id);
+            if (role == null)
+                return false;
+
+            _context.Roles.Remove(role);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
