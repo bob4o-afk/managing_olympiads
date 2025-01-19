@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Services;
-using OlympiadApi.Models;
 using OlympiadApi.DTOs;
 
 namespace OlympiadApi.Controllers
@@ -16,6 +15,8 @@ namespace OlympiadApi.Controllers
             _emailService = emailService;
         }
 
+        //check - maybe i need admin or email
+        //here should be made a checking for group - so only with the elsys emails
         [HttpPost("send")]
         public async Task<IActionResult> SendEmail([FromBody] EmailRequest request)
         {

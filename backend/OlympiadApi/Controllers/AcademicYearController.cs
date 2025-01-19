@@ -33,7 +33,6 @@ namespace OlympiadApi.Controllers
 
         // GET: api/academicyear/{id}
         [HttpGet("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public IActionResult GetAcademicYearById(int id)
         {
             try

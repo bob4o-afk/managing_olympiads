@@ -64,11 +64,6 @@ namespace OlympiadApi.Repositories.Implementations
             if (existingUser == null)
                 throw new ArgumentException("User not found.");
 
-            if (!string.IsNullOrEmpty(user.Password))
-            {
-                existingUser.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-            }
-
             existingUser.Name = user.Name;
             existingUser.Email = user.Email;
             existingUser.Username = user.Username;
