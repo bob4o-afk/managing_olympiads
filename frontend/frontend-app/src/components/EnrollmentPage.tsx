@@ -1,18 +1,21 @@
 import React, { useState, useEffect, FormEvent } from "react";
-import { Button, Form, Select, Typography, notification, Card } from "antd";
+import { Button, Form, Select, Typography, notification, Card, Input } from "antd";
 import "./ui/EnrollmentPage.css";
+
+import { Olympiad } from "../types/OlympiadTypes";
+import { AcademicYear } from "../types/AcademicYearTypes";
 
 const { Title } = Typography;
 const { Option } = Select;
 const { Text } = Typography;
 
 const EnrollmentPage: React.FC = () => {
-  const [selectedOlympiad, setSelectedOlympiad] = useState<string>("");
-  const [olympiads, setOlympiads] = useState<any[]>([]);
-  const [academicYears, setAcademicYears] = useState<any[]>([]);
+  const [selectedOlympiadId, setSelectedOlympiadId] = useState<string>("");
+  const [olympiads, setOlympiads] = useState<Olympiad[]>([]);
+  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
   const [email, setEmail] = useState<string | null>(null);
+  const [fullName, setFullName] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [enrolled, setEntrolled] = useState<boolean>(false);
   const [, setEmailSent] = useState<boolean>(false);
 
   useEffect(() => {
@@ -64,6 +67,7 @@ const EnrollmentPage: React.FC = () => {
     if (storedSession) {
       const parsedSession = JSON.parse(storedSession);
       setEmail(parsedSession.email);
+      setFullName(parsedSession.full_name);
       setUserId(parsedSession.userId);
     }
 
@@ -72,7 +76,15 @@ const EnrollmentPage: React.FC = () => {
   }, []);
 
   const handleSelectChange = (value: string) => {
-    setSelectedOlympiad(value);
+    setSelectedOlympiadId(value);
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFullName(e.target.value);
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
   };
 
   const formatDateToLocal = (utcDate: string) => {
@@ -91,7 +103,7 @@ const EnrollmentPage: React.FC = () => {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
-      hour12: true,
+      hour12: false,
     });
   };
 
@@ -123,7 +135,7 @@ const EnrollmentPage: React.FC = () => {
       return;
     }
 
-    if (selectedOlympiad === "") {
+    if (!selectedOlympiadId) {
       notification.error({
         message: "Selection Error",
         description: "Please select an Olympiad.",
@@ -132,7 +144,7 @@ const EnrollmentPage: React.FC = () => {
     }
 
     const olympiadDetails = olympiads.find(
-      (olympiad) => olympiad.subject === selectedOlympiad
+      (olympiad) => olympiad.olympiadId === selectedOlympiadId
     );
 
     if (!olympiadDetails) {
@@ -175,7 +187,57 @@ const EnrollmentPage: React.FC = () => {
       );
 
       if (response.ok) {
-        setEntrolled(true);
+        notification.success({
+          message: "Enrollment Successful",
+          description: `You have successfully enrolled in the ${olympiadDetails.subject} Olympiad.`,
+        });
+
+        const emailData = {
+          toEmail: email,
+          subject: olympiadDetails.subject,
+          body: `
+          Dear Student, \n\n
+          You have successfully enrolled in the ${olympiadDetails.subject} Olympiad.\n\n
+          ${`Location: ${olympiadDetails.location}\n`}
+          ${`Date: ${new Date(
+            olympiadDetails.dateOfOlympiad
+          ).toLocaleDateString()}\n`}
+          ${`Start Time: ${new Date(
+            olympiadDetails.startTime
+          ).toLocaleTimeString()}\n`}
+          `,
+          ccEmail: process.env.REACT_APP_EMAIL_CC,
+        };
+  
+        try {
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/email/send`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(emailData),
+          });
+  
+          if (response.ok) {
+            setEmailSent(true);
+            notification.success({
+              message: "Success",
+              description: "Enrollment email successfully sent!",
+            });
+          } else {
+            const errorText = await response.text();
+            notification.error({
+              message: "Sending Error",
+              description: `There was an error sending the email: ${errorText}`,
+            });
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          notification.error({
+            message: "Network Error",
+            description: "There was a problem with the network or server.",
+          });
+        }
       } else {
         const errorText = await response.text();
         notification.error({
@@ -190,62 +252,13 @@ const EnrollmentPage: React.FC = () => {
         description: "There was a problem with the network or server.",
       });
     }
-
-    if (enrolled) {
-      const emailData = {
-        toEmail: email,
-        subject: selectedOlympiad,
-        body: `
-        Dear Student, \n\n
-        You have successfully enrolled in the ${selectedOlympiad} Olympiad.\n\n
-        ${`Location: ${olympiadDetails.location}\n`}
-        ${`Date: ${new Date(
-          olympiadDetails.dateOfOlympiad
-        ).toLocaleDateString()}\n`}
-        ${`Start Time: ${new Date(
-          olympiadDetails.startTime
-        ).toLocaleTimeString()}\n`}
-        `,
-        ccEmail: process.env.REACT_APP_EMAIL_CC,
-      };
-
-      try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/email/send`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(emailData),
-        });
-
-        if (response.ok) {
-          setEmailSent(true);
-          notification.success({
-            message: "Success",
-            description: "Enrollment email successfully sent!",
-          });
-        } else {
-          const errorText = await response.text();
-          notification.error({
-            message: "Sending Error",
-            description: `There was an error sending the email: ${errorText}`,
-          });
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        notification.error({
-          message: "Network Error",
-          description: "There was a problem with the network or server.",
-        });
-      }
-    }
   };
 
   return (
     <div className="enrollment-page">
       <Title level={2}>Olympiad Enrollment</Title>
 
-      {email ? (
+      {userId ? (
         <>
           <Text
             style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px" }}
@@ -254,15 +267,33 @@ const EnrollmentPage: React.FC = () => {
           </Text>
 
           <Form onSubmitCapture={handleSubmit} className="enrollment-form">
+            <Form.Item label="Full Name">
+                <Input
+                  value={fullName || ''}
+                  onChange={handleNameChange}
+                  placeholder="Enter your full name"
+                />
+              </Form.Item>
+              <Form.Item label="Email">
+                <Input
+                  value={email || ''}
+                  onChange={handleEmailChange}
+                  placeholder="Enter your email"
+                  type="email"
+                />
+              </Form.Item>
             <Form.Item label="Select an Olympiad">
               <Select
-                value={selectedOlympiad}
+                value={selectedOlympiadId}
                 onChange={handleSelectChange}
                 placeholder="Select an Olympiad"
                 style={{ width: "100%", height: "100%" }}
               >
                 {olympiads.map((olympiad) => (
-                  <Option key={olympiad.olympiadId} value={olympiad.subject}>
+                  <Option
+                    key={olympiad.olympiadId}
+                    value={olympiad.olympiadId}
+                  >
                     <div>
                       <strong>{olympiad.subject}</strong>
                       <p>{`Location: ${olympiad.location}`}</p>
@@ -281,7 +312,7 @@ const EnrollmentPage: React.FC = () => {
               <Button
                 type="primary"
                 htmlType="submit"
-                disabled={!selectedOlympiad}
+                disabled={!selectedOlympiadId}
               >
                 Submit Enrollment
               </Button>

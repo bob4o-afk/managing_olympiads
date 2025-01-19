@@ -14,7 +14,6 @@ const RequestPasswordReset = () => {
     setError("");
 
     try {
-        localStorage.setItem('resetInfo', usernameOrEmail);
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/request-password-change`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -28,8 +27,12 @@ const RequestPasswordReset = () => {
 
         const data = await response.json();
         setMessage(data.message);
-    } catch (error: any) {
+    } catch (error) {
+      if (error instanceof Error) {
         setError(error.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
     } finally {
         setLoading(false);
     }

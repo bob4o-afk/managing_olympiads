@@ -7,7 +7,7 @@ const { Title, Text } = Typography;
 const Settings: React.FC = () => {
     const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
     const [autoFillDocs, setAutoFillDocs] = useState<boolean>(true);
-    const [session, setSession] = useState<any>(null);
+    const [session, setSession] = useState<UserSession | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [showPasswordModal, setShowPasswordModal] = useState<boolean>(false);
     const [currentPassword, setCurrentPassword] = useState<string>('');
@@ -54,8 +54,9 @@ const Settings: React.FC = () => {
         if (session) {
             const fetchUserData = async () => {
                 try {
+                    console.log(session);
                     const token = localStorage.getItem("authToken");
-                    const userResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/user`, {
+                    const userResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${session.userId}`, {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
@@ -68,8 +69,7 @@ const Settings: React.FC = () => {
                         return;
                     }
 
-                    const users = await userResponse.json();
-                    const user = users.find((u: { email: any; }) => u.email === session.email);
+                    const user = await userResponse.json();
 
                     if (user) {
                         setNotificationsEnabled(user.notifications?.emailNotifications ?? true);
@@ -125,54 +125,55 @@ const Settings: React.FC = () => {
     const savePreferences = async () => {
         try {
             const token = localStorage.getItem("authToken");
+            
+            if(session){
+                const userResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${session.userId}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
+                });
 
-            const userResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/user`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
-                },
-            });
+                if (!userResponse.ok) {
+                    alert("Failed to fetch users. Please try again.");
+                    return;
+                }
 
-            if (!userResponse.ok) {
-                alert("Failed to fetch users. Please try again.");
-                return;
-            }
+                const user = await userResponse.json();
 
-            const users = await userResponse.json();
-            const user = users.find((u: { email: any; }) => u.email === session.email);
+                if (!user) {
+                    alert("User not found.");
+                    return;
+                }
 
-            if (!user) {
-                alert("User not found.");
-                return;
-            }
+                const updatedUser = {
+                    ...user,
+                    Notifications: {
+                        ...user.Notifications,
+                        emailNotifications: notificationsEnabled,
+                    },
+                    PersonalSettings: {
+                        ...user.PersonalSettings,
+                        autoFilling: autoFillDocs,
+                    },
+                    Password: currentPassword
+                };
 
-            const updatedUser = {
-                ...user,
-                Notifications: {
-                    ...user.Notifications,
-                    emailNotifications: notificationsEnabled,
-                },
-                PersonalSettings: {
-                    ...user.PersonalSettings,
-                    autoFilling: autoFillDocs,
-                },
-                Password: currentPassword
-            };
+                const updateResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${user.userId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(updatedUser),
+                });
 
-            const updateResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${user.userId}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
-                },
-                body: JSON.stringify(updatedUser),
-            });
-
-            if (updateResponse.ok) {
-                alert("Preferences saved successfully!");
-            } else {
-                alert("Failed to save preferences. Please try again.");
+                if (updateResponse.ok) {
+                    alert("Preferences saved successfully!");
+                } else {
+                    alert("Failed to save preferences. Please try again.");
+                }
             }
         } catch (error) {
             console.error("An error occurred while saving preferences:", error);

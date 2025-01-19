@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 const { Title, Text } = Typography;
 
 const MyProfile: React.FC = () => {
-    const [session, setSession] = useState<any>(null);
+    const [session, setSession] = useState<UserSession | null>(null);
     const [role, setRole] = useState<string>(""); 
     const [loading, setLoading] = useState<boolean>(true);
     const navigate = useNavigate();
