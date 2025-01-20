@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using OlympiadApi.Models;
 using OlympiadApi.Services;
 using Newtonsoft.Json;
+using OlympiadApi.DTOs;
 
 
 namespace OlympiadApi.Helpers
@@ -20,7 +21,7 @@ namespace OlympiadApi.Helpers
             _userService = userService;
         }
 
-        public string GenerateJwtToken(User user, Dictionary<string, Dictionary<string, bool>> rolesWithPermissions)
+        public string GenerateJwtToken(UserDto user, Dictionary<string, Dictionary<string, bool>> rolesWithPermissions)
         {
             var secretKey = _configuration["JWT_SECRET_KEY"];
             var issuer = _configuration["JWT_ISSUER"];

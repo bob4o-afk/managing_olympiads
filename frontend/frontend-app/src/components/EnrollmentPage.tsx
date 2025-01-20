@@ -85,6 +85,7 @@ const EnrollmentPage: React.FC = () => {
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
+
   };
 
   const formatDateToLocal = (utcDate: string) => {

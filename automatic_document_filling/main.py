@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import requests
 import PyPDF2
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -10,6 +11,9 @@ import os
 
 app = Flask(__name__)
 CORS(app)
+
+SEND_DOCUMENT_URL = os.getenv("SEND_DOCUMENT_URL")
+CC_EMAIL = os.getenv("USER_EMAIL")
 
 def add_text_to_pdf(input_pdf, output_pdf, texts, coordinates, font_size=12, font_path=None):
     if not os.path.exists(font_path):
@@ -24,7 +28,7 @@ def add_text_to_pdf(input_pdf, output_pdf, texts, coordinates, font_size=12, fon
         # Create a separate overlay for each page
         for page_index, packet in enumerate(packets):
             c = canvas.Canvas(packet, pagesize=letter)
-            pdfmetrics.registerFont(TTFont('Arial', font_path))
+            pdfmetrics.registerFont(TTFont("Arial", font_path))
             c.setFont("Arial", font_size)
 
             for text, (x, y, page) in zip(texts, coordinates):
@@ -43,27 +47,31 @@ def add_text_to_pdf(input_pdf, output_pdf, texts, coordinates, font_size=12, fon
         with open(output_pdf, "wb") as output_file:
             writer.write(output_file)
 
-@app.route('/fill_pdf', methods=['POST'])
+@app.route("/fill_pdf", methods=["POST"])
 def fill_pdf():
     data = request.json
 
-    parent_name = data.get('parentName', '')
-    address = data.get('address', '')
-    telephone = data.get('telephone', '')
-    student_name = data.get('studentName', '')
-    grade = data.get('grade', '')
-    school = data.get('school', '')
-    gender = data.get('gender', '').lower()
-    test = data.get('test', '')
+    email = data.get("email")
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
+
+    parent_name = data.get("parentName", "")
+    address = data.get("address", "")
+    telephone = data.get("telephone", "")
+    student_name = data.get("studentName", "")
+    grade = data.get("grade", "")
+    school = data.get("school", "")
+    gender = data.get("gender", "").lower()
+    test = data.get("test", "")
 
     max_length = 32
     if len(school) > max_length:
-        last_space = school[:max_length].rfind(' ')
+        last_space = school[:max_length].rfind(" ")
         first_line = school[:last_space] if last_space != -1 else school[:max_length]
         second_line = school[last_space + 1:] if last_space != -1 else school[max_length:]
     else:
         first_line = school
-        second_line = ''
+        second_line = ""
 
     texts = [
         parent_name,
@@ -73,8 +81,8 @@ def fill_pdf():
         grade,
         first_line,
         second_line,
-        '--',
-        test
+        "--",
+        test,
     ]
 
     # Coordinates for text placement
@@ -96,24 +104,43 @@ def fill_pdf():
     }
     if gender in gender_coordinates:
         coordinates.append(gender_coordinates[gender])
-        texts.append('X')
+        texts.append("X")
 
-    input_pdf = 'Deklaracia.pdf'
-    output_pdf = 'filled_documents/Deklaracia_filled.pdf'
+    input_pdf = "Deklaracia.pdf"
+    output_pdf = "filled_documents/Deklaracia_filled.pdf"
 
     # Font path
     # font_path = r'C:\Windows\Fonts\Arial.ttf'
-    font_path = os.path.join(os.path.dirname(__file__), 'fonts', 'Arial.ttf')
+    font_path = os.path.join(os.path.dirname(__file__), "fonts", "Arial.ttf")
 
     try:
         add_text_to_pdf(input_pdf, output_pdf, texts, coordinates, font_path=font_path)
-        return jsonify({"message": "PDF filled successfully!", "output_file": output_pdf})
+
+        response = send_document(email, output_pdf)
+
+        if response.status_code == 200:
+            return jsonify({"message": "PDF filled and sent successfully"})
+        else:
+            return jsonify({"error": f"Failed to send document: {response.text}"}), response.status_code
+
     except FileNotFoundError as e:
         return jsonify({"error": f"File not found: {e}"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    os.makedirs('filled_documents', exist_ok=True)
-    os.makedirs('fonts', exist_ok=True)
+def send_document(email, file_path):
+    payload = {
+        "ToEmail": email,
+        "Subject": "Filled Document",
+        "Body": "Please find the filled document attached.",
+        "CcEmail": CC_EMAIL,
+    }
+
+    with open(file_path, "rb") as pdf_file:
+        files = {"Document": ("Deklaracia_filled.pdf", pdf_file, "application/pdf")}
+        return requests.post(SEND_DOCUMENT_URL, data=payload, files=files)
+
+if __name__ == "__main__":
+    os.makedirs("filled_documents", exist_ok=True)
+    os.makedirs("fonts", exist_ok=True)
     app.run(debug=True)

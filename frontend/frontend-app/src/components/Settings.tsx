@@ -142,6 +142,7 @@ const Settings: React.FC = () => {
 
                 const user = await userResponse.json();
 
+
                 if (!user) {
                     alert("User not found.");
                     return;

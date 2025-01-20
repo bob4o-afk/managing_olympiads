@@ -1,0 +1,115 @@
+Table users {
+  user_id integer [primary key, increment]
+  name varchar [not null]
+  date_of_birth date [not null]
+  academic_year_id integer [ref: > academic_year.academic_year_id]
+  username varchar [not null, unique]
+  email varchar [not null, unique]
+  password varchar [not null]
+  gender varchar
+  email_verified boolean [default: false]
+  personal_settings jsonb
+  notifications jsonb
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+// personal_settings
+// {
+//   "notifications": true,
+//   "auto_fill": false,
+//   "theme": "dark"
+// }
+
+// notifications
+// [
+//   {
+//     "type": "system",
+//     "message": "Welcome to the platform",
+//     "is_read": false,
+//     "created_at": "2024-10-02T12:00:00"
+//   },
+//   {
+//     "type": "reminder",
+//     "message": "Olympiad starts tomorrow",
+//     "is_read": false,
+//     "created_at": "2024-10-01T15:00:00"
+//   }
+// ]
+
+Table user_role_assignments {
+  assignment_id integer [primary key, increment]
+  user_id integer [ref: > users.user_id]
+  role_id integer [ref: > roles.role_id]
+  assigned_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table roles {
+  role_id integer [primary key, increment]
+  role_name varchar [not null, unique]
+  permissions jsonb
+}
+
+// permissions
+// {
+//   "create": true,
+//   "edit": false,
+//   "view": true,
+//   "delete": false
+// }
+
+Table olympiads {
+  olympiad_id integer [primary key, increment]
+  subject varchar [not null]
+  description text
+  date_of_olympiad date
+  round varchar
+  location varchar
+  start_time timestamp
+  academic_year_id integer [ref: > academic_year.academic_year_id]
+  class_number integer [not null]
+}
+
+Table student_olympiad_enrollment {
+  enrollment_id integer [primary key, increment]
+  user_id integer [ref: > users.user_id]
+  olympiad_id integer [ref: > olympiads.olympiad_id]
+  academic_year_id integer [ref: > academic_year.academic_year_id]
+  enrollment_status varchar [not null, default: 'pending']
+  status_history jsonb
+  score integer
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+// status_history
+// [
+//   {
+//     "previous_status": "pending",
+//     "new_status": "approved",
+//     "changed_at": "2024-09-15T12:00:00"
+//   },
+//   {
+//     "previous_status": "approved",
+//     "new_status": "completed",
+//     "changed_at": "2024-09-20T12:00:00"
+//   }
+// ]
+
+Table academic_year {
+  academic_year_id integer [primary key, increment]
+  start_year integer [not null]
+  end_year integer [not null]
+}
+
+Table user_token {
+  user_token_id integer [primary key, increment]
+  user_id integer [ref: > users.user_id]
+  token varchar [not null]
+  expiration datetime [not null]
+}
+//documents should be saved in supabase for example - file storage
+
+Table document_templates {
+  document_template_id integer [primary key, increment]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}

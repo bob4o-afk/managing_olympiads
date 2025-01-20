@@ -1,4 +1,4 @@
-    namespace OlympiadApi.Models;
+    namespace OlympiadApi.DTOs;
 
     public class EmailRequest
     {

@@ -1,12 +1,16 @@
 using OlympiadApi.Data;
+using OlympiadApi.DTos;
 using OlympiadApi.Services;
 using OlympiadApi.Helpers;
+using OlympiadApi.Repositories.Implementations;
+using OlympiadApi.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using OlympiadApi.Filters;
 using DotNetEnv;
+using OlympiadApi.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,7 +75,18 @@ builder.Services.AddScoped<UserRoleAssignmentService>();
 builder.Services.AddScoped<StudentOlympiadEnrollmentService>();
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<AuthService>();
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAcademicYearRepository, AcademicYearRepository>();
+builder.Services.AddScoped<IOlympiadRepository, OlympiadRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IStudentOlympiadEnrollmentRepository, StudentOlympiadEnrollmentRepository>();
+builder.Services.AddScoped<IUserRoleAssignmentRepository, UserRoleAssignmentRepository>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+
+
 builder.Services.AddScoped<AdminRoleAuthorizeAttribute>();
+builder.Services.AddScoped<AdminOrStudentRoleAuthorizeAttribute>();
 
 
 builder.Services.AddControllers();

@@ -1,27 +1,31 @@
-using OlympiadApi.Data;
+using OlympiadApi.Repositories.Interfaces;
 using OlympiadApi.Models;
 
 namespace OlympiadApi.Services
 {
     public class AcademicYearService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IAcademicYearRepository _academicYearRepository;
 
-        public AcademicYearService(ApplicationDbContext context)
+        public AcademicYearService(IAcademicYearRepository academicYearRepository)
         {
-            _context = context;
+            _academicYearRepository = academicYearRepository;
         }
 
         public void AddAcademicYear(int startYear, int endYear)
         {
             var academicYear = new AcademicYear { StartYear = startYear, EndYear = endYear };
-            _context.AcademicYear.Add(academicYear);
-            _context.SaveChanges();
+            _academicYearRepository.AddAcademicYear(academicYear);
         }
 
         public IEnumerable<AcademicYear> GetAllAcademicYears()
         {
-            return _context.AcademicYear.ToList();
+            return _academicYearRepository.GetAllAcademicYears();
+        }
+
+        public AcademicYear? GetAcademicYearById(int id)
+        {
+            return _academicYearRepository.GetAcademicYearById(id);
         }
     }
 }

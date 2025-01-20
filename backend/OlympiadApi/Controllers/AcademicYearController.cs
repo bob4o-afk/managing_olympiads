@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
-using OlympiadApi.Data;
-using OlympiadApi.Filters;
+using OlympiadApi.Services;
 using OlympiadApi.Models;
+using Microsoft.AspNetCore.Mvc;
+using OlympiadApi.Filters;
 
 namespace OlympiadApi.Controllers
 {
@@ -9,22 +9,21 @@ namespace OlympiadApi.Controllers
     [Route("api/[controller]")]
     public class AcademicYearController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AcademicYearService _academicYearService;
 
-        public AcademicYearController(ApplicationDbContext context)
+        public AcademicYearController(AcademicYearService academicYearService)
         {
-            _context = context;
+            _academicYearService = academicYearService;
         }
 
         // GET: api/academicyear
         [HttpGet]
-        //students checking
         public IActionResult GetAllAcademicYear()
         {
             try
             {
-                var academicYear = _context.AcademicYear.ToList();
-                return Ok(academicYear); // Return all academic years
+                var academicYears = _academicYearService.GetAllAcademicYears();
+                return Ok(academicYears);
             }
             catch (Exception ex)
             {
@@ -34,12 +33,11 @@ namespace OlympiadApi.Controllers
 
         // GET: api/academicyear/{id}
         [HttpGet("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
         public IActionResult GetAcademicYearById(int id)
         {
             try
             {
-                var academicYear = _context.AcademicYear.FirstOrDefault(ay => ay.AcademicYearId == id);
+                var academicYear = _academicYearService.GetAcademicYearById(id);
                 if (academicYear == null)
                 {
                     return NotFound(new { message = "Academic Year not found." });
@@ -64,8 +62,7 @@ namespace OlympiadApi.Controllers
                     return BadRequest(new { message = "Invalid data." });
                 }
 
-                _context.AcademicYear.Add(academicYear);
-                _context.SaveChanges();
+                _academicYearService.AddAcademicYear(academicYear.StartYear, academicYear.EndYear);
 
                 return CreatedAtAction(nameof(GetAcademicYearById), new { id = academicYear.AcademicYearId }, academicYear);
             }

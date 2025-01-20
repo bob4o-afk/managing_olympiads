@@ -11,12 +11,10 @@ namespace OlympiadApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserService _userService;
-        private readonly JwtHelper _jwtHelper;
 
         public UserController(UserService userService, JwtHelper jwtHelper)
         {
             _userService = userService;
-            _jwtHelper = jwtHelper;
         }
 
         [HttpGet]
@@ -28,7 +26,8 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpGet("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        //check for matching emails
+        [ServiceFilter(typeof(AdminOrStudentRoleAuthorizeAttribute))]
         public IActionResult GetUserById(int id)
         {
             var user = _userService.GetUserById(id);
@@ -48,6 +47,7 @@ namespace OlympiadApi.Controllers
 
         [HttpPut("{id}")]
         //check for matching emails
+        [ServiceFilter(typeof(AdminOrStudentRoleAuthorizeAttribute))]
         public IActionResult UpdateUser(int id, [FromBody] User user)
         {
             if (id != user.UserId)
