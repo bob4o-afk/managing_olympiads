@@ -27,8 +27,12 @@ const RequestPasswordReset = () => {
 
         const data = await response.json();
         setMessage(data.message);
-    } catch (error: any) {
+    } catch (error) {
+      if (error instanceof Error) {
         setError(error.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
     } finally {
         setLoading(false);
     }

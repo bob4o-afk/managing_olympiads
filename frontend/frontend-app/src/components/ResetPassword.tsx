@@ -41,8 +41,12 @@ const ResetPassword: React.FC = () => {
             setTimeout(() => {
                 navigate('/my-profile');
             }, 2000); 
-        } catch (error: any) {
-            setMessage({ text: `Error updating password: ${error.message}`, type: 'error' });
+        } catch (error) {
+            if(error instanceof Error) {
+                setMessage({ text: `Error updating password: ${error.message}`, type: 'error' });
+            }else{
+                setMessage({ text: 'An unexpected error occurred', type: 'error' });
+            }
         }
 
         setLoading(false);

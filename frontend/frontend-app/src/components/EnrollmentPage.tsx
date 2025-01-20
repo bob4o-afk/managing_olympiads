@@ -1,6 +1,9 @@
 import React, { useState, useEffect, FormEvent } from "react";
-import { Button, Form, Select, Typography, notification, Card } from "antd";
+import { Button, Form, Select, Typography, notification, Card, Input } from "antd";
 import "./ui/EnrollmentPage.css";
+
+import { Olympiad } from "../types/OlympiadTypes";
+import { AcademicYear } from "../types/AcademicYearTypes";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -8,9 +11,10 @@ const { Text } = Typography;
 
 const EnrollmentPage: React.FC = () => {
   const [selectedOlympiadId, setSelectedOlympiadId] = useState<string>("");
-  const [olympiads, setOlympiads] = useState<any[]>([]);
-  const [academicYears, setAcademicYears] = useState<any[]>([]);
+  const [olympiads, setOlympiads] = useState<Olympiad[]>([]);
+  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
   const [email, setEmail] = useState<string | null>(null);
+  const [fullName, setFullName] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [, setEmailSent] = useState<boolean>(false);
 
@@ -63,6 +67,7 @@ const EnrollmentPage: React.FC = () => {
     if (storedSession) {
       const parsedSession = JSON.parse(storedSession);
       setEmail(parsedSession.email);
+      setFullName(parsedSession.full_name);
       setUserId(parsedSession.userId);
     }
 
@@ -72,6 +77,15 @@ const EnrollmentPage: React.FC = () => {
 
   const handleSelectChange = (value: string) => {
     setSelectedOlympiadId(value);
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFullName(e.target.value);
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+
   };
 
   const formatDateToLocal = (utcDate: string) => {
@@ -245,7 +259,7 @@ const EnrollmentPage: React.FC = () => {
     <div className="enrollment-page">
       <Title level={2}>Olympiad Enrollment</Title>
 
-      {email ? (
+      {userId ? (
         <>
           <Text
             style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px" }}
@@ -254,6 +268,21 @@ const EnrollmentPage: React.FC = () => {
           </Text>
 
           <Form onSubmitCapture={handleSubmit} className="enrollment-form">
+            <Form.Item label="Full Name">
+                <Input
+                  value={fullName || ''}
+                  onChange={handleNameChange}
+                  placeholder="Enter your full name"
+                />
+              </Form.Item>
+              <Form.Item label="Email">
+                <Input
+                  value={email || ''}
+                  onChange={handleEmailChange}
+                  placeholder="Enter your email"
+                  type="email"
+                />
+              </Form.Item>
             <Form.Item label="Select an Olympiad">
               <Select
                 value={selectedOlympiadId}

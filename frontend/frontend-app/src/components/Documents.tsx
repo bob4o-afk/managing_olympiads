@@ -2,12 +2,19 @@ import React, { useState, FormEvent, useRef, useEffect } from "react";
 import { Card, Typography, notification } from "antd";
 import "./ui/Documents.css";
 
+import { Particle } from "./particles/Particle";
+import { spawnParticles } from "./particles/particleUtils";
+
 const { Title } = Typography;
 const { Text } = Typography;
 
 const Documents: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const particles: Particle[] = [];
+  const colors: string[] = ["#FF0080", "#FF8C00", "#40E0D0", "#00BFFF", "#FFB6C1"];
+
+
 
   useEffect(() => {
     const storedSession = localStorage.getItem("userSession");
@@ -25,56 +32,6 @@ const Documents: React.FC = () => {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 
-    const particles: any[] = [];
-    const colors = ["#FF0080", "#FF8C00", "#40E0D0", "#00BFFF", "#FFB6C1"];
-
-    class Particle {
-      x: number;
-      y: number;
-      speed: number;
-      angle: number;
-      accel: number;
-      life: number;
-      decay: number;
-      color: string;
-
-      constructor(x: number, y: number, color: string) {
-        this.x = x;
-        this.y = y;
-        this.speed = Math.random() * 2 + 0.5;
-        this.angle = Math.random() * Math.PI * 2;
-        this.accel = 0.01;
-        this.life = Math.random() * 50 + 50;
-        this.decay = 0.98;
-        this.color = color;
-      }
-
-      update() {
-        this.speed *= this.decay;
-        this.x += Math.cos(this.angle) * this.speed;
-        this.y += Math.sin(this.angle) * this.speed;
-        this.life -= 1;
-      }
-
-      draw(ctx: CanvasRenderingContext2D) {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-      }
-    }
-
-    function spawnParticles() {
-      if (!canvas) return;
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-
-      for (let i = 0; i < 5; i++) {
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        particles.push(new Particle(centerX, centerY, color));
-      }
-    }
-
     function animate() {
       if (!ctx || !canvas) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -87,7 +44,7 @@ const Documents: React.FC = () => {
         }
       });
 
-      spawnParticles();
+      spawnParticles(canvas, colors, particles);
       requestAnimationFrame(animate);
     }
 
@@ -203,12 +160,18 @@ const Documents: React.FC = () => {
           return acc;
         }, {} as Record<string, string>)
       );
-    } catch (error: any) {
-      notification.error({
-        message: "Submission Error",
-        description:
-          error.message || "An error occurred while submitting the form.",
-      });
+    } catch (error) {
+      if (error instanceof Error) {
+        notification.error({
+          message: "Submission Error",
+          description: error.message || "An error occurred while submitting the form.",
+        });
+      } else {
+        notification.error({
+          message: "Unknown Error",
+          description: "An unexpected error occurred.",
+        });
+      }    
     }
   };
 
