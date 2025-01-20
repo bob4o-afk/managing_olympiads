@@ -1,18 +1,17 @@
 FROM node:18
 
-# Install curl and copy wait-for-it script
+# Install dos2unix for line-ending conversion
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl && \
-    curl -Lo /usr/local/bin/wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && \
-    chmod +x /usr/local/bin/wait-for-it.sh && \
+    apt-get install -y --no-install-recommends dos2unix && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install wait-for-it script
+# Copy the wait-for-it script from the local directory
 COPY wait-for-it.sh /usr/local/bin/wait-for-it
-RUN chmod +x /usr/local/bin/wait-for-it
 
+# Fix Windows line endings if they exist in the wait-for-it script
+RUN dos2unix /usr/local/bin/wait-for-it && chmod +x /usr/local/bin/wait-for-it
 
 # Install dependencies
 COPY frontend-app/package*.json ./

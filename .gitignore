@@ -9,15 +9,17 @@
 
 
 /backend/OlympiadApi/.env
-/backend/OlympiadApi/.env
+/backend/OlympiadApi/appsettings.json
 
-/automatic_document_filling/appsettings.json
+
+/automatic_document_filling/filled_documents
 /automatic_document_filling/.env
 
 
 /python-scraper/.env
 /python-scraper/files/
 /python-scraper/src/__pycache__
+
 
 /db/.env
 /db/Sample.sql

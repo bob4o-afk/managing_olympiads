@@ -10,8 +10,6 @@ def main():
         pdf_to_word_and_extract_table()
         extract_and_process_text()
         process_and_send_data()
-
-
     except EnvironmentVariableError as e:
         print(f"Configuration error: {e}")
     except Exception as e:

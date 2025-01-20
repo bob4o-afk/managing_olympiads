@@ -17,6 +17,7 @@ namespace OlympiadApi.Controllers
 
         //check - maybe i need admin or email
         //here should be made a checking for group - so only with the elsys emails
+
         [HttpPost("send")]
         public async Task<IActionResult> SendEmail([FromBody] EmailRequest request)
         {

@@ -26,12 +26,10 @@ const ResetPassword: React.FC = () => {
         }
 
         try {
-            const usernameOrEmail = localStorage.getItem('resetInfo'); 
-
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/reset-password?token=${token}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ Username: usernameOrEmail, NewPassword: newPassword }),
+                body: JSON.stringify({ NewPassword: newPassword }),
             });
 
             if (!response.ok) {
