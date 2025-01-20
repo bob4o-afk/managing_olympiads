@@ -17,8 +17,12 @@ namespace OlympiadApi.Repositories.Implementations
         public async Task<List<UserRoleAssignment>> GetAllAssignmentsAsync()
         {
             return await _context.UserRoleAssignments
-                .Include(ura => ura.User)
-                .Include(ura => ura.Role)
+                .Select(ura => new UserRoleAssignment
+                {
+                    UserId = ura.UserId,
+                    RoleId = ura.RoleId,
+                    AssignedAt = ura.AssignedAt
+                })
                 .ToListAsync();
         }
 

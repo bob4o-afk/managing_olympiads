@@ -27,6 +27,7 @@ namespace OlympiadApi.Controllers
 
         [HttpGet("{id}")]
         //check for matching emails
+        [ServiceFilter(typeof(AdminOrStudentRoleAuthorizeAttribute))]
         public IActionResult GetUserById(int id)
         {
             var user = _userService.GetUserById(id);
@@ -46,6 +47,7 @@ namespace OlympiadApi.Controllers
 
         [HttpPut("{id}")]
         //check for matching emails
+        [ServiceFilter(typeof(AdminOrStudentRoleAuthorizeAttribute))]
         public IActionResult UpdateUser(int id, [FromBody] User user)
         {
             if (id != user.UserId)

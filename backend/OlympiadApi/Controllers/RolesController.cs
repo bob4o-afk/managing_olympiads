@@ -53,5 +53,26 @@ namespace OlympiadApi.Controllers
                 return StatusCode(500, new { message = "An error occurred while creating the role.", error = ex.Message });
             }
         }
+        // DELETE: api/role/{id}
+        [HttpDelete("{id}")]
+        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        public async Task<IActionResult> DeleteRole(int id)
+        {
+            try
+            {
+                // Check if role exists
+                var deleted = await _roleService.DeleteRoleAsync(id);
+                if (!deleted)
+                {
+                    return NotFound(new { message = "Role not found." });
+                }
+
+                return Ok(new { message = "Role deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while deleting the role.", error = ex.Message });
+            }
+        }
     }
 }

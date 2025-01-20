@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using OlympiadApi.Filters;
 using DotNetEnv;
+using OlympiadApi.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,9 +82,11 @@ builder.Services.AddScoped<IOlympiadRepository, OlympiadRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IStudentOlympiadEnrollmentRepository, StudentOlympiadEnrollmentRepository>();
 builder.Services.AddScoped<IUserRoleAssignmentRepository, UserRoleAssignmentRepository>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 
 
 builder.Services.AddScoped<AdminRoleAuthorizeAttribute>();
+builder.Services.AddScoped<AdminOrStudentRoleAuthorizeAttribute>();
 
 
 builder.Services.AddControllers();

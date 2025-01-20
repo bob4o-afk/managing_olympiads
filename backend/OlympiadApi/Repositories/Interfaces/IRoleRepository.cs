@@ -7,5 +7,6 @@ namespace OlympiadApi.Repositories.Interfaces
         Task<List<Role>> GetRolesAsync();
         Task<Role?> CreateRoleAsync(Role role);
         Task<Role?> GetRoleByIdAsync(int id);
+        Task<bool> DeleteRoleAsync(int id);
     }
 }
