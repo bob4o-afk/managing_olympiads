@@ -118,7 +118,7 @@ const MyProfile: React.FC = () => {
                                 backgroundColor: "var(--button-background-color)",
                                 border: "none",
                             }}
-                            onClick={() => handleAction("/reset-password")}
+                            onClick={() => handleAction("/request-password-change")}
                         >
                             Change Password
                         </Button>
