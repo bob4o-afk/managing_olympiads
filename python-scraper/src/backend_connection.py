@@ -11,7 +11,7 @@ from src.load_env import load_environment_variables
 
 def load_environment():
     load_dotenv()
-    check_required_env_vars(["USERS_ENDPOINT", "OLYMPIAD_ENDPOINT", "RPC_ENDPOINT", "LOGIN_URL", "USERNAME", "PASSWORD"])
+    check_required_env_vars(["USERS_ENDPOINT", "OLYMPIAD_ENDPOINT", "RPC_ENDPOINT", "LOGIN_URL", "USERNAME", "PASSWORD", "ROLE_ASSIGNMENT_ENDPOINT"])
 
 
 def check_required_env_vars(required_vars):
@@ -29,12 +29,12 @@ def get_api_endpoints():
     return {
         "users_endpoint": os.getenv("USERS_ENDPOINT"),
         "olympiad_endpoint": os.getenv("OLYMPIAD_ENDPOINT"),
-        "rpc_endpoint": os.getenv("RPC_ENDPOINT")
+        "rpc_endpoint": os.getenv("RPC_ENDPOINT"),
+        "role_assignment_endpoint": os.getenv("ROLE_ASSIGNMENT_ENDPOINT")
     }
 
 
 def authenticate():
-
     login_url = os.getenv("LOGIN_URL")
     username = os.getenv("USERNAME")
     password = os.getenv("PASSWORD")
@@ -76,11 +76,32 @@ def send_to_endpoint(api_endpoint, token, payload):
         print(f"Error sending payload: {e}")
         return str(e)
 
-def process_and_send_data():
-    load_dotenv()
-    _, _, _, OUTPUT_JSON_PATH = load_environment_variables()
-    if not os.path.exists(OUTPUT_JSON_PATH):
-        raise FileNotFoundError(f"File not found: {OUTPUT_JSON_PATH}")
+def fetch_all_users(api_endpoint, token):
+    headers = {"Authorization": f"Bearer {token}"}
+    try:
+        response = requests.get(api_endpoint, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching users: {e}")
+        return str(e)
+
+
+def assign_role_to_user(api_endpoint, token, user_id, role_id=2):
+    headers = {"Authorization": f"Bearer {token}"}
+    assigned_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    payload = {
+        "UserId": user_id,
+        "RoleId": role_id,
+        "AssignedAt": assigned_at
+    }
+    try:
+        response = requests.post(api_endpoint, json=payload, headers=headers)
+        response.raise_for_status()
+        print(f"Role ID {role_id} successfully assigned to User ID {user_id}")
+    except requests.RequestException as e:
+        print(f"Error assigning role: {e}")
+
 
 def request_password_reset_for_user(api_endpoint, token, email_or_username):
     payload = {"UsernameOrEmail": email_or_username}
@@ -139,10 +160,25 @@ def process_and_send_data():
         print("\nUsers created successfully.")
 
 
+    users = fetch_all_users(endpoints["users_endpoint"], token)
+    if not users:
+        print("Failed to fetch users. Cannot assign roles.")
+        return        
+
+    print(users)
 
     for user in [user1, user2]:
+        matching_user = next(
+                (u for u in users if u.get("email", "").strip().lower() == user["Email"].strip().lower()), 
+                None
+            )
+        if not matching_user:
+            print(f"User {user['Name']} not found in the system.")
+            continue
         try:
+            assign_role_to_user(endpoints["role_assignment_endpoint"], token, matching_user["userId"])
             print(f"Sending password reset request for: {user['Email']}")
+            
             reset_error = request_password_reset_for_user(endpoints["rpc_endpoint"], token, user["Email"])
             if reset_error:
                 reset_errors.append({"user": user["Name"], "error": reset_error})
@@ -161,14 +197,7 @@ def process_and_send_data():
         for err in errors:
             print(f"User: {err['user']}, Error: {err['error']}")
     else:
-        print("\nUsers created successfully.")
-
-    if reset_errors:
-        print("\nErrors occurred during password reset request:")
-        for err in reset_errors:
-            print(f"User: {err['user']}, Error: {err['error']}")
-    else:
-        print("\nPassword reset requests sent successfully.")
+        print("\nAll users created and roles assigned successfully.")
 
     olympiad_count = 0
     olympiad_errors = []

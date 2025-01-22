@@ -52,6 +52,12 @@ namespace OlympiadApi.Repositories.Implementations
             };
         }
 
+        public User? FindUserByUsernameOrEmail(string usernameOrEmail)
+        {
+            return _context.Users
+                .FirstOrDefault(u => u.Username == usernameOrEmail || u.Email == usernameOrEmail);
+        }
+        
         public void CreateUser(User user)
         {
             _context.Users.Add(user);

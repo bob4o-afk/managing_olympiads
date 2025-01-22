@@ -1,4 +1,4 @@
-import React, { useState, FormEvent, useRef, useEffect } from "react";
+import React, { useState, FormEvent, useRef, useEffect, useMemo } from "react";
 import { Card, Typography, notification } from "antd";
 import "./ui/Documents.css";
 
@@ -11,9 +11,12 @@ const { Text } = Typography;
 const Documents: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [email, setEmail] = useState<string | null>(null);
-  const particles: Particle[] = [];
-  const colors: string[] = ["#FF0080", "#FF8C00", "#40E0D0", "#00BFFF", "#FFB6C1"];
-
+  const [sessionName, setSessionName] = useState<string>("");
+  const particlesRef = useRef<Particle[]>([]);
+  const colors = useMemo(
+    () => ["#FF0080", "#FF8C00", "#40E0D0", "#00BFFF", "#FFB6C1"],
+    []
+  );
 
 
   useEffect(() => {
@@ -21,6 +24,7 @@ const Documents: React.FC = () => {
     if (storedSession) {
       const parsedSession = JSON.parse(storedSession);
       setEmail(parsedSession.email);
+      setSessionName(parsedSession.name); 
     }
 
     const canvas = canvasRef.current;
@@ -31,6 +35,8 @@ const Documents: React.FC = () => {
 
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
+
+    const particles = particlesRef.current;
 
     function animate() {
       if (!ctx || !canvas) return;
@@ -53,7 +59,7 @@ const Documents: React.FC = () => {
     return () => {
       particles.length = 0;
     };
-  }, []);
+  }, [colors, particlesRef]);
 
   const formFields = [
     { label: "Parent Name", name: "parentName" },
@@ -181,6 +187,20 @@ const Documents: React.FC = () => {
         <Title level={3}>Document Form</Title>
         {email ? (
           <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="name">Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={sessionName}
+                readOnly
+                className="readonly-field"
+                style={{ color: "white", backgroundColor: "transparent" }} 
+                autoFocus
+              />
+            </div>
+
             {formFields.map((field) => {
               if (field.name === "grade") {
                 return (

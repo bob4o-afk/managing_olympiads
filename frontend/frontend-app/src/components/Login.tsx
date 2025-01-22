@@ -53,12 +53,20 @@ const Login: React.FC = (): JSX.Element => {
             }
 
             const authData = await authResponse.json();
-            setToken(authData.token);
-            localStorage.setItem("authToken", authData.token);
+            const token = authData.token;
+            setToken(token);
+            localStorage.setItem("authToken", token);
 
             const userDetails = authData.user;
 
-            const roleResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/UserRoleAssignment/`);
+            const roleResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/UserRoleAssignment/`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
             if (!roleResponse.ok) {
                 const errorText = await roleResponse.text();
                 console.error("Role Fetch Error:", errorText);

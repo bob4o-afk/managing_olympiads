@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, Button, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
+import { UserSession } from "../types/Session";
 
 const { Title, Text } = Typography;
 

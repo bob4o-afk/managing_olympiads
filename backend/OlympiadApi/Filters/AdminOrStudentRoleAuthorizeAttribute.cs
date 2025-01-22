@@ -23,6 +23,9 @@ namespace OlympiadApi.Filters
             }
 
             var token = authHeader.Substring("Bearer ".Length).Trim();
+            if(!_jwtHelper.ValidateJwtToken(token)){
+                context.Result = new UnauthorizedObjectResult(new { message = "Token is invalid or expired." });
+            }
             var claims = _jwtHelper.GetClaimsFromJwt(token);
 
             if (claims == null || !claims.Any())

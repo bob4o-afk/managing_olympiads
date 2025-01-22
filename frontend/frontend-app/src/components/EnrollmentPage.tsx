@@ -14,8 +14,8 @@ const EnrollmentPage: React.FC = () => {
   const [olympiads, setOlympiads] = useState<Olympiad[]>([]);
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
   const [email, setEmail] = useState<string | null>(null);
-  const [fullName, setFullName] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [, setEmailSent] = useState<boolean>(false);
 
   useEffect(() => {
@@ -67,7 +67,6 @@ const EnrollmentPage: React.FC = () => {
     if (storedSession) {
       const parsedSession = JSON.parse(storedSession);
       setEmail(parsedSession.email);
-      setFullName(parsedSession.full_name);
       setUserId(parsedSession.userId);
     }
 
@@ -77,15 +76,6 @@ const EnrollmentPage: React.FC = () => {
 
   const handleSelectChange = (value: string) => {
     setSelectedOlympiadId(value);
-  };
-
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFullName(e.target.value);
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-
   };
 
   const formatDateToLocal = (utcDate: string) => {
@@ -175,13 +165,15 @@ const EnrollmentPage: React.FC = () => {
     };
 
     try {
-      
+      var token = localStorage.getItem("authToken");
+      setToken(token);
       const response = await fetch(
       `${process.env.REACT_APP_API_URL}/api/studentolympiadenrollment`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(enrollmentData),
         }
@@ -268,21 +260,6 @@ const EnrollmentPage: React.FC = () => {
           </Text>
 
           <Form onSubmitCapture={handleSubmit} className="enrollment-form">
-            <Form.Item label="Full Name">
-                <Input
-                  value={fullName || ''}
-                  onChange={handleNameChange}
-                  placeholder="Enter your full name"
-                />
-              </Form.Item>
-              <Form.Item label="Email">
-                <Input
-                  value={email || ''}
-                  onChange={handleEmailChange}
-                  placeholder="Enter your email"
-                  type="email"
-                />
-              </Form.Item>
             <Form.Item label="Select an Olympiad">
               <Select
                 value={selectedOlympiadId}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Switch, Button, Typography, Modal, Input } from 'antd';
 import { HiEye, HiEyeOff } from 'react-icons/hi'; 
+import { UserSession } from '../types/Session';
 
 const { Title, Text } = Typography;
 

@@ -16,13 +16,17 @@ namespace OlympiadApi.Repositories.Implementations
 
         public async Task<List<UserRoleAssignment>> GetAllAssignmentsAsync()
         {
+            // return await _context.UserRoleAssignments
+            //     .Select(ura => new UserRoleAssignment
+            //     {
+            //         UserId = ura.UserId,
+            //         RoleId = ura.RoleId,
+            //         AssignedAt = ura.AssignedAt
+            //     })
+            //     .ToListAsync();
             return await _context.UserRoleAssignments
-                .Select(ura => new UserRoleAssignment
-                {
-                    UserId = ura.UserId,
-                    RoleId = ura.RoleId,
-                    AssignedAt = ura.AssignedAt
-                })
+                .Include(ura => ura.User)
+                .Include(ura => ura.Role)
                 .ToListAsync();
         }
 
@@ -36,8 +40,18 @@ namespace OlympiadApi.Repositories.Implementations
 
         public async Task<UserRoleAssignment> CreateAssignmentAsync(UserRoleAssignment assignment)
         {
+            var user = await _context.Users.FindAsync(assignment.UserId);
+            var role = await _context.Roles.FindAsync(assignment.RoleId);
+
+            if (user == null || role == null)
+                throw new InvalidOperationException("Invalid UserId or RoleId provided.");
+
+            assignment.User = user;
+            assignment.Role = role;
+
             _context.UserRoleAssignments.Add(assignment);
             await _context.SaveChangesAsync();
+
             return assignment;
         }
 

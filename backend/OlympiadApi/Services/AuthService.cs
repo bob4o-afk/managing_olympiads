@@ -1,6 +1,7 @@
 using OlympiadApi.DTOs;
 using OlympiadApi.Helpers;
 using OlympiadApi.Repositories;
+using OlympiadApi.Repositories.Interfaces;
 
 namespace OlympiadApi.Services
 {
@@ -10,21 +11,26 @@ namespace OlympiadApi.Services
         private readonly JwtHelper _jwtHelper;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
+        private readonly IUserRepository _userRepository;
 
-        public AuthService(IAuthRepository authRepository, JwtHelper jwtHelper, IEmailService emailService, IConfiguration configuration)
+        public AuthService(IAuthRepository authRepository, JwtHelper jwtHelper, IEmailService emailService, IConfiguration configuration, IUserRepository userRepository)
         {
             _authRepository = authRepository;
             _jwtHelper = jwtHelper;
             _emailService = emailService;
             _configuration = configuration;
+            _userRepository = userRepository;
         }
 
         public async Task<object?> LoginAsync(LoginDto loginDto)
         {
-            var user = await _authRepository.AuthenticateUserAsync(loginDto.UsernameOrEmail, loginDto.Password);
+            var userdto = await _authRepository.AuthenticateUserAsync(loginDto.UsernameOrEmail, loginDto.Password);
+            if (userdto == null) return null;
+
+            var userRolesWithPermissions = await _authRepository.GetUserRolesWithPermissionsAsync(userdto.UserId);
+            var user = _userRepository.FindUserByUsernameOrEmail(userdto.Email);
             if (user == null) return null;
 
-            var userRolesWithPermissions = await _authRepository.GetUserRolesWithPermissionsAsync(user.UserId);
             var token = _jwtHelper.GenerateJwtToken(user, userRolesWithPermissions);
 
             return new
@@ -83,7 +89,8 @@ namespace OlympiadApi.Services
                 return (false, "Token is invalid.");
             }
 
-            var userIdClaim = claims.FirstOrDefault(c => c.Type == "UserId");
+            var userIdClaim = claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
+            
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             {
                 return (false, "User ID claim not found in token.");
