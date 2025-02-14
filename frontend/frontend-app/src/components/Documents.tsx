@@ -1,9 +1,10 @@
 import React, { useState, FormEvent, useRef, useEffect, useMemo } from "react";
-import { Card, Typography, notification } from "antd";
+import { Button, Card, Typography, notification } from "antd";
 import "./ui/Documents.css";
 
 import { Particle } from "./particles/Particle";
 import { spawnParticles } from "./particles/particleUtils";
+import { motion } from "framer-motion";
 
 const { Title } = Typography;
 const { Text } = Typography;
@@ -18,13 +19,12 @@ const Documents: React.FC = () => {
     []
   );
 
-
   useEffect(() => {
     const storedSession = localStorage.getItem("userSession");
     if (storedSession) {
       const parsedSession = JSON.parse(storedSession);
       setEmail(parsedSession.email);
-      setSessionName(parsedSession.name); 
+      setSessionName(parsedSession.full_name);
     }
 
     const canvas = canvasRef.current;
@@ -65,11 +65,8 @@ const Documents: React.FC = () => {
     { label: "Parent Name", name: "parentName" },
     { label: "Address", name: "address" },
     { label: "Telephone", name: "telephone" },
-    { label: "Student Name", name: "studentName" },
     { label: "Grade", name: "grade" },
     { label: "School", name: "school" },
-    { label: "Gender", name: "gender" },
-    { label: "Test", name: "test" },
   ];
 
   const [formData, setFormData] = useState(
@@ -83,6 +80,11 @@ const Documents: React.FC = () => {
 
   const predefinedSchool =
     'Технологично училище "Електронни системи" към ТУ-София';
+
+  const isValidName = (name: string) => {
+    const parts = name.split(/[\s-]+/).filter(Boolean);
+    return parts.length === 3;
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -98,7 +100,6 @@ const Documents: React.FC = () => {
     const { value } = e.target;
     setFormData((prev) => ({ ...prev, school: value }));
 
-    // Show suggestion only if input matches correctly so far
     if (predefinedSchool.startsWith(value) && value !== predefinedSchool) {
       setSchoolSuggestion(predefinedSchool);
     } else {
@@ -135,7 +136,26 @@ const Documents: React.FC = () => {
       return;
     }
 
-    const data = { ...formData, email };
+    const studentValid = isValidName(sessionName);
+    const parentValid = isValidName(formData.parentName);
+
+    if (!studentValid) {
+      notification.error({
+        message: "Invalid Student Name",
+        description: "Student name must be full.",
+      });
+      return;
+    }
+
+    if (!parentValid) {
+      notification.error({
+        message: "Invalid Parent Name",
+        description: "Parent name must be full.",
+      });
+      return;
+    }
+
+    const data = { ...formData, email, studentName: sessionName };
 
     try {
       const response = await fetch(
@@ -170,14 +190,15 @@ const Documents: React.FC = () => {
       if (error instanceof Error) {
         notification.error({
           message: "Submission Error",
-          description: error.message || "An error occurred while submitting the form.",
+          description:
+            error.message || "An error occurred while submitting the form.",
         });
       } else {
         notification.error({
           message: "Unknown Error",
           description: "An unexpected error occurred.",
         });
-      }    
+      }
     }
   };
 
@@ -188,15 +209,14 @@ const Documents: React.FC = () => {
         {email ? (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="name">Name</label>
+              <label htmlFor="studentName">Name</label>
               <input
                 type="text"
-                id="name"
-                name="name"
+                id="studentName"
+                name="studentName"
                 value={sessionName}
                 readOnly
                 className="readonly-field"
-                style={{ color: "white", backgroundColor: "transparent" }} 
                 autoFocus
               />
             </div>
@@ -279,9 +299,12 @@ const Documents: React.FC = () => {
                 );
               }
             })}
-            <button type="submit" className="submit-button">
-              Submit
-            </button>
+
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <Button htmlType="submit" className="submit-button">
+                Submit
+              </Button>
+            </motion.div>
           </form>
         ) : (
           <Card

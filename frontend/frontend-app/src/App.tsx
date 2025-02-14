@@ -17,6 +17,9 @@ import ResetPassword from './components/ResetPassword';
 import RequestPasswordReset from './components/RequestPasswordReset';
 import Login from './components/Login';
 import Documents from './components/Documents';
+import StudentOlympiadEnrollments from "./components/StudentOlympiadEnrollments";
+import OlympiadsAnimation from './components/OlympiadsAnimation';
+import { SESSION_KEY, generateSessionId } from "./constants/storage";
 
 
 const { Sider, Header, Content } = Layout;
@@ -26,10 +29,38 @@ function App() {
     const [collapsed, setCollapsed] = useState(true);
     const [, setSelectedKey] = useState('home');
     const navigate = useNavigate();
+    const [showAnimation, setShowAnimation] = useState(true);
 
     const toggleTheme = () => {
         setDarkTheme(!darkTheme);
     };
+
+
+    useEffect(() => {
+        const currentSession = sessionStorage.getItem(SESSION_KEY);
+        if (!currentSession) {
+            const newSession = generateSessionId();
+            sessionStorage.setItem(SESSION_KEY, newSession);
+    
+            if (localStorage.getItem(SESSION_KEY) !== newSession) {
+                localStorage.clear();
+                localStorage.setItem(SESSION_KEY, newSession);
+            }
+        }
+        if(localStorage.getItem("animation")){
+            setShowAnimation(false);
+        }
+    }, []);
+    
+    useEffect(() => {
+        if (showAnimation) {
+            setTimeout(() => {
+                localStorage.setItem("animation", "false");
+                setShowAnimation(false);
+            }, 12700);
+        }
+    }, [showAnimation]);
+
 
     useEffect(() => {
         document.body.className = darkTheme ? 'dark-theme' : 'light-theme';
@@ -40,7 +71,12 @@ function App() {
         navigate(`/${key}`);
     };
 
-    return (
+    return showAnimation ?
+    (
+        <OlympiadsAnimation />
+
+    ):
+    (
         <Layout style={{ height: '100vh' }}>
             <Sider
                 collapsed={collapsed}
@@ -105,6 +141,7 @@ function App() {
                     <Routes>
                         <Route path="/home" element={<HomePage onNavigate={handleMenuSelect} />} />
                         <Route path="/enrollment" element={<EnrollmentPage />} />
+                        <Route path="/enrollments" element={<StudentOlympiadEnrollments />} />
                         <Route path="/all-olympiads" element={<PDFViewer />} />
                         <Route path="/documents" element={<Documents/>} />
                         <Route path="/for-me" element={<div><CVTemplate /></div>} />
@@ -114,6 +151,7 @@ function App() {
                         <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/update-info" element={<UpdateInfo />} />
                         <Route path="/login" element={<Login />} />
+                        <Route path="/animation" element={<OlympiadsAnimation />} />
                         <Route path="/" element={<HomePage onNavigate={handleMenuSelect} />} />
                     </Routes>
                 </Content>

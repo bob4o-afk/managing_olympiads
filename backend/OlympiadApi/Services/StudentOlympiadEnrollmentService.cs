@@ -22,6 +22,12 @@ namespace OlympiadApi.Services
             return await _repository.GetEnrollmentByIdAsync(id);
         }
 
+        public async Task<List<StudentOlympiadEnrollment>> GetEnrollmentsByUserIdAsync(int userId)
+        {
+            return await _repository.GetEnrollmentsByUserIdAsync(userId);
+        }
+
+
        public async Task<StudentOlympiadEnrollment> CreateEnrollmentAsync(StudentOlympiadEnrollment enrollment)
         {
             if (enrollment == null)

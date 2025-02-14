@@ -8,6 +8,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 from io import BytesIO
 import os
+import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -62,7 +63,6 @@ def fill_pdf():
     grade = data.get("grade", "")
     school = data.get("school", "")
     gender = data.get("gender", "").lower()
-    test = data.get("test", "")
 
     max_length = 32
     if len(school) > max_length:
@@ -81,8 +81,7 @@ def fill_pdf():
         grade,
         first_line,
         second_line,
-        "--",
-        test,
+        datetime.datetime.now().strftime('%d.%m.%Y'),
     ]
 
     # Coordinates for text placement
@@ -94,8 +93,7 @@ def fill_pdf():
         [250, 475, 0],  # Grade
         [340, 475, 0],  # School first line
         [75, 445, 0],   # School second line
-        [160, 365, 0],  # Placeholder
-        [0, 0, 1]       # Test (2nd page)
+        [375, 232, 1]   # Date (2nd page)
     ]
 
     gender_coordinates = {
@@ -110,7 +108,6 @@ def fill_pdf():
     output_pdf = "filled_documents/Deklaracia_filled.pdf"
 
     # Font path
-    # font_path = r'C:\Windows\Fonts\Arial.ttf'
     font_path = os.path.join(os.path.dirname(__file__), "fonts", "Arial.ttf")
 
     try:

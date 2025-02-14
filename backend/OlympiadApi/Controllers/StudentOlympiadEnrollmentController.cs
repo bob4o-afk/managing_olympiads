@@ -36,6 +36,19 @@ namespace OlympiadApi.Controllers
             return Ok(enrollment);
         }
 
+        [HttpGet("user/{userId}")]
+        [ServiceFilter(typeof(AdminOrStudentRoleAuthorizeAttribute))]
+        public async Task<IActionResult> GetEnrollmentsByUserId(int userId)
+        {
+            var enrollments = await _service.GetEnrollmentsByUserIdAsync(userId);
+            if (enrollments == null || enrollments.Count == 0)
+            {
+                return NotFound(new { Message = "No enrollments found for this user." });
+            }
+            return Ok(enrollments);
+        }
+
+
         [HttpPost]
         [ServiceFilter(typeof(AdminOrStudentRoleAuthorizeAttribute))]
         public async Task<IActionResult> CreateEnrollment([FromBody] StudentOlympiadEnrollment enrollment)

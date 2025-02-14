@@ -9,6 +9,7 @@ import {
   BarChartOutlined,
   SnippetsOutlined,
   DatabaseOutlined,
+  UnorderedListOutlined
 } from '@ant-design/icons';
 
 interface SidebarProps {
@@ -43,6 +44,11 @@ const Sidebar: React.FC<SidebarProps> = ({ darkTheme, onSelect }) => {
           key: 'enrollment',
           icon: <FormOutlined />,
           label: 'Enrollment',
+        },
+        {
+          key: 'enrollments',
+          icon: <UnorderedListOutlined />,
+          label: 'Enrollments',
         },
         {
           key: 'documents',

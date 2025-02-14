@@ -1,0 +1,99 @@
+.container-for-animation {
+    position: relative;
+    font-size: 50px;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.letter-o {
+    display: inline-block;
+    transform-origin: center;
+    transition: transform 3s ease-in-out;
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border: 6px solid var(--text-color);
+    border-radius: 50%;
+    text-align: center;
+    line-height: 50px;
+    background: transparent;
+    left: 0;
+}
+
+.text-for-animation {
+    display: flex;
+    align-items: center;
+    opacity: 1;
+    transition: opacity 3s ease-in-out;
+    position: relative;
+    padding-left: 60px;
+}
+
+.word {
+    transition: opacity 3s ease-in-out;
+}
+
+.rings-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: ringsAppear 3s forwards 6s, ringsDisappear 3s forwards 9s;
+}
+
+.ring {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border: 6px solid black;
+    border-radius: 50%;
+}
+
+.ring:nth-child(1) { left: -200px; top: -10px; border-color: blue; }
+.ring:nth-child(2) { left: 0px; top: -10px; border-color: red; }
+.ring:nth-child(3) { left: -150px; top: 40px; border-color: yellow; }
+.ring:nth-child(4) { left: -50px; top: 40px; border-color: green; }
+
+@keyframes growO {
+    0% { transform: scale(1); }
+    100% { transform: scale(3) translateY(20px); }
+}
+
+@keyframes shrinkO {
+    0% { transform: scale(3) translateY(20px);}
+    100% { transform: scale(1) translateY(0px);}
+}
+
+@keyframes wordsDisappear {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes wordsReappear {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes ringsAppear {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(2); opacity: 1; }
+}
+
+@keyframes ringsDisappear {
+    0% { transform: scale(2); opacity: 1; }
+    100% { transform: scale(0); opacity: 0; }
+}
+
+.animate-o {
+    animation: growO 3s forwards 3s, shrinkO 3s forwards 9s;
+}
+
+.animate-word {
+    animation: wordsDisappear 3s forwards 3s, wordsReappear 3s forwards 9s;
+}

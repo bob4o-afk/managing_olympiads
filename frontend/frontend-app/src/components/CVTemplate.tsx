@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, Typography, Divider, Row, Col, Progress } from 'antd';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -6,11 +6,32 @@ import { MailOutlined, PhoneOutlined, HomeOutlined, InstagramOutlined, GithubOut
 import { PieChart, Pie, Tooltip } from 'recharts';
 
 import './ui/CVTemplate.css';
+import { UserSession } from '../types/Session';
 
 const { Title, Text } = Typography;
 
+
 const CVTemplate: React.FC = () => {
+  const [session, setSession] = useState<UserSession | null>(null);
+  
+  useEffect(() => {
+    const fetchSession = () => {
+      const storedSession = localStorage.getItem("userSession");
+      if (!storedSession) return;
+  
+      try {
+        const parsedSession = JSON.parse(storedSession);
+        setSession(parsedSession);
+      } catch (error) {
+        console.error("Failed to parse session data:", error);
+      }
+    };
+  
+    fetchSession();
+  }, []);  
+
   const exportButtonRef = useRef<HTMLButtonElement>(null);
+  
 
   const personalityData = [
     { name: "Problem Solver", value: 95 },
@@ -20,6 +41,8 @@ const CVTemplate: React.FC = () => {
   ];
 
   const exportToPDF = async () => {
+    if (session?.email !== "bobi06bobi@gmail.com") return;
+
     const element = document.getElementById('cv');
     if (!element) return;
 
@@ -207,8 +230,7 @@ const CVTemplate: React.FC = () => {
               <p>I enjoy writing and listening to music, reading and participating in local hackathons. I also
                 love creating things, such as origami and web riddles. Additionally, I play games and have experience in game development.
                 You can check out one of my games <a href="https://bobinkata.itch.io/escape2-0" target="_blank" rel="noopener noreferrer">here </a>
-                and you can check my <a href="https://riddle-1.free.bg/" target="_blank" rel="noopener noreferrer">first</a> and
-                <a href="https://riddle-2.free.bg/" target="_blank" rel="noopener noreferrer"> second</a> riddle.</p>
+                and you can check my <a href="https://riddle-1.free.bg/" target="_blank" rel="noopener noreferrer">first</a> riddle.</p>
             </div>
           </Col>
 
@@ -309,14 +331,16 @@ const CVTemplate: React.FC = () => {
           </Col>
         </Row>
 
-        <Button
-          type="primary"
-          onClick={exportToPDF}
-          className="export-btn"
-          ref={exportButtonRef}
-        >
-          Export as PDF
-        </Button>
+        {session?.email === "bobi06bobi@gmail.com" && (
+          <Button
+            type="primary"
+            onClick={exportToPDF}
+            className="export-btn"
+            ref={exportButtonRef}
+          >
+            Export as PDF
+          </Button>
+        )}
       </div>
     </div>
   );

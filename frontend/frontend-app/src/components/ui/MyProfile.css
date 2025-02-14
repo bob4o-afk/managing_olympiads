@@ -1,0 +1,72 @@
+.container {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    padding: 24px;
+    flex-wrap: wrap;
+}
+
+.left-section {
+    max-width: 600px;
+    flex: 1;
+}
+
+.right-section {
+    flex: 1;
+    min-width: 300px;
+}
+
+.olympiads-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.olympiad-item {
+    border-bottom: 1px solid #ccc;
+    padding: 8px 0;
+}
+
+.olympiad-item:last-child {
+    border-bottom: none;
+}
+
+.profile-card {
+    margin-bottom: 16px;
+    background-color: var(--card-background-color);
+}
+
+.account-card {
+    background-color: var(--card-background-color);
+}
+
+.profile-card-text {
+    font-size: 17px;
+    color: var(--text-color);
+}
+
+.button {
+    color: var(--button-text-color);
+    font-size: 16px;
+    width: 100%;
+}
+
+.logout-button {
+    font-size: 16px;
+    width: 100%;
+}
+
+.ranking-text {
+    font-size: 16px;
+    color: var(--text-colort);
+}
+
+.progress-bar .ant-progress-text {
+    color: blue !important;
+}
+
+@media (max-width: 800px) {
+    .container {
+        flex-direction: column;
+    }
+}
