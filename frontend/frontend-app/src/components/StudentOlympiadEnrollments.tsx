@@ -157,41 +157,17 @@ const StudentOlympiadEnrollments: React.FC = () => {
       okText: "Yes",
       cancelText: "No",
       centered: true,
-      onOk: async () => {
-        try {
-          const token = localStorage.getItem("authToken");
-          const response = await fetch(
-            `${process.env.REACT_APP_API_URL}/api/studentolympiadenrollment/${enrollmentId}`,
-            {
-              method: "DELETE",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-  
-          if (response.ok) {
-            notification.success({
-              message: "Success",
-              description: "Enrollment deleted successfully!",
-            });
-            setEnrollments((prev) => prev.filter((e) => e.enrollmentId !== enrollmentId));
-          } else {
-            notification.error({
-              message: "Error",
-              description: "Failed to delete enrollment",
-            });
-          }
-        } catch (error) {
-          notification.error({
-            message: "Network Error",
-            description: "Failed to delete enrollment",
-          });
-        }
-      },
       footer: [
         <div style={{ textAlign: "center", width: "100%" }} key="yes-footer">
-          <Button key="yes" type="primary" danger onClick={() => Modal.destroyAll()}>
+          <Button
+            key="yes"
+            type="primary"
+            danger
+            onClick={async () => {
+              await deleteEnrollment(enrollmentId);
+              Modal.destroyAll();
+            }}
+          >
             Yes
           </Button>
         </div>,
@@ -203,7 +179,40 @@ const StudentOlympiadEnrollments: React.FC = () => {
       ],
     });
   };
-
+  
+  const deleteEnrollment = async (enrollmentId: number) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/studentolympiadenrollment/${enrollmentId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.ok) {
+        notification.success({
+          message: "Success",
+          description: "Enrollment deleted successfully!",
+        });
+        setEnrollments((prev) => prev.filter((e) => e.enrollmentId !== enrollmentId));
+      } else {
+        notification.error({
+          message: "Error",
+          description: "Failed to delete enrollment",
+        });
+      }
+    } catch (error) {
+      notification.error({
+        message: "Network Error",
+        description: "Failed to delete enrollment",
+      });
+    }
+  };
+  
   const columns: ColumnType<any>[] = [  
     {
       title: "User",
