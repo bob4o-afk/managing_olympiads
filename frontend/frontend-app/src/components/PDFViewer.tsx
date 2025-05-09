@@ -6,6 +6,7 @@ import { defaultLayoutPlugin, DefaultLayoutPlugin } from "@react-pdf-viewer/defa
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import './ui/PDFViewer.css';
+import LoadingPage from "./LoadingPage";
 
 // Initialize Supabase client
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL!;
@@ -55,7 +56,7 @@ function PDFViewer(): JSX.Element {
                     {viewPdf ? (
                         <Viewer fileUrl={viewPdf} plugins={[newPlugin]} />
                     ) : (
-                        <p>Loading PDF... Please wait!</p>
+                        <LoadingPage />
                     )}
                 </Worker>
             </div>

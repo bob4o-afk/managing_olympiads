@@ -2,12 +2,15 @@ import React, { useState, FormEvent, useRef, useEffect, useMemo } from "react";
 import { Button, Card, Typography, notification } from "antd";
 import "./ui/Documents.css";
 
+import LoadingPage from "../components/LoadingPage";
+
 import { Particle } from "./particles/Particle";
 import { spawnParticles } from "./particles/particleUtils";
 import { motion } from "framer-motion";
 
 const { Title } = Typography;
 const { Text } = Typography;
+
 
 const Documents: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -18,6 +21,8 @@ const Documents: React.FC = () => {
     () => ["#FF0080", "#FF8C00", "#40E0D0", "#00BFFF", "#FFB6C1"],
     []
   );
+
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const storedSession = localStorage.getItem("userSession");
@@ -128,11 +133,14 @@ const Documents: React.FC = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
+    setIsLoading(true);
+
     if (!email) {
       notification.error({
         message: "Login Required",
         description: "You must log in to fill out the form.",
       });
+      setIsLoading(false);
       return;
     }
 
@@ -144,6 +152,7 @@ const Documents: React.FC = () => {
         message: "Invalid Student Name",
         description: "Student name must be full.",
       });
+      setIsLoading(false);
       return;
     }
 
@@ -152,6 +161,7 @@ const Documents: React.FC = () => {
         message: "Invalid Parent Name",
         description: "Parent name must be full.",
       });
+      setIsLoading(false);
       return;
     }
 
@@ -199,134 +209,139 @@ const Documents: React.FC = () => {
           description: "An unexpected error occurred.",
         });
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="document-container">
-      <div className="form-container">
-        <Title level={3}>Document Form</Title>
-        {email ? (
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="studentName">Name</label>
-              <input
-                type="text"
-                id="studentName"
-                name="studentName"
-                value={sessionName}
-                readOnly
-                className="readonly-field"
-                autoFocus
-              />
-            </div>
+    <>
+      {isLoading && <LoadingPage />}
+      <div className="document-container">
+        <div className="form-container">
+          <Title level={3}>Document Form</Title>
+          {email ? (
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="studentName">Name</label>
+                <input
+                  type="text"
+                  id="studentName"
+                  name="studentName"
+                  value={sessionName}
+                  readOnly
+                  className="readonly-field"
+                  autoFocus
+                />
+              </div>
 
-            {formFields.map((field) => {
-              if (field.name === "grade") {
-                return (
-                  <div key={field.name} className="form-group">
-                    <label htmlFor={field.name}>{field.label}</label>
-                    <select
-                      id={field.name}
-                      name={field.name}
-                      value={formData[field.name]}
-                      onChange={handleGradeChange}
-                      required
-                      className="custom-dropdown"
-                    >
-                      {[
-                        "8А",
-                        "8Б",
-                        "8В",
-                        "8Г",
-                        "9А",
-                        "9Б",
-                        "9В",
-                        "9Г",
-                        "10А",
-                        "10Б",
-                        "10В",
-                        "10Г",
-                        "11А",
-                        "11Б",
-                        "11В",
-                        "11Г",
-                        "12А",
-                        "12Б",
-                        "12В",
-                        "12Г",
-                      ].map((grade) => (
-                        <option key={grade} value={grade}>
-                          {grade}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                );
-              } else if (field.name === "school") {
-                return (
-                  <div key={field.name} className="form-group">
-                    <label htmlFor={field.name}>{field.label}</label>
-                    <input
-                      type="text"
-                      id={field.name}
-                      name={field.name}
-                      value={formData[field.name]}
-                      onChange={handleSchoolChange}
-                      onKeyDown={handleSchoolKeyPress}
-                      onBlur={handleSchoolBlur}
-                      required
-                      placeholder="Enter school name"
-                    />
-                    {schoolSuggestion && (
-                      <div className="suggestion">{schoolSuggestion}</div>
-                    )}
-                  </div>
-                );
-              } else {
-                return (
-                  <div key={field.name} className="form-group">
-                    <label htmlFor={field.name}>{field.label}</label>
-                    <input
-                      type="text"
-                      id={field.name}
-                      name={field.name}
-                      value={formData[field.name]}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                );
-              }
-            })}
+              {formFields.map((field) => {
+                if (field.name === "grade") {
+                  return (
+                    <div key={field.name} className="form-group">
+                      <label htmlFor={field.name}>{field.label}</label>
+                      <select
+                        id={field.name}
+                        name={field.name}
+                        value={formData[field.name]}
+                        onChange={handleGradeChange}
+                        required
+                        className="custom-dropdown"
+                      >
+                        {[
+                          "8А",
+                          "8Б",
+                          "8В",
+                          "8Г",
+                          "9А",
+                          "9Б",
+                          "9В",
+                          "9Г",
+                          "10А",
+                          "10Б",
+                          "10В",
+                          "10Г",
+                          "11А",
+                          "11Б",
+                          "11В",
+                          "11Г",
+                          "12А",
+                          "12Б",
+                          "12В",
+                          "12Г",
+                        ].map((grade) => (
+                          <option key={grade} value={grade}>
+                            {grade}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                } else if (field.name === "school") {
+                  return (
+                    <div key={field.name} className="form-group">
+                      <label htmlFor={field.name}>{field.label}</label>
+                      <input
+                        type="text"
+                        id={field.name}
+                        name={field.name}
+                        value={formData[field.name]}
+                        onChange={handleSchoolChange}
+                        onKeyDown={handleSchoolKeyPress}
+                        onBlur={handleSchoolBlur}
+                        required
+                        placeholder="Enter school name"
+                      />
+                      {schoolSuggestion && (
+                        <div className="suggestion">{schoolSuggestion}</div>
+                      )}
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div key={field.name} className="form-group">
+                      <label htmlFor={field.name}>{field.label}</label>
+                      <input
+                        type="text"
+                        id={field.name}
+                        name={field.name}
+                        value={formData[field.name]}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                  );
+                }
+              })}
 
-            <motion.div whileHover={{ scale: 1.05 }}>
-              <Button htmlType="submit" className="submit-button">
-                Submit
-              </Button>
-            </motion.div>
-          </form>
-        ) : (
-          <Card
-            style={{
-              backgroundColor: "white",
-              padding: "20px",
-              borderRadius: "8px",
-            }}
-          >
-            <Text
-              style={{ fontSize: "16px", fontWeight: "600", color: "#888" }}
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Button htmlType="submit" className="submit-button">
+                  Submit
+                </Button>
+              </motion.div>
+            </form>
+          ) : (
+            <Card
+              style={{
+                backgroundColor: "white",
+                padding: "20px",
+                borderRadius: "8px",
+              }}
             >
-              You need to log in to enroll in an Olympiad.
-            </Text>
-          </Card>
-        )}
-      </div>
+              <Text
+                style={{ fontSize: "16px", fontWeight: "600", color: "#888" }}
+              >
+                You need to log in to enroll in an Olympiad.
+              </Text>
+            </Card>
+          )}
+        </div>
 
-      <div className="cool-container">
-        <canvas ref={canvasRef} className="animated-canvas"></canvas>
+        <div className="cool-container">
+          <canvas ref={canvasRef} className="animated-canvas"></canvas>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

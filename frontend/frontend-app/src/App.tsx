@@ -37,6 +37,8 @@ function App() {
 
 
     useEffect(() => {
+        setShowAnimation(false);
+
         const currentSession = sessionStorage.getItem(SESSION_KEY);
         if (!currentSession) {
             const newSession = generateSessionId();

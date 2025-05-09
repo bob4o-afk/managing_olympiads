@@ -3,6 +3,7 @@ using OlympiadApi.Models;
 using OlympiadApi.Services;
 using OlympiadApi.Helpers;
 using OlympiadApi.Filters;
+using OlympiadApi.DTOs;
 
 namespace OlympiadApi.Controllers
 {
@@ -56,6 +57,19 @@ namespace OlympiadApi.Controllers
             _userService.UpdateUser(user);
             return NoContent();
         }
+
+        [HttpPatch("{id}")]
+        [ServiceFilter(typeof(AdminOrStudentRoleAuthorizeAttribute))]
+        public IActionResult UpdateUserNameAndEmail(int id, [FromBody] UserUpdateDto dto)
+        {
+            var user = _userService.GetUserById(id);
+            if (user == null)
+                return NotFound(new { message = "User not found." });
+
+            _userService.UpdateUserNameAndEmail(id, dto.Name, dto.Email);
+            return NoContent();
+        }
+
 
         [HttpDelete("{id}")]
         [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]

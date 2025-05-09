@@ -4,6 +4,7 @@ import "./ui/EnrollmentPage.css";
 
 import { Olympiad } from "../types/OlympiadTypes";
 import { AcademicYear } from "../types/AcademicYearTypes";
+import LoadingPage from "../components/LoadingPage";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -17,58 +18,10 @@ const EnrollmentPage: React.FC = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
   const [selectedRound, setSelectedRound] = useState<string | null>(null);
-  const [, setToken] = useState<string | null>(null);
-  const [, setEmailSent] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchOlympiads = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/olympiad`
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setOlympiads(data);
-        } else {
-          notification.error({
-            message: "Error",
-            description: "Failed to load Olympiad data.",
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching Olympiads:", error);
-        notification.error({
-          message: "Network Error",
-          description: "There was an issue fetching the Olympiad data.",
-        });
-      }
-    };
-
-    const fetchAcademicYears = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/academicyear`
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setAcademicYears(data);
-        } else {
-          notification.error({
-            message: "Error",
-            description: "Failed to load Academic Year data.",
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching Academic Years:", error);
-        notification.error({
-          message: "Network Error",
-          description: "There was an issue fetching the Academic Year data.",
-        });
-      }
-    };
-
+    setIsLoading(true);
     const storedSession = localStorage.getItem("userSession");
     if (storedSession) {
       const parsedSession = JSON.parse(storedSession);
@@ -78,7 +31,56 @@ const EnrollmentPage: React.FC = () => {
 
     fetchOlympiads();
     fetchAcademicYears();
+    setIsLoading(false);
   }, []);
+
+  const fetchOlympiads = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/olympiad`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setOlympiads(data);
+      } else {
+        notification.error({
+          message: "Error",
+          description: "Failed to load Olympiad data.",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching Olympiads:", error);
+      notification.error({
+        message: "Network Error",
+        description: "There was an issue fetching the Olympiad data.",
+      });
+    }
+  };
+
+  const fetchAcademicYears = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/academicyear`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setAcademicYears(data);
+      } else {
+        notification.error({
+          message: "Error",
+          description: "Failed to load Academic Year data.",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching Academic Years:", error);
+      notification.error({
+        message: "Network Error",
+        description: "There was an issue fetching the Academic Year data.",
+      });
+    }
+  };
 
   const handleSelectChange = (value: string) => {
     setSelectedOlympiadId(value);
@@ -93,21 +95,6 @@ const EnrollmentPage: React.FC = () => {
     setSelectedRound(value);
     setSelectedOlympiadId("");
   };
-
-  const sortedClasses = Array.from(
-    new Set(olympiads.map((olympiad) => olympiad.classNumber))
-  ).sort((a, b) => a - b);
-
-  const sortedRounds = Array.from(
-    new Set(olympiads.map((olympiad) => olympiad.round))
-  );
-
-  const filteredOlympiads = olympiads.filter((olympiad) => {
-    return (
-      (selectedClass === null || olympiad.classNumber === selectedClass) &&
-      (selectedRound === null || olympiad.round === selectedRound)
-    );
-  });
 
   const formatDateToLocal = (utcDate: string) => {
     const date = new Date(utcDate);
@@ -146,240 +133,260 @@ const EnrollmentPage: React.FC = () => {
     return selectedAcademicYear ? selectedAcademicYear.academicYearId : null;
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const sendEnrollmentEmail = async (emailData: any) => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/email/send`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(emailData),
+    });
 
-    if (!email) {
-      notification.error({
-        message: "Login Required",
-        description: "You must log in to enroll.",
-      });
-      return;
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error sending email: ${errorText}`);
     }
 
-    if (!selectedOlympiadId) {
-      notification.error({
-        message: "Selection Error",
-        description: "Please select an Olympiad.",
-      });
-      return;
-    }
+    notification.success({ message: "Success", description: "Enrollment email successfully sent!" });
+  };
 
-    const olympiadDetails = olympiads.find(
-      (olympiad) => olympiad.olympiadId === selectedOlympiadId
-    );
+  const enrollStudent = async (enrollmentData: any) => {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/studentolympiadenrollment`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(enrollmentData),
+    });
 
-    if (!olympiadDetails) {
-      notification.error({
-        message: "Error",
-        description: "Selected Olympiad data is missing.",
-      });
-      return;
-    }
-
-    const academicYearId = getCurrentAcademicYearId();
-    if (!academicYearId) {
-      notification.error({
-        message: "Academic Year Error",
-        description: "Could not determine the current academic year.",
-      });
-      return;
-    }
-
-    const enrollmentData = {
-      userId: userId,
-      olympiadId: olympiadDetails.olympiadId,
-      academicYearId: academicYearId,
-      enrollmentStatus: "pending",
-      createdAt: new Date().toISOString(),
-    };
-
-    try {
-      var token = localStorage.getItem("authToken");
-      setToken(token);
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/studentolympiadenrollment`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(enrollmentData),
-        }
-      );
-
-      if (response.ok) {
-        notification.success({
-          message: "Enrollment Successful",
-          description: `You have successfully enrolled in the ${olympiadDetails.subject} Olympiad.`,
-        });
-
-        const emailData = {
-          toEmail: email,
-          subject: olympiadDetails.subject,
-          body: `
-          Dear Student, \n\n
-          You have successfully enrolled in the ${
-            olympiadDetails.subject
-          } Olympiad.\n\n
-          ${`Location: ${olympiadDetails.location}\n`}
-          ${`Date: ${new Date(
-            olympiadDetails.dateOfOlympiad
-          ).toLocaleDateString()}\n`}
-          ${`Start Time: ${new Date(
-            olympiadDetails.startTime
-          ).toLocaleTimeString()}\n`}
-          `,
-          ccEmail: process.env.REACT_APP_EMAIL_CC,
-        };
-
-        try {
-          const response = await fetch(
-            `${process.env.REACT_APP_API_URL}/api/email/send`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(emailData),
-            }
-          );
-
-          if (response.ok) {
-            setEmailSent(true);
-            notification.success({
-              message: "Success",
-              description: "Enrollment email successfully sent!",
-            });
-          } else {
-            const errorText = await response.text();
-            notification.error({
-              message: "Sending Error",
-              description: `There was an error sending the email: ${errorText}`,
-            });
-          }
-        } catch (error) {
-          console.error("Error:", error);
-          notification.error({
-            message: "Network Error",
-            description: "There was a problem with the network or server.",
-          });
-        }
-      } else {
-        const errorText = await response.text();
-        notification.error({
-          message: "Enrollment Error",
-          description: `There was an error enrolling: ${errorText}`,
-        });
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      notification.error({
-        message: "Network Error",
-        description: "There was a problem with the network or server.",
-      });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Enrollment failed: ${errorText}`);
     }
   };
 
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+
+    try {
+      if (!email) {
+        notification.error({
+          message: "Login Required",
+          description: "You must log in to enroll.",
+        });
+        setIsLoading(false);
+        return;
+      }
+      if (!selectedOlympiadId) {
+        notification.error({
+          message: "Selection Error",
+          description: "Please select an Olympiad.",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      const olympiadDetails = olympiads.find(
+        (olympiad) => olympiad.olympiadId === selectedOlympiadId
+      );
+      if (!olympiadDetails) {
+        notification.error({
+          message: "Error",
+          description: "Selected Olympiad data is missing.",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      const academicYearId = getCurrentAcademicYearId();
+      if (!academicYearId) {
+        notification.error({
+          message: "Academic Year Error",
+          description: "Could not determine the current academic year.",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      const enrollmentData = {
+        userId: userId,
+        olympiadId: olympiadDetails.olympiadId,
+        academicYearId: academicYearId,
+        enrollmentStatus: "pending",
+        createdAt: new Date().toISOString(),
+      };
+
+      await enrollStudent(enrollmentData);
+
+      notification.success({
+        message: "Enrollment Successful",
+        description: `You have successfully enrolled in the ${olympiadDetails.subject} Olympiad.`,
+      });
+
+      const startTime = new Date(
+        olympiadDetails.startTime
+      ).toLocaleTimeString();
+    
+      const emailData = {
+        toEmail: email,
+        subject: olympiadDetails.subject,
+        body: `
+        Dear Student, \n\n
+        You have successfully enrolled in the ${
+          olympiadDetails.subject
+        } Olympiad.\n\n
+        ${`Location: ${olympiadDetails.location}\n`}
+        ${`Date: ${new Date(
+          olympiadDetails.dateOfOlympiad
+        ).toLocaleDateString()}\n`}
+        ${`Start Time: ${startTime}\n`}
+        `,
+        ccEmail: process.env.REACT_APP_EMAIL_CC,
+      };
+
+      await sendEnrollmentEmail(emailData);
+    } catch (error) {
+      const rawMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      const errorMessage = rawMessage.split('\n')[0].replace("Enrollment failed: ", "");
+      notification.error({ message: "Error", description: errorMessage });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const sortedClasses = Array.from(
+    new Set(olympiads.map((olympiad) => olympiad.classNumber))
+  ).sort((a, b) => a - b);
+
+  const filteredOlympiads = olympiads.filter((olympiad) => {
+    return (
+      (selectedClass === null || olympiad.classNumber === selectedClass) &&
+      (selectedRound === null || olympiad.round === selectedRound)
+    );
+  });
+
   return (
-    <div className="enrollment-page">
-      <Title level={2} style={{color: "var(--text-color)"}}>Olympiad Enrollment</Title>
+    <>
+      {isLoading && <LoadingPage />}
 
-      {userId ? (
-        <>
-          <div style={{ display: "flex", justifyContent: "center" }}>
+      <div className="enrollment-page">
+        <Title level={2} style={{ color: "var(--text-color)" }}>
+          Olympiad Enrollment
+        </Title>
+
+        {userId ? (
+          <>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <Text
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "600",
+                  marginBottom: "8px",
+                  textAlign: "center",
+                  color: "var(--text-color)",
+                }}
+              >
+                Please select an Olympiad from the list below:
+              </Text>
+            </div>
+            <Form onSubmitCapture={handleSubmit} className="enrollment-form">
+              <Form.Item
+                label={<span style={{ color: "black" }}>Filter by Class</span>}
+                colon={false}
+              >
+                <Select
+                  onChange={handleClassChange}
+                  placeholder="Select a class"
+                  allowClear
+                >
+                  {sortedClasses.map((classNumber) => (
+                    <Option key={classNumber} value={classNumber}>
+                      Class {classNumber}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item
+                label={<span style={{ color: "black" }}>Filter by Round</span>}
+                colon={false}
+              >
+                <Select
+                  onChange={handleRoundChange}
+                  placeholder="Select a round"
+                  allowClear
+                  style={{ width: "100%" }}
+                >
+                  {Array.from(
+                    new Set(olympiads.map((olympiad) => olympiad.round))
+                  ).map((round) => (
+                    <Option key={round} value={round}>
+                      {round}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Form.Item
+                label={
+                  <span style={{ color: "black" }}>Select an Olympiad</span>
+                }
+                colon={false}
+              >
+                <Select
+                  value={selectedOlympiadId}
+                  onChange={handleSelectChange}
+                  placeholder="Select an Olympiad"
+                  style={{ width: "100%", height: "100%" }}
+                >
+                  {filteredOlympiads.map((olympiad) => (
+                    <Option
+                      key={olympiad.olympiadId}
+                      value={olympiad.olympiadId}
+                    >
+                      <div>
+                        <strong>{`${olympiad.subject} - Class ${olympiad.classNumber} (${olympiad.round})`}</strong>
+                        <p>{`Location: ${olympiad.location}`}</p>
+                        <p>{`Date: ${formatDateToLocal(
+                          olympiad.dateOfOlympiad
+                        )}`}</p>
+                        <p>{`Start Time: ${formatTimeToLocal(
+                          olympiad.startTime
+                        )}`}</p>
+                      </div>
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  disabled={!selectedOlympiadId}
+                >
+                  Submit Enrollment
+                </Button>
+              </Form.Item>
+            </Form>
+          </>
+        ) : (
+          <Card
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "8px",
+            }}
+          >
             <Text
-              style={{
-                fontSize: "18px",
-                fontWeight: "600",
-                marginBottom: "8px",
-                textAlign: "center",
-                color: "var(--text-color)"
-              }}
+              style={{ fontSize: "16px", fontWeight: "600", color: "#888" }}
             >
-              Please select an Olympiad from the list below:
+              You need to log in to enroll in an Olympiad.
             </Text>
-          </div>
-          <Form onSubmitCapture={handleSubmit} className="enrollment-form">
-            <Form.Item label={<span style={{ color: "black" }}>Filter by Class</span>} colon={false}>
-              <Select
-                onChange={handleClassChange}
-                placeholder="Select a class"
-                allowClear
-              >
-                {sortedClasses.map((classNumber) => (
-                  <Option key={classNumber} value={classNumber}>
-                    Class {classNumber}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            <Form.Item label={<span style={{ color: "black"}}>Filter by Round</span>} colon={false}>
-              <Select
-                onChange={handleRoundChange}
-                placeholder="Select a round"
-                allowClear
-                style={{ width: "100%" }}
-              >
-                {Array.from(
-                  new Set(olympiads.map((olympiad) => olympiad.round))
-                ).map((round) => (
-                  <Option key={round} value={round}>
-                    {round}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item label={<span style={{ color: "black" }}>Select an Olympiad</span>} colon={false}>
-              <Select
-                value={selectedOlympiadId}
-                onChange={handleSelectChange}
-                placeholder="Select an Olympiad"
-                style={{ width: "100%", height: "100%" }}
-              >
-                {filteredOlympiads.map((olympiad) => (
-                  <Option key={olympiad.olympiadId} value={olympiad.olympiadId}>
-                    <div>
-                      <strong>{`${olympiad.subject} - Class ${olympiad.classNumber} (${olympiad.round})`}</strong>
-                      <p>{`Location: ${olympiad.location}`}</p>
-                      <p>{`Date: ${formatDateToLocal(
-                        olympiad.dateOfOlympiad
-                      )}`}</p>
-                      <p>{`Start Time: ${formatTimeToLocal(
-                        olympiad.startTime
-                      )}`}</p>
-                    </div>
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                disabled={!selectedOlympiadId}
-              >
-                Submit Enrollment
-              </Button>
-            </Form.Item>
-          </Form>
-        </>
-      ) : (
-        <Card
-          style={{
-            backgroundColor: "white",
-            padding: "20px",
-            borderRadius: "8px",
-          }}
-        >
-          <Text style={{ fontSize: "16px", fontWeight: "600", color: "#888" }}>
-            You need to log in to enroll in an Olympiad.
-          </Text>
-        </Card>
-      )}
-    </div>
+          </Card>
+        )}
+      </div>
+    </>
   );
 };
 

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { UserSession } from "../types/Session";
 import "./ui/MyProfile.css";
+import LoadingPage from "./LoadingPage";
 
 const { Title, Text } = Typography;
 
@@ -87,6 +88,7 @@ const MyProfile: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log("Enrolled Olympiads:", data);
 
         // Filter by academic year (hardcoded to 2 for now) and status "pending"
         const filteredOlympiads = data
@@ -99,17 +101,38 @@ const MyProfile: React.FC = () => {
             (a: any, b: any) =>
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           )
-          .slice(0, 3)
-          .map((enrollment: any) => ({
-            name: enrollment.olympiad.subject,
-            status: enrollment.enrollmentStatus,
-            academicYear: enrollment.academicYearId,
-            dateOfOlympiad: enrollment.olympiad.dateOfOlympiad,
-            round: enrollment.olympiad.round,
-            location: enrollment.olympiad.location,
-            startTime: enrollment.olympiad.startTime || "N/A",
-          }));
-        console.log(filteredOlympiads);
+          .slice(0, 3)    // top 3 for now (TO DO: add a button to see all)
+          .map((enrollment: { enrollmentStatus: string; academicYearId: number; olympiad: { subject: string; dateOfOlympiad: string; round: string; location: string; startTime?: string; }; createdAt: string; }) => {
+            const dateObj = new Date(enrollment.olympiad.dateOfOlympiad);
+            const rawTime = enrollment.olympiad.startTime;
+            let formattedTime = "N/A";
+          
+            if (rawTime) {
+              const timeObj = new Date(rawTime);
+              if (!isNaN(timeObj.getTime())) {
+                formattedTime = timeObj.toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                });
+              }
+            }
+          
+            return {
+              name: enrollment.olympiad.subject,
+              status: enrollment.enrollmentStatus,
+              academicYear: enrollment.academicYearId,
+              dateOfOlympiad: dateObj.toLocaleDateString("en-US", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              }),
+              round: enrollment.olympiad.round,
+              location: enrollment.olympiad.location,
+              startTime: formattedTime,
+            };
+          });
 
         setEnrolledOlympiads(filteredOlympiads);
       } else {
@@ -139,106 +162,109 @@ const MyProfile: React.FC = () => {
     initializeSession();
   }, [validateSession]);
 
-  if (loading) {
-    return <p>Loading profile...</p>;
-  }
-
   return (
-    <div className="container">
-      <div className="left-section">
-        <Card className="profile-card">
-          <Title level={2} style={{ color: "var(--text-color)" }}>
-            My Profile
-          </Title>
-          <Text className="profile-card-text">
-            <strong>Name:</strong> {session?.full_name || "N/A"}
-          </Text>
-          <br />
-          <Text className="profile-card-text">
-            <strong>Email:</strong> {session?.email}
-          </Text>
-          <br />
-          <Text className="profile-card-text">
-            <strong>Role:</strong> {role || "Loading role..."}
-          </Text>
-        </Card>
-        <Card className="account-card">
-          <Title level={2} style={{ color: "var(--text-color)" }}>
-            Account Management
-          </Title>
-          <motion.div whileHover={{ scale: 1.05 }}>
-            <Button
-              className="button"
-              onClick={() => navigate("/request-password-change")}
-            >
-              Change Password
-            </Button>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.05 }}>
-            <Button className="button" onClick={() => navigate("/update-info")}>
-              Update Profile
-            </Button>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.05 }}>
-            <Button className="logout-button" danger onClick={handleLogout}>
-              Logout
-            </Button>
-          </motion.div>
-        </Card>
-      </div>
+    <>
+      {loading && <LoadingPage />}
 
-      <div className="right-section">
-        <Title level={2} style={{ color: "var(--text-color)" }}>
-          Olympiad Progress
-        </Title>
-        <Text className="ranking-text">
-          Ranking: #{ranking} out of {totalStudents}
-        </Text>
-        <Progress
-          percent={progressPercentage}
-          status="active"
-          className="progress-bar"
-        />
-        <Title
-          level={5}
-          style={{ marginTop: "16px", color: "var(--text-color)" }}
-        >
-          Enrolled Olympiads:
-        </Title>
-        {enrolledOlympiads.length > 0 ? (
-          <ul className="olympiads-list">
-            {enrolledOlympiads.map((olympiad, index) => (
-              <li key={index} className="olympiad-item">
-                <strong>{olympiad.name}</strong> - {olympiad.status} <br />
-                <Text style={{ color: "var(--text-color)" }}>
-                  <strong>Academic Year:</strong> {olympiad.academicYear}
-                </Text>
-                <br />
-                <Text style={{ color: "var(--text-color)" }}>
-                  <strong>Date:</strong> {olympiad.dateOfOlympiad}
-                </Text>
-                <br />
-                <Text style={{ color: "var(--text-color)" }}>
-                  <strong>Round:</strong> {olympiad.round}
-                </Text>
-                <br />
-                <Text style={{ color: "var(--text-color)" }}>
-                  <strong>Location:</strong> {olympiad.location}
-                </Text>
-                <br />
-                <Text style={{ color: "var(--text-color)" }}>
-                  <strong>Start Time:</strong> {olympiad.startTime}
-                </Text>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <Text style={{ color: "var(--text-color)" }}>
-            No recent pending enrollments.
+      <div className="container">
+        <div className="left-section">
+          <Card className="profile-card">
+            <Title level={2} style={{ color: "var(--text-color)" }}>
+              My Profile
+            </Title>
+            <Text className="profile-card-text">
+              <strong>Name:</strong> {session?.full_name || "N/A"}
+            </Text>
+            <br />
+            <Text className="profile-card-text">
+              <strong>Email:</strong> {session?.email}
+            </Text>
+            <br />
+            <Text className="profile-card-text">
+              <strong>Role:</strong> {role || "Loading role..."}
+            </Text>
+          </Card>
+          <Card className="account-card">
+            <Title level={2} style={{ color: "var(--text-color)" }}>
+              Account Management
+            </Title>
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <Button
+                className="button"
+                onClick={() => navigate("/request-password-change")}
+              >
+                Change Password
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <Button
+                className="button"
+                onClick={() => navigate("/update-info")}
+              >
+                Update Profile
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <Button className="logout-button" danger onClick={handleLogout}>
+                Logout
+              </Button>
+            </motion.div>
+          </Card>
+        </div>
+
+        <div className="right-section">
+          <Title level={2} style={{ color: "var(--text-color)" }}>
+            Olympiad Progress
+          </Title>
+          <Text className="ranking-text">
+            Ranking: #{ranking} out of {totalStudents}
           </Text>
-        )}
+          <Progress
+            percent={progressPercentage}
+            status="active"
+            className="progress-bar"
+          />
+          <Title
+            level={5}
+            style={{ marginTop: "16px", color: "var(--text-color)" }}
+          >
+            Enrolled Olympiads:
+          </Title>
+          {enrolledOlympiads.length > 0 ? (
+            <ul className="olympiads-list">
+              {enrolledOlympiads.map((olympiad, index) => (
+                <li key={index} className="olympiad-item">
+                  <strong>{olympiad.name}</strong> - {olympiad.status} <br />
+                  <Text style={{ color: "var(--text-color)" }}>
+                    <strong>Academic Year:</strong> {olympiad.academicYear}
+                  </Text>
+                  <br />
+                  <Text style={{ color: "var(--text-color)" }}>
+                    <strong>Date:</strong> {olympiad.dateOfOlympiad}
+                  </Text>
+                  <br />
+                  <Text style={{ color: "var(--text-color)" }}>
+                    <strong>Round:</strong> {olympiad.round}
+                  </Text>
+                  <br />
+                  <Text style={{ color: "var(--text-color)" }}>
+                    <strong>Location:</strong> {olympiad.location}
+                  </Text>
+                  <br />
+                  <Text style={{ color: "var(--text-color)" }}>
+                    <strong>Start Time:</strong> {olympiad.startTime}
+                  </Text>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Text style={{ color: "var(--text-color)" }}>
+              No recent pending enrollments.
+            </Text>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

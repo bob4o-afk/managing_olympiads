@@ -45,6 +45,18 @@ namespace OlympiadApi.Services
             _userRepository.UpdateUser(user);
         }
 
+        public void UpdateUserNameAndEmail(int id, string name, string email)
+        {
+            var user = _userRepository.GetUserById(id);
+            if (user == null)
+                throw new Exception("User not found.");
+
+            user.Name = name;
+            user.Email = email;
+
+            _userRepository.UpdateUser(user);
+        }
+
         public void DeleteUser(int id)
         {
             _userRepository.DeleteUser(id);

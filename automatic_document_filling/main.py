@@ -9,7 +9,9 @@ from reportlab.pdfbase import pdfmetrics
 from io import BytesIO
 import os
 import datetime
+from dotenv import load_dotenv
 
+load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
@@ -123,6 +125,10 @@ def fill_pdf():
     except FileNotFoundError as e:
         return jsonify({"error": f"File not found: {e}"}), 404
     except Exception as e:
+        import traceback
+        traceback.print_exc()
+
+
         return jsonify({"error": str(e)}), 500
 
 def send_document(email, file_path):
