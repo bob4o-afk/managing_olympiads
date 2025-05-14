@@ -1,35 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { Form, Input, Button, Typography, notification, Card } from "antd";
 import "./ui/UpdateInfo.css";
-import { notification } from "antd";
 import LoadingPage from "./LoadingPage";
+import { LanguageContext } from "../contexts/LanguageContext";
+
+const { Title } = Typography;
 
 const UpdateInfo: React.FC = () => {
-  const [fullName, setFullName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
+  const { locale } = useContext(LanguageContext);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [error, setError] = useState<string | null>(null);
+  const [form] = Form.useForm();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userSession");
-    setFullName("");
-    setEmail("");
     navigate("/login");
   };
 
-  const handleUpdateInfo = async (e: React.FormEvent): Promise<void> => {
+  const handleUpdateInfo = async (values: { name: string; email: string }) => {
     setIsLoading(true);
-    e.preventDefault();
-
     const token = localStorage.getItem("authToken");
     const userSession = JSON.parse(localStorage.getItem("userSession") || "{}");
     const userId = userSession?.userId;
 
     if (!token || !userId) {
       setError("User not authenticated.");
+      setIsLoading(false);
       return;
     }
 
@@ -43,8 +42,8 @@ const UpdateInfo: React.FC = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            name: fullName,
-            email: email,
+            name: values.name,
+            email: values.email,
           }),
         }
       );
@@ -68,34 +67,90 @@ const UpdateInfo: React.FC = () => {
     }
   };
 
+  const validateFullName = (_: any, value: string) => {
+    if (!value) return Promise.resolve();
+    const parts = value.trim().split(/\s+/);
+    if (parts.length !== 3) {
+      return Promise.reject(
+        locale.startsWith("bg")
+          ? "Моля, въведете три имена."
+          : "Please enter your full name (first, middle, and last)."
+      );
+    }
+    return Promise.resolve();
+  };
+
   return (
     <>
       {isLoading && <LoadingPage />}
-
       <div className="update-info-container">
-        <h2>Update Profile Information</h2>
-        <form onSubmit={handleUpdateInfo}>
-          <div className="form-group">
-            <label>Full name</label>
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <button type="submit">Update Information</button>
-        </form>
-        {error && <p className="error-message">{error}</p>}
+        <Card className="profile-card">
+          <Title level={3} className="update-info-title">
+            {locale.startsWith("bg")
+              ? "Актуализиране на профилна информация"
+              : "Update Profile Information"}
+          </Title>
+
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleUpdateInfo}
+            requiredMark={false}
+          >
+            <Form.Item
+              label={locale.startsWith("bg") ? "Три имена" : "Full name"}
+              name="name"
+              rules={[
+                {
+                  required: true,
+                  message: locale.startsWith("bg")
+                    ? "Моля, въведете три имена."
+                    : "Please enter your full name",
+                },
+                { validator: validateFullName },
+              ]}
+            >
+              <Input className="ant-input" />
+            </Form.Item>
+
+            <Form.Item
+              label={locale.startsWith("bg") ? "Имейл" : "Email"}
+              name="email"
+              rules={[
+                {
+                  required: true,
+                  message: locale.startsWith("bg")
+                    ? "Моля, въведете имейл."
+                    : "Please enter your email",
+                },
+                {
+                  type: "email",
+                  message: locale.startsWith("bg")
+                    ? "Моля, въведете валиден имейл."
+                    : "Enter a valid email",
+                },
+              ]}
+            >
+              <Input className="ant-input" />
+            </Form.Item>
+
+            <Form.Item>
+              <Button htmlType="submit" className="ant-btn-primary">
+                {locale.startsWith("bg")
+                  ? "Актуализирай информацията"
+                  : "Update Information"}
+              </Button>
+
+              <Button htmlType="button" className="ant-btn-back" onClick={() => navigate(-1)}>
+                {locale.startsWith("bg")
+                  ? "Връщане назад"
+                  : "Go back"}
+              </Button>
+            </Form.Item>
+
+            {error && <p className="error-message">{error}</p>}
+          </Form>
+        </Card>
       </div>
     </>
   );

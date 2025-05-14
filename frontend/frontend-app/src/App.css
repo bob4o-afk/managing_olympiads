@@ -2,6 +2,7 @@
 .light-theme {
   --background-color: #ffffff;
   --text-color: #000000;
+  --text-color-inverse: #ffffff;
   --card-background-color: #f0f2f5;
   --button-background-color: #1890ff;
   --button-text-color: #ffffff;
@@ -18,6 +19,7 @@
 .dark-theme {
   --background-color: #0a0d1d;
   --text-color: #ffffff;
+  --text-color-inverse: #000000;
   --card-background-color: #1f1e1e;
   --button-background-color: #4a90e2;
   --button-text-color: #ffffff;
@@ -99,10 +101,34 @@ body {
   background-color: var(--header-background-color);
 }
 
+.sidebar-menu {
+  height: 88vh;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  font-size: 1rem;
+  position: relative;
+}
+
+.sidebar-bottom-buttons {
+  position: absolute;
+  flex-direction: column;
+  bottom: 30px;
+  left: 15px;
+  display: flex;
+  gap: 15px;
+}
+
+.toggle {
+  margin-left: 15px;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }

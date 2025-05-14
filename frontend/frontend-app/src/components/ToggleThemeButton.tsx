@@ -1,5 +1,6 @@
-import React from "react";
-import { Button } from "antd";
+import React, { useContext } from "react";
+import { LanguageContext } from "../contexts/LanguageContext";
+import { Button, Tooltip } from "antd";
 import { HiOutlineSun, HiOutlineMoon } from "react-icons/hi";
 
 interface ToggleThemeButtonProps {
@@ -7,21 +8,29 @@ interface ToggleThemeButtonProps {
   toggleTheme: () => void;
 }
 
-const ToggleThemeButton: React.FC<ToggleThemeButtonProps> = ({ darkTheme, toggleTheme }) => {
+const ToggleThemeButton: React.FC<ToggleThemeButtonProps> = ({
+  darkTheme,
+  toggleTheme,
+}) => {
+  const { locale } = useContext(LanguageContext);
+  const isBG = locale.startsWith("bg");
   return (
     <div className="toggle-theme-btn">
-      <Button
-        onClick={toggleTheme}
-        style={{
-          backgroundColor: 'var(--navigation-button-color)',
-          color: '#000000',
-          border: 'none',
-          padding: '8px 16px',
-          borderRadius: '4px',
-        }}
-      >
-        {darkTheme ? <HiOutlineSun /> : <HiOutlineMoon />}
-      </Button>
+      <Tooltip title={isBG ? "Смени темата" : "Switch Theme"}>
+        <Button
+          onClick={toggleTheme}
+          style={{
+            backgroundColor: "var(--navigation-button-color)",
+            color: "#000000",
+            border: "none",
+            padding: "8px 16px",
+            borderRadius: "4px",
+            width: "50px",
+          }}
+        >
+          {darkTheme ? <HiOutlineSun /> : <HiOutlineMoon />}
+        </Button>
+      </Tooltip>
     </div>
   );
 };

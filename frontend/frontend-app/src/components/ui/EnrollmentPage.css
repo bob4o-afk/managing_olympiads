@@ -1,24 +1,23 @@
 .enrollment-page {
-    max-width: 600px;
-    margin: auto;
-    padding: 20px;
-    background-color: var(--card-background-color);
-    border-radius: 8px;
-  }
-  
-  .enrollment-form {
-    background: var(--navigation-button-color);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .enrollment-form .ant-form-item {
-    margin-bottom: 16px;
-  }
-  
-  .enrollment-page .ant-btn {
-    width: 100%;
-    background-color: var(--button-background-color);
-  }
-  
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: var(--card-background-color);
+  border-radius: 8px;
+}
+
+.enrollment-form {
+  background: var(--navigation-button-color);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.enrollment-form .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.enrollment-page .ant-btn {
+  width: 100%;
+  background-color: var(--button-background-color);
+}

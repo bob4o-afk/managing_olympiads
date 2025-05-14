@@ -1,10 +1,11 @@
-import React, { useState, useEffect, FormEvent } from "react";
+import React, { useState, useEffect, FormEvent, useContext } from "react";
 import { Button, Form, Select, Typography, notification, Card } from "antd";
 import "./ui/EnrollmentPage.css";
 
 import { Olympiad } from "../types/OlympiadTypes";
 import { AcademicYear } from "../types/AcademicYearTypes";
 import LoadingPage from "../components/LoadingPage";
+import { LanguageContext } from "../contexts/LanguageContext";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -19,6 +20,8 @@ const EnrollmentPage: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
   const [selectedRound, setSelectedRound] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { locale } = useContext(LanguageContext);
+  const isBG = locale.startsWith("bg");
 
   useEffect(() => {
     setIsLoading(true);
@@ -96,9 +99,9 @@ const EnrollmentPage: React.FC = () => {
     setSelectedOlympiadId("");
   };
 
-  const formatDateToLocal = (utcDate: string) => {
+  const formatDateToLocal = (utcDate: string, locale: string) => {
     const date = new Date(utcDate);
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleDateString(locale, {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -134,30 +137,39 @@ const EnrollmentPage: React.FC = () => {
   };
 
   const sendEnrollmentEmail = async (emailData: any) => {
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/email/send`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(emailData),
-    });
+    const response = await fetch(
+      `${process.env.REACT_APP_API_URL}/api/email/send`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(emailData),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Error sending email: ${errorText}`);
     }
 
-    notification.success({ message: "Success", description: "Enrollment email successfully sent!" });
+    notification.success({
+      message: "Success",
+      description: "Enrollment email successfully sent!",
+    });
   };
 
   const enrollStudent = async (enrollmentData: any) => {
     const token = localStorage.getItem("authToken");
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/studentolympiadenrollment`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(enrollmentData),
-    });
+    const response = await fetch(
+      `${process.env.REACT_APP_API_URL}/api/studentolympiadenrollment`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(enrollmentData),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -168,7 +180,6 @@ const EnrollmentPage: React.FC = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    
 
     try {
       if (!email) {
@@ -228,7 +239,7 @@ const EnrollmentPage: React.FC = () => {
       const startTime = new Date(
         olympiadDetails.startTime
       ).toLocaleTimeString();
-    
+
       const emailData = {
         toEmail: email,
         subject: olympiadDetails.subject,
@@ -248,8 +259,11 @@ const EnrollmentPage: React.FC = () => {
 
       await sendEnrollmentEmail(emailData);
     } catch (error) {
-      const rawMessage = error instanceof Error ? error.message : "An unknown error occurred";
-      const errorMessage = rawMessage.split('\n')[0].replace("Enrollment failed: ", "");
+      const rawMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      const errorMessage = rawMessage
+        .split("\n")[0]
+        .replace("Enrollment failed: ", "");
       notification.error({ message: "Error", description: errorMessage });
     } finally {
       setIsLoading(false);
@@ -273,7 +287,7 @@ const EnrollmentPage: React.FC = () => {
 
       <div className="enrollment-page">
         <Title level={2} style={{ color: "var(--text-color)" }}>
-          Olympiad Enrollment
+          {isBG ? "Записване за олимпиада" : "Olympiad Enrollment"}
         </Title>
 
         {userId ? (
@@ -288,34 +302,48 @@ const EnrollmentPage: React.FC = () => {
                   color: "var(--text-color)",
                 }}
               >
-                Please select an Olympiad from the list below:
+                {isBG
+                  ? "Моля, изберете олимпиада от списъка по-долу:"
+                  : "Please select an Olympiad from the list below:"}
               </Text>
             </div>
-            <Form onSubmitCapture={handleSubmit} className="enrollment-form">
+            <Form
+              onSubmitCapture={handleSubmit}
+              layout="vertical"
+              className="enrollment-form"
+            >
               <Form.Item
-                label={<span style={{ color: "black" }}>Filter by Class</span>}
+                label={
+                  <span style={{ color: "black" }}>
+                    {isBG ? "Филтрирай по клас" : "Filter by Class"}
+                  </span>
+                }
                 colon={false}
               >
                 <Select
                   onChange={handleClassChange}
-                  placeholder="Select a class"
+                  placeholder={isBG ? "Избери клас" : "Select a class"}
                   allowClear
                 >
                   {sortedClasses.map((classNumber) => (
                     <Option key={classNumber} value={classNumber}>
-                      Class {classNumber}
+                      {isBG ? `${classNumber}. Клас` : `Class ${classNumber}`}
                     </Option>
                   ))}
                 </Select>
               </Form.Item>
 
               <Form.Item
-                label={<span style={{ color: "black" }}>Filter by Round</span>}
+                label={
+                  <span style={{ color: "black" }}>
+                    {isBG ? "Филтрирай по кръг" : "Filter by Round"}
+                  </span>
+                }
                 colon={false}
               >
                 <Select
                   onChange={handleRoundChange}
-                  placeholder="Select a round"
+                  placeholder={isBG ? "Избери кръг" : "Select a round"}
                   allowClear
                   style={{ width: "100%" }}
                 >
@@ -323,21 +351,30 @@ const EnrollmentPage: React.FC = () => {
                     new Set(olympiads.map((olympiad) => olympiad.round))
                   ).map((round) => (
                     <Option key={round} value={round}>
-                      {round}
+                      {isBG
+                        ? round === "Regional Ring"
+                          ? "Регионален"
+                          : round === "National Ring"
+                          ? "Национален"
+                          : round === "District Ring"
+                          ? "Областен"
+                          : round
+                        : round.charAt(0).toUpperCase() + round.slice(1)}
                     </Option>
                   ))}
                 </Select>
               </Form.Item>
               <Form.Item
                 label={
-                  <span style={{ color: "black" }}>Select an Olympiad</span>
+                  <span style={{ color: "black" }}>
+                    {isBG ? "Избери олимпиада" : "Select an Olympiad"}
+                  </span>
                 }
                 colon={false}
               >
                 <Select
                   value={selectedOlympiadId}
                   onChange={handleSelectChange}
-                  placeholder="Select an Olympiad"
                   style={{ width: "100%", height: "100%" }}
                 >
                   {filteredOlympiads.map((olympiad) => (
@@ -346,14 +383,23 @@ const EnrollmentPage: React.FC = () => {
                       value={olympiad.olympiadId}
                     >
                       <div>
-                        <strong>{`${olympiad.subject} - Class ${olympiad.classNumber} (${olympiad.round})`}</strong>
-                        <p>{`Location: ${olympiad.location}`}</p>
-                        <p>{`Date: ${formatDateToLocal(
-                          olympiad.dateOfOlympiad
+                        <strong>
+                          {`${olympiad.subject} - ${
+                            isBG
+                              ? `${olympiad.classNumber}. Клас`
+                              : `Class ${olympiad.classNumber}:`
+                          } (${olympiad.round})`}
+                        </strong>
+                        <p>{`${isBG ? "Място" : "Location"}: ${
+                          olympiad.location
+                        }`}</p>
+                        <p>{`${isBG ? "Дата" : "Date"}: ${formatDateToLocal(
+                          olympiad.dateOfOlympiad,
+                          isBG ? "bg-BG" : "en-US"
                         )}`}</p>
-                        <p>{`Start Time: ${formatTimeToLocal(
-                          olympiad.startTime
-                        )}`}</p>
+                        <p>{`${
+                          isBG ? "Начален час" : "Start Time"
+                        }: ${formatTimeToLocal(olympiad.startTime)}`}</p>
                       </div>
                     </Option>
                   ))}
@@ -365,7 +411,7 @@ const EnrollmentPage: React.FC = () => {
                   htmlType="submit"
                   disabled={!selectedOlympiadId}
                 >
-                  Submit Enrollment
+                  {isBG ? "Запиши се" : "Submit Enrollment"}
                 </Button>
               </Form.Item>
             </Form>
@@ -379,9 +425,16 @@ const EnrollmentPage: React.FC = () => {
             }}
           >
             <Text
-              style={{ fontSize: "16px", fontWeight: "600", color: "#888" }}
+              style={{
+                fontSize: "16px",
+                fontWeight: "600",
+                color: "#888",
+                textAlign: "center",
+              }}
             >
-              You need to log in to enroll in an Olympiad.
+              {isBG
+                ? "Трябва да влезете в своя профил, за да се запишете за олимпиада."
+                : "You need to log in to enroll in an Olympiad."}
             </Text>
           </Card>
         )}

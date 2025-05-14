@@ -6,6 +6,7 @@ import "./App.css";
 
 import Sidebar from "./components/Sidebar";
 import ToggleThemeButton from "./components/ToggleThemeButton";
+import ToggleLanguageButton from "./components/ToggleLanguageButton";
 import HomePage from "./components/HomePage";
 import PDFViewer from "./components/PDFViewer";
 import CVTemplate from "./components/CVTemplate";
@@ -89,11 +90,19 @@ function App() {
             left: 0,
             top: 0,
             zIndex: 1000,
-            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
-          <Sidebar darkTheme={darkTheme} onSelect={handleMenuSelect} />
+          <div style={{ flexGrow: 1, overflowY: "auto" }}>
+            <Sidebar darkTheme={darkTheme} onSelect={handleMenuSelect} />
+          </div>
+
+          <div className="sidebar-bottom-buttons">
+            <ToggleLanguageButton />
+          
           <ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} />
+          </div>
         </Sider>
       )}
 
@@ -137,17 +146,30 @@ function App() {
             className="drawer"
             width="60vw"
           >
-            <Sidebar
-              darkTheme={darkTheme}
-              onSelect={handleMenuSelect}
-              isMobile={isMobile}
-              closeDrawer={() => setDrawerVisible(false)}
-            />
-            <div>
-              <ToggleThemeButton
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+              }}
+            >
+              <Sidebar
                 darkTheme={darkTheme}
-                toggleTheme={toggleTheme}
+                onSelect={handleMenuSelect}
+                isMobile={isMobile}
+                closeDrawer={() => setDrawerVisible(false)}
               />
+
+              <div
+                style={{ marginTop: "auto" }}
+                className="sidebar-bottom-buttons"
+              >
+                <ToggleLanguageButton />
+                <ToggleThemeButton
+                  darkTheme={darkTheme}
+                  toggleTheme={toggleTheme}
+                />
+              </div>
             </div>
           </Drawer>
         )}
