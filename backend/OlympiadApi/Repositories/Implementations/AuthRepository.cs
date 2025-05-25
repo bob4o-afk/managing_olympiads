@@ -3,7 +3,7 @@ using OlympiadApi.Models;
 using Microsoft.EntityFrameworkCore;
 using OlympiadApi.DTOs;
 
-namespace OlympiadApi.Repositories
+namespace OlympiadApi.Repositories.Interfaces
 {
     public class AuthRepository : IAuthRepository
     {

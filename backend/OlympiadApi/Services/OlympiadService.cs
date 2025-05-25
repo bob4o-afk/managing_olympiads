@@ -1,9 +1,10 @@
 using OlympiadApi.Models;
 using OlympiadApi.Repositories.Interfaces;
+using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Services
 {
-    public class OlympiadService
+    public class OlympiadService : IOlympiadService
     {
         private readonly IOlympiadRepository _repository;
 
@@ -25,7 +26,6 @@ namespace OlympiadApi.Services
 
             _repository.AddOlympiad(olympiad);
         }
-
 
         public IEnumerable<Olympiad> GetAllOlympiads()
         {

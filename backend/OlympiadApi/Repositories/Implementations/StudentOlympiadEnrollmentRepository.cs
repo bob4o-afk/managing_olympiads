@@ -31,8 +31,7 @@ namespace OlympiadApi.Repositories.Implementations
                 .Include(e => e.AcademicYear)
                 .FirstOrDefaultAsync(e => e.EnrollmentId == id);
         }
-
-
+        
         public async Task<List<StudentOlympiadEnrollment>> GetEnrollmentsByUserIdAsync(int userId)
         {
             return await _context.StudentOlympiadEnrollment
@@ -41,7 +40,6 @@ namespace OlympiadApi.Repositories.Implementations
                 .Include(e => e.AcademicYear)
                 .Where(e => e.UserId == userId)
                 .ToListAsync();
-
         }
 
         public async Task<StudentOlympiadEnrollment> CreateEnrollmentAsync(StudentOlympiadEnrollment enrollment)

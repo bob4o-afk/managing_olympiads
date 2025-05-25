@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using OlympiadApi.Services;
+using OlympiadApi.Services.Interfaces;
 using OlympiadApi.Models;
 using OlympiadApi.Filters;
 
@@ -9,9 +9,9 @@ namespace OlympiadApi.Controllers
     [Route("api/[controller]")]
     public class OlympiadController : ControllerBase
     {
-        private readonly OlympiadService _olympiadService;
+        private readonly IOlympiadService _olympiadService;
 
-        public OlympiadController(OlympiadService olympiadService)
+        public OlympiadController(IOlympiadService olympiadService)
         {
             _olympiadService = olympiadService;
         }

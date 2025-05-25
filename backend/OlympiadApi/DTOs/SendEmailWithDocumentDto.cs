@@ -1,4 +1,3 @@
-
 namespace OlympiadApi.DTOs
 {
     public class SendEmailWithDocumentDto

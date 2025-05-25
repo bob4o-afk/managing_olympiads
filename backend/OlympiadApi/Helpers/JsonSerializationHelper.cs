@@ -1,8 +1,8 @@
 using System.Text.Json;
 
-namespace OlympiadApi.Helpers;
-
-public static class JsonSerializationHelper
+namespace OlympiadApi.Helpers
+{
+    public static class JsonSerializationHelper
     {
         public static string? SerializeToJson(Dictionary<string, object>? dictionary)
         {
@@ -14,3 +14,4 @@ public static class JsonSerializationHelper
             return json == null ? null : JsonSerializer.Deserialize<Dictionary<string, object>>(json);
         }
     }
+}

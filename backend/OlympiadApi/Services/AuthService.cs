@@ -1,19 +1,19 @@
 using OlympiadApi.DTOs;
 using OlympiadApi.Helpers;
-using OlympiadApi.Repositories;
 using OlympiadApi.Repositories.Interfaces;
+using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Services
 {
-    public class AuthService
+    public class AuthService : IAuthService
     {
         private readonly IAuthRepository _authRepository;
-        private readonly JwtHelper _jwtHelper;
+        private readonly IJwtHelper _jwtHelper;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly IUserRepository _userRepository;
 
-        public AuthService(IAuthRepository authRepository, JwtHelper jwtHelper, IEmailService emailService, IConfiguration configuration, IUserRepository userRepository)
+        public AuthService(IAuthRepository authRepository, IJwtHelper jwtHelper, IEmailService emailService, IConfiguration configuration, IUserRepository userRepository)
         {
             _authRepository = authRepository;
             _jwtHelper = jwtHelper;

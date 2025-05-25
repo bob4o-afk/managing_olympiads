@@ -16,7 +16,7 @@ namespace OlympiadApi.Repositories.Implementations
 
         public void AddOlympiad(Olympiad olympiad)
         {
-            if (olympiad == null) 
+            if (olympiad == null)
                 throw new ArgumentNullException(nameof(olympiad));
 
             if (string.IsNullOrEmpty(olympiad.Subject))
@@ -29,7 +29,6 @@ namespace OlympiadApi.Repositories.Implementations
             _context.SaveChanges();
         }
 
-
         public IEnumerable<Olympiad> GetAllOlympiads()
         {
             return _context.Olympiads?.Include(o => o.AcademicYear).ToList() ?? new List<Olympiad>();
@@ -37,9 +36,8 @@ namespace OlympiadApi.Repositories.Implementations
 
         public Olympiad GetOlympiadById(int id)
         {
-            var olympiad = _context.Olympiads?.Include(o => o.AcademicYear)
-                                             .FirstOrDefault(o => o.OlympiadId == id);
-            
+            var olympiad = _context.Olympiads?.Include(o => o.AcademicYear).FirstOrDefault(o => o.OlympiadId == id);
+
             if (olympiad == null)
                 throw new KeyNotFoundException($"Olympiad with ID {id} not found.");
 

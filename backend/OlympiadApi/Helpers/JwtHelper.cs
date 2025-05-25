@@ -3,19 +3,17 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using OlympiadApi.Models;
-using OlympiadApi.Services;
+using OlympiadApi.Services.Interfaces;
 using Newtonsoft.Json;
-using OlympiadApi.DTOs;
-
 
 namespace OlympiadApi.Helpers
 {
-    public class JwtHelper
+    public class JwtHelper : IJwtHelper
     {
         private readonly IConfiguration _configuration;
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
 
-        public JwtHelper(IConfiguration configuration, UserService userService)
+        public JwtHelper(IConfiguration configuration, IUserService userService)
         {
             _configuration = configuration;
             _userService = userService;
@@ -110,15 +108,17 @@ namespace OlympiadApi.Helpers
             return BCrypt.Net.BCrypt.Verify(password, user.Password);
         }
 
-        public IEnumerable<Claim>? GetClaimsFromJwt(string token)
+        public IEnumerable<Claim>? GetClaimsFromJwt(string? token)
         {
+            if (string.IsNullOrWhiteSpace(token))
+                return null;
+
             var handler = new JwtSecurityTokenHandler();
             if (!handler.CanReadToken(token))
                 return null;
 
             var jwtToken = handler.ReadJwtToken(token);
-            return jwtToken?.Claims;
+            return jwtToken.Claims;
         }
-
     }
 }

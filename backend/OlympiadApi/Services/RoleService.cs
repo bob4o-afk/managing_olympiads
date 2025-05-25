@@ -1,9 +1,10 @@
 using OlympiadApi.Models;
 using OlympiadApi.Repositories.Interfaces;
+using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Services
 {
-    public class RoleService
+    public class RoleService : IRoleService
     {
         private readonly IRoleRepository _roleRepository;
 

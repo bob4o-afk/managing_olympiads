@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Filters;
 using OlympiadApi.Models;
-using OlympiadApi.Services;
+using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Controllers
 {
@@ -9,9 +9,9 @@ namespace OlympiadApi.Controllers
     [ApiController]
     public class UserRoleAssignmentController : ControllerBase
     {
-        private readonly UserRoleAssignmentService _service;
+        private readonly IUserRoleAssignmentService _service;
 
-        public UserRoleAssignmentController(UserRoleAssignmentService service)
+        public UserRoleAssignmentController(IUserRoleAssignmentService service)
         {
             _service = service;
         }

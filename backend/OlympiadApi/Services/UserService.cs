@@ -1,10 +1,11 @@
 using OlympiadApi.DTOs;
 using OlympiadApi.Models;
 using OlympiadApi.Repositories.Interfaces;
+using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
 

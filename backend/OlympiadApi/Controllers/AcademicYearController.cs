@@ -1,4 +1,4 @@
-using OlympiadApi.Services;
+using OlympiadApi.Services.Interfaces;
 using OlympiadApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Filters;
@@ -9,9 +9,9 @@ namespace OlympiadApi.Controllers
     [Route("api/[controller]")]
     public class AcademicYearController : ControllerBase
     {
-        private readonly AcademicYearService _academicYearService;
+        private readonly IAcademicYearService _academicYearService;
 
-        public AcademicYearController(AcademicYearService academicYearService)
+        public AcademicYearController(IAcademicYearService academicYearService)
         {
             _academicYearService = academicYearService;
         }

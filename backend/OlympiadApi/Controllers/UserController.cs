@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Models;
-using OlympiadApi.Services;
-using OlympiadApi.Helpers;
+using OlympiadApi.Services.Interfaces;
 using OlympiadApi.Filters;
 using OlympiadApi.DTOs;
 
@@ -11,9 +10,9 @@ namespace OlympiadApi.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
 
-        public UserController(UserService userService, JwtHelper jwtHelper)
+        public UserController(IUserService userService)
         {
             _userService = userService;
         }

@@ -1,9 +1,10 @@
 using OlympiadApi.Repositories.Interfaces;
+using OlympiadApi.Services.Interfaces;
 using OlympiadApi.Models;
 
 namespace OlympiadApi.Services
 {
-    public class AcademicYearService
+    public class AcademicYearService : IAcademicYearService
     {
         private readonly IAcademicYearRepository _academicYearRepository;
 

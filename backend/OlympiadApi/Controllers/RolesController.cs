@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Filters;
 using OlympiadApi.Models;
-using OlympiadApi.Services;
+using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Controllers
 {
@@ -9,10 +9,10 @@ namespace OlympiadApi.Controllers
     [Route("api/[controller]")]
     public class RoleController : ControllerBase
     {
-        private readonly RoleService _roleService;
+        private readonly IRoleService _roleService;
 
         // Inject the RoleService via constructor
-        public RoleController(RoleService roleService)
+        public RoleController(IRoleService roleService)
         {
             _roleService = roleService;
         }

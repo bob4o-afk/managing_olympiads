@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using OlympiadApi.Services;
+using OlympiadApi.Services.Interfaces;
 using OlympiadApi.DTOs;
 
 namespace OlympiadApi.Controllers
@@ -8,9 +8,9 @@ namespace OlympiadApi.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
 
-        public AuthController(AuthService authService)
+        public AuthController(IAuthService authService)
         {
             _authService = authService;
         }

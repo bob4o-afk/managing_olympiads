@@ -1,4 +1,7 @@
-public class PasswordChangeRequestDto
+namespace OlympiadApi.DTOs
 {
-    public required string UsernameOrEmail { get; set; }
+    public class PasswordChangeRequestDto
+    {
+        public required string UsernameOrEmail { get; set; }
+    }
 }

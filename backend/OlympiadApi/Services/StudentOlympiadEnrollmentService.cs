@@ -1,9 +1,10 @@
 using OlympiadApi.Models;
 using OlympiadApi.Repositories.Interfaces;
+using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Services
 {
-    public class StudentOlympiadEnrollmentService
+    public class StudentOlympiadEnrollmentService : IStudentOlympiadEnrollmentService
     {
         private readonly IStudentOlympiadEnrollmentRepository _repository;
 
@@ -27,8 +28,7 @@ namespace OlympiadApi.Services
             return await _repository.GetEnrollmentsByUserIdAsync(userId);
         }
 
-
-       public async Task<StudentOlympiadEnrollment> CreateEnrollmentAsync(StudentOlympiadEnrollment enrollment)
+        public async Task<StudentOlympiadEnrollment> CreateEnrollmentAsync(StudentOlympiadEnrollment enrollment)
         {
             if (enrollment == null)
                 throw new ArgumentNullException(nameof(enrollment));

@@ -7,7 +7,7 @@ namespace OlympiadApi.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // This makes the ID auto-incremented
-        public int OlympiadId  { get; set; }
+        public int OlympiadId { get; set; }
         public required string Subject { get; set; }
         public string? Description { get; set; }
         public required DateTime DateOfOlympiad { get; set; }
