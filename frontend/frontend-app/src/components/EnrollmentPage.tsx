@@ -4,6 +4,8 @@ import "./ui/EnrollmentPage.css";
 
 import { Olympiad } from "../types/OlympiadTypes";
 import { AcademicYear } from "../types/AcademicYearTypes";
+import { EnrollmentEmailData } from "../types/EmailTypes";
+import { StudentOlympiadEnrollmentData } from "../types/EnrollmentTypes";
 import LoadingPage from "../components/LoadingPage";
 import { LanguageContext } from "../contexts/LanguageContext";
 
@@ -110,7 +112,7 @@ const EnrollmentPage: React.FC = () => {
   };
 
   const formatTimeToLocal = (utcTime: string | null) => {
-    if (!utcTime) return "No time specified";
+    if (!utcTime) return isBG ? "Няма конкретен час" : "No specific time";
     const time = new Date(utcTime);
     return time.toLocaleTimeString("en-US", {
       hour: "2-digit",
@@ -136,7 +138,7 @@ const EnrollmentPage: React.FC = () => {
     return selectedAcademicYear ? selectedAcademicYear.academicYearId : null;
   };
 
-  const sendEnrollmentEmail = async (emailData: any) => {
+  const sendEnrollmentEmail = async (emailData: EnrollmentEmailData) => {
     const response = await fetch(
       `${process.env.REACT_APP_API_URL}/api/email/send`,
       {
@@ -157,7 +159,9 @@ const EnrollmentPage: React.FC = () => {
     });
   };
 
-  const enrollStudent = async (enrollmentData: any) => {
+  const enrollStudent = async (
+    enrollmentData: StudentOlympiadEnrollmentData
+  ) => {
     const token = localStorage.getItem("authToken");
     const response = await fetch(
       `${process.env.REACT_APP_API_URL}/api/studentolympiadenrollment`,
@@ -221,7 +225,16 @@ const EnrollmentPage: React.FC = () => {
         return;
       }
 
-      const enrollmentData = {
+      if (!userId) {
+        notification.error({
+          message: "Login Required",
+          description: "You must log in to enroll.",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      const enrollmentData: StudentOlympiadEnrollmentData = {
         userId: userId,
         olympiadId: olympiadDetails.olympiadId,
         academicYearId: academicYearId,
@@ -236,23 +249,31 @@ const EnrollmentPage: React.FC = () => {
         description: `You have successfully enrolled in the ${olympiadDetails.subject} Olympiad.`,
       });
 
-      const startTime = new Date(
-        olympiadDetails.startTime
-      ).toLocaleTimeString();
+      const startTime = formatTimeToLocal(olympiadDetails.startTime ?? null);
+      const dateString = new Date(
+        olympiadDetails.dateOfOlympiad
+      ).toLocaleDateString(isBG ? "bg-BG" : "en-US");
 
       const emailData = {
         toEmail: email,
-        subject: olympiadDetails.subject,
+        subject: isBG
+          ? `Записване за олимпиадата по ${olympiadDetails.subject}`
+          : `${olympiadDetails.subject} Olympiad Enrollment`,
         body: `
-        Dear Student, \n\n
-        You have successfully enrolled in the ${
-          olympiadDetails.subject
-        } Olympiad.\n\n
-        ${`Location: ${olympiadDetails.location}\n`}
-        ${`Date: ${new Date(
-          olympiadDetails.dateOfOlympiad
-        ).toLocaleDateString()}\n`}
-        ${`Start Time: ${startTime}\n`}
+          <p>${isBG ? "Уважаеми ученик," : "Dear Student,"}</p>
+          <p>
+            ${
+              isBG
+                ? `Вие успешно се записахте за олимпиадата по <strong>${olympiadDetails.subject}</strong>.`
+                : `You have successfully enrolled in the <strong>${olympiadDetails.subject}</strong> Olympiad.`
+            }
+          </p>
+          <p>
+            ${isBG ? "Място" : "Location"}: ${olympiadDetails.location}<br>
+            ${isBG ? "Дата" : "Date"}: ${dateString}<br>
+            ${isBG ? "Начален час" : "Start Time"}: ${startTime}
+          </p>
+          <p>${isBG ? "Поздрави" : "Best regards"},<br>Olympiad System</p>
         `,
         ccEmail: process.env.REACT_APP_EMAIL_CC,
       };
@@ -264,7 +285,12 @@ const EnrollmentPage: React.FC = () => {
       const errorMessage = rawMessage
         .split("\n")[0]
         .replace("Enrollment failed: ", "");
-      notification.error({ message: "Error", description: errorMessage });
+      notification.error({
+        message: isBG ? "Грешка" : "Error",
+        description: isBG
+          ? `Възникна грешка при записването: ${errorMessage}`
+          : `An error occurred during enrollment: ${errorMessage}`,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -286,7 +312,7 @@ const EnrollmentPage: React.FC = () => {
       {isLoading && <LoadingPage />}
 
       <div className="enrollment-page">
-        <Title level={2} style={{ color: "var(--text-color)" }}>
+        <Title level={2}>
           {isBG ? "Записване за олимпиада" : "Olympiad Enrollment"}
         </Title>
 
@@ -294,6 +320,7 @@ const EnrollmentPage: React.FC = () => {
           <>
             <div style={{ display: "flex", justifyContent: "center" }}>
               <Text
+                className="text"
                 style={{
                   fontSize: "18px",
                   fontWeight: "600",
@@ -407,7 +434,7 @@ const EnrollmentPage: React.FC = () => {
               </Form.Item>
               <Form.Item>
                 <Button
-                  type="primary"
+                  className="button"
                   htmlType="submit"
                   disabled={!selectedOlympiadId}
                 >
@@ -424,14 +451,7 @@ const EnrollmentPage: React.FC = () => {
               borderRadius: "8px",
             }}
           >
-            <Text
-              style={{
-                fontSize: "16px",
-                fontWeight: "600",
-                color: "#888",
-                textAlign: "center",
-              }}
-            >
+            <Text className="text-card">
               {isBG
                 ? "Трябва да влезете в своя профил, за да се запишете за олимпиада."
                 : "You need to log in to enroll in an Olympiad."}

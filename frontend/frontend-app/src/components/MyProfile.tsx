@@ -1,14 +1,18 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import { Card, Button, Typography, Progress } from "antd";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { UserSession } from "../types/Session";
 import "./ui/MyProfile.css";
 import LoadingPage from "./LoadingPage";
+import { LanguageContext } from "../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 
 const MyProfile: React.FC = () => {
+  const { locale } = useContext(LanguageContext);
+  const isBG = locale.startsWith("bg");
+
   const [session, setSession] = useState<UserSession | null>(null);
   const [role, setRole] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
@@ -25,7 +29,6 @@ const MyProfile: React.FC = () => {
   >([]);
   const navigate = useNavigate();
 
-  // Hardcoded Data
   const ranking = 5;
   const totalStudents = 100;
   const progressPercentage = 75;
@@ -88,9 +91,7 @@ const MyProfile: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Enrolled Olympiads:", data);
 
-        // Filter by academic year (hardcoded to 2 for now) and status "pending"
         const filteredOlympiads = data
           .filter(
             (enrollment: any) =>
@@ -101,12 +102,12 @@ const MyProfile: React.FC = () => {
             (a: any, b: any) =>
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           )
-          .slice(0, 3)    // top 3 for now (TO DO: add a button to see all)
-          .map((enrollment: { enrollmentStatus: string; academicYearId: number; olympiad: { subject: string; dateOfOlympiad: string; round: string; location: string; startTime?: string; }; createdAt: string; }) => {
+          .slice(0, 3)
+          .map((enrollment: any) => {
             const dateObj = new Date(enrollment.olympiad.dateOfOlympiad);
             const rawTime = enrollment.olympiad.startTime;
             let formattedTime = "N/A";
-          
+
             if (rawTime) {
               const timeObj = new Date(rawTime);
               if (!isNaN(timeObj.getTime())) {
@@ -117,12 +118,12 @@ const MyProfile: React.FC = () => {
                 });
               }
             }
-          
+
             return {
               name: enrollment.olympiad.subject,
               status: enrollment.enrollmentStatus,
               academicYear: enrollment.academicYearId,
-              dateOfOlympiad: dateObj.toLocaleDateString("en-US", {
+              dateOfOlympiad: dateObj.toLocaleDateString(isBG ? "bg-BG" : "en-US", {
                 weekday: "long",
                 year: "numeric",
                 month: "long",
@@ -143,7 +144,7 @@ const MyProfile: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isBG]);
 
   useEffect(() => {
     const initializeSession = async () => {
@@ -160,7 +161,7 @@ const MyProfile: React.FC = () => {
       setLoading(false);
     };
     initializeSession();
-  }, [validateSession]);
+  }, [validateSession, fetchEnrolledOlympiads]);
 
   return (
     <>
@@ -170,30 +171,30 @@ const MyProfile: React.FC = () => {
         <div className="left-section">
           <Card className="profile-card">
             <Title level={2} style={{ color: "var(--text-color)" }}>
-              My Profile
+              {isBG ? "Моят профил" : "My Profile"}
             </Title>
             <Text className="profile-card-text">
-              <strong>Name:</strong> {session?.full_name || "N/A"}
+              <strong>{isBG ? "Име:" : "Name:"}</strong> {session?.full_name || "N/A"}
             </Text>
             <br />
             <Text className="profile-card-text">
-              <strong>Email:</strong> {session?.email}
+              <strong>{isBG ? "Имейл:" : "Email:"}</strong> {session?.email}
             </Text>
             <br />
             <Text className="profile-card-text">
-              <strong>Role:</strong> {role || "Loading role..."}
+              <strong>{isBG ? "Роля:" : "Role:"}</strong> {role || (isBG ? "Зареждане..." : "Loading role...")}
             </Text>
           </Card>
           <Card className="account-card">
             <Title level={2} style={{ color: "var(--text-color)" }}>
-              Account Management
+              {isBG ? "Управление на акаунт" : "Account Management"}
             </Title>
             <motion.div whileHover={{ scale: 1.05 }}>
               <Button
                 className="button"
                 onClick={() => navigate("/request-password-change")}
               >
-                Change Password
+                {isBG ? "Смяна на парола" : "Change Password"}
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }}>
@@ -201,12 +202,12 @@ const MyProfile: React.FC = () => {
                 className="button"
                 onClick={() => navigate("/update-info")}
               >
-                Update Profile
+                {isBG ? "Редактирай профила" : "Update Profile"}
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }}>
               <Button className="logout-button" danger onClick={handleLogout}>
-                Logout
+                {isBG ? "Изход" : "Logout"}
               </Button>
             </motion.div>
           </Card>
@@ -214,10 +215,12 @@ const MyProfile: React.FC = () => {
 
         <div className="right-section">
           <Title level={2} style={{ color: "var(--text-color)" }}>
-            Olympiad Progress
+            {isBG ? "Прогрес на олимпиади" : "Olympiad Progress"}
           </Title>
           <Text className="ranking-text">
-            Ranking: #{ranking} out of {totalStudents}
+            {isBG
+              ? `Класиране: #${ranking} от ${totalStudents}`
+              : `Ranking: #${ranking} out of ${totalStudents}`}
           </Text>
           <Progress
             percent={progressPercentage}
@@ -228,7 +231,7 @@ const MyProfile: React.FC = () => {
             level={5}
             style={{ marginTop: "16px", color: "var(--text-color)" }}
           >
-            Enrolled Olympiads:
+            {isBG ? "Записани олимпиади:" : "Enrolled Olympiads:"}
           </Title>
           {enrolledOlympiads.length > 0 ? (
             <ul className="olympiads-list">
@@ -236,30 +239,36 @@ const MyProfile: React.FC = () => {
                 <li key={index} className="olympiad-item">
                   <strong>{olympiad.name}</strong> - {olympiad.status} <br />
                   <Text style={{ color: "var(--text-color)" }}>
-                    <strong>Academic Year:</strong> {olympiad.academicYear}
+                    <strong>{isBG ? "Учебна година:" : "Academic Year:"}</strong>{" "}
+                    {olympiad.academicYear}
                   </Text>
                   <br />
                   <Text style={{ color: "var(--text-color)" }}>
-                    <strong>Date:</strong> {olympiad.dateOfOlympiad}
+                    <strong>{isBG ? "Дата:" : "Date:"}</strong>{" "}
+                    {olympiad.dateOfOlympiad}
                   </Text>
                   <br />
                   <Text style={{ color: "var(--text-color)" }}>
-                    <strong>Round:</strong> {olympiad.round}
+                    <strong>{isBG ? "Кръг:" : "Round:"}</strong> {olympiad.round}
                   </Text>
                   <br />
                   <Text style={{ color: "var(--text-color)" }}>
-                    <strong>Location:</strong> {olympiad.location}
+                    <strong>{isBG ? "Локация:" : "Location:"}</strong>{" "}
+                    {olympiad.location}
                   </Text>
                   <br />
                   <Text style={{ color: "var(--text-color)" }}>
-                    <strong>Start Time:</strong> {olympiad.startTime}
+                    <strong>{isBG ? "Начален час:" : "Start Time:"}</strong>{" "}
+                    {olympiad.startTime}
                   </Text>
                 </li>
               ))}
             </ul>
           ) : (
             <Text style={{ color: "var(--text-color)" }}>
-              No recent pending enrollments.
+              {isBG
+                ? "Няма записани олимпиади към момента."
+                : "No recent pending enrollments."}
             </Text>
           )}
         </div>

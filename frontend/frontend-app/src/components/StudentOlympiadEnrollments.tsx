@@ -81,6 +81,52 @@ const StudentOlympiadEnrollments: React.FC = () => {
     fetchEnrollments();
   }, []);
 
+  useEffect(() => {
+    let hasShownNotification = false;
+    let timeoutId: number | null = null;
+
+    const checkOrientation = () => {
+      const isMobile = window.innerWidth <= 768;
+      const aspectRatio = window.innerWidth / window.innerHeight;
+      const isSixteenNine = Math.abs(aspectRatio - 16 / 9) < 0.1;
+
+      if (isMobile && !isSixteenNine && !hasShownNotification) {
+        hasShownNotification = true;
+        notification.info({
+          message: isBG ? "Завъртете устройството" : "Rotate Your Device",
+          description: isBG
+            ? "По-добро изживяване в хоризонтален режим (16:9)."
+            : "For a better experience, use landscape mode (16:9).",
+          duration: 8,
+        });
+      }
+    };
+
+    const delayedCheck = () => {
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = window.setTimeout(checkOrientation, 200);
+    };
+
+    delayedCheck();
+
+    const handleOrientationChange = () => {
+      if (!hasShownNotification) {
+        delayedCheck();
+      }
+    };
+
+    window.addEventListener("orientationchange", handleOrientationChange);
+
+    return () => {
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+      window.removeEventListener("orientationchange", handleOrientationChange);
+    };
+  }, [isBG]);
+
   const handleEdit = (
     enrollment: EnrollmentRow,
     type: "enrollmentStatus" | "score"
@@ -224,7 +270,6 @@ const StudentOlympiadEnrollments: React.FC = () => {
         <div style={{ textAlign: "center", width: "100%" }} key="yes-footer">
           <Button
             key="yes"
-            type="primary"
             danger
             onClick={async () => {
               await deleteEnrollment(enrollmentId);
@@ -357,10 +402,13 @@ const StudentOlympiadEnrollments: React.FC = () => {
       key: "actions",
       render: (_, record) => (
         <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
-          <Button onClick={() => handleEdit(record, "enrollmentStatus")}>
+          <Button
+            type="primary"
+            onClick={() => handleEdit(record, "enrollmentStatus")}
+          >
             {isBG ? "Редактирай статус" : "Edit Status"}
           </Button>
-          <Button onClick={() => handleEdit(record, "score")}>
+          <Button type="primary" onClick={() => handleEdit(record, "score")}>
             {isBG ? "Редактирай резултат" : "Edit Score"}
           </Button>
           <Button danger onClick={() => handleDelete(record.enrollmentId)}>
@@ -374,7 +422,10 @@ const StudentOlympiadEnrollments: React.FC = () => {
 
   return (
     <div style={{ padding: "24px" }}>
-      <Title level={2} style={{ color: "var(--text-color)" }}>
+      <Title
+        level={2}
+        style={{ color: "var(--text-color)", textAlign: "center" }}
+      >
         {isBG ? "Записвания на всички ученици" : "Student Olympiad Enrollments"}
       </Title>
       <Table
@@ -400,7 +451,7 @@ const StudentOlympiadEnrollments: React.FC = () => {
         footer={[
           <Button
             key="ok"
-            type="primary"
+            className="button"
             onClick={handleSaveEdit}
             style={{ textAlign: "center" }}
           >
@@ -408,6 +459,7 @@ const StudentOlympiadEnrollments: React.FC = () => {
           </Button>,
           <Button
             key="cancel"
+            className="cancel-button"
             onClick={() => setEditingEnrollment(null)}
             style={{ display: "block", margin: "10px auto" }}
           >

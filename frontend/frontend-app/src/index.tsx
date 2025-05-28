@@ -5,16 +5,19 @@ import { BrowserRouter as Router } from "react-router-dom";
 
 import reportWebVitals from "./reportWebVitals";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import React from "react";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
-  <LanguageProvider>
-    <Router>
-      <App />
-    </Router>
-  </LanguageProvider>
+  <React.StrictMode>
+    <LanguageProvider>
+      <Router>
+        <App />
+      </Router>
+    </LanguageProvider>
+  </React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function

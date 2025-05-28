@@ -135,16 +135,18 @@ const UpdateInfo: React.FC = () => {
             </Form.Item>
 
             <Form.Item>
-              <Button htmlType="submit" className="ant-btn-primary">
+              <Button htmlType="submit" className="button" loading={isLoading}>
                 {locale.startsWith("bg")
                   ? "Актуализирай информацията"
                   : "Update Information"}
               </Button>
 
-              <Button htmlType="button" className="ant-btn-back" onClick={() => navigate(-1)}>
-                {locale.startsWith("bg")
-                  ? "Връщане назад"
-                  : "Go back"}
+              <Button
+                htmlType="button"
+                className="cancel-button"
+                onClick={() => navigate(-1)}
+              >
+                {locale.startsWith("bg") ? "Връщане назад" : "Go back"}
               </Button>
             </Form.Item>
 

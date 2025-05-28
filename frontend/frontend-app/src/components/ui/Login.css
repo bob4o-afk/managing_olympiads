@@ -8,72 +8,56 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-h2 {
+.login-form h2 {
     text-align: center;
     color: var(--text-color);
+    margin-bottom: 20px;
 }
 
-.form-group {
-    margin-bottom: 15px;
+.login-form .ant-form-item {
+    margin-top: 35px;
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
+.login-form .ant-form-item-label > label {
+    font-size: 16px;
+}
+
+.login-form .ant-input {
+    background-color: var(--background-color) !important;
     color: var(--text-color);
-}
-
-.form-group input {
-    width: 100%;
-    padding: 10px;
     border: 1px solid var(--text-color);
     border-radius: 4px;
-    background-color: var(--background-color);
+    padding: 8px;
+}
+
+.password-input {
+    background-color: var(--background-color) !important;
     color: var(--text-color);
-}
-
-button {
-    width: 100%;
-    padding: 10px;
-    border: none;
+    border: 1px solid var(--text-color);
     border-radius: 4px;
-    background-color: var(--button-background-color);
-    color: var(--button-text-color);
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 10px;
+    padding: 8px;
 }
 
-button:hover {
-    opacity: 0.9;
+.password-input .ant-input {
+    border: none !important;
+}
+
+.password-input .ant-input-prefix {
+    color: var(--text-color);
+    margin-right: 8px;
+}
+
+.recovery-section {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.recovery-section button {
+    font-size: 16px;
 }
 
 .error-message {
     color: red;
     text-align: center;
     margin-top: 10px;
-}
-
-.session-info {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.recovery-section {
-    margin-top: 20px;
-    text-align: center;
-}
-
-.recovery-form {
-    margin-top: 10px;
-}
-
-.recovery-form input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--text-color);
-    border-radius: 4px;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    margin-bottom: 10px;
 }

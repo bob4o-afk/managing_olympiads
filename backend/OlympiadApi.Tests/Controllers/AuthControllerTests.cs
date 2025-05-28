@@ -6,6 +6,7 @@ using OlympiadApi.DTOs;
 using OlympiadApi.Services.Interfaces;
 using OlympiadApi.Helpers;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace OlympiadApi.Tests.Controllers
 {
@@ -51,11 +52,11 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void RequestPasswordChange_ReturnsOk_WhenSuccessful()
+        public async Task RequestPasswordChange_ReturnsOk_WhenSuccessful()
         {
-            _authServiceMock.Setup(s => s.RequestPasswordChange(It.IsAny<PasswordChangeRequestDto>())).Returns(true);
+            _authServiceMock.Setup(s => s.RequestPasswordChange(It.IsAny<PasswordChangeRequestDto>())).ReturnsAsync(true);
 
-            var result = _controller.RequestPasswordChange(new PasswordChangeRequestDto { UsernameOrEmail = "user" });
+            var result = await _controller.RequestPasswordChange(new PasswordChangeRequestDto { UsernameOrEmail = "user" });
 
             var ok = Assert.IsType<OkObjectResult>(result);
             var dict = AsDictionary(ok.Value);
@@ -63,11 +64,11 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void RequestPasswordChange_ReturnsNotFound_WhenUserNotFound()
+        public async Task RequestPasswordChange_ReturnsNotFound_WhenUserNotFound()
         {
-            _authServiceMock.Setup(s => s.RequestPasswordChange(It.IsAny<PasswordChangeRequestDto>())).Returns(false);
+            _authServiceMock.Setup(s => s.RequestPasswordChange(It.IsAny<PasswordChangeRequestDto>())).ReturnsAsync(false);
 
-            var result = _controller.RequestPasswordChange(new PasswordChangeRequestDto { UsernameOrEmail = "invalid" });
+            var result = await _controller.RequestPasswordChange(new PasswordChangeRequestDto { UsernameOrEmail = "invalid" });
 
             var notFound = Assert.IsType<NotFoundObjectResult>(result);
             var dict = AsDictionary(notFound.Value);

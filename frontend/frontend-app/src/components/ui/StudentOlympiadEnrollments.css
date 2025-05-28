@@ -40,22 +40,9 @@
   background-color: #076bae !important;
 }
 
-.ant-pagination-item-1 {
+.ant-pagination-item {
   background-color: #f0f2f5 !important;
   border-color: var(--button-background-color) !important;
-}
-
-.ant-pagination-item-2 {
-  background-color: #f0f2f5 !important;
-  border-color: var(--button-background-color) !important;
-}
-
-.ant-pagination-item-1 {
-  background-color: #f0f2f5 !important;
-}
-
-.ant-pagination-item-2 {
-  background-color: #f0f2f5 !important;
 }
 
 .ant-table-filter-dropdown .ant-btn {

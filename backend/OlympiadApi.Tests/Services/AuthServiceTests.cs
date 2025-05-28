@@ -7,6 +7,7 @@ using OlympiadApi.DTOs;
 using OlympiadApi.Models;
 using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace OlympiadApi.Tests.Services
 {
@@ -130,7 +131,7 @@ namespace OlympiadApi.Tests.Services
 
 
         [Fact]
-        public void RequestPasswordChange_ValidUser_SendsEmail()
+        public async Task RequestPasswordChange_ValidUser_SendsEmail()
         {
             var request = new PasswordChangeRequestDto { UsernameOrEmail = "user" };
             var userDto = new UserDto
@@ -144,7 +145,7 @@ namespace OlympiadApi.Tests.Services
             _authRepoMock.Setup(r => r.GetUserByEmailOrUsername(request.UsernameOrEmail)).Returns(userDto);
             _configMock.Setup(c => c["FrontendUrl"]).Returns("http://frontend");
 
-            var result = _authService.RequestPasswordChange(request);
+            var result = await _authService.RequestPasswordChange(request);
 
             Assert.True(result);
             _emailServiceMock.Verify(e => e.SendEmailAsync(
@@ -156,11 +157,11 @@ namespace OlympiadApi.Tests.Services
         }
 
         [Fact]
-        public void RequestPasswordChange_InvalidUser_ReturnsFalse()
+        public async Task RequestPasswordChange_InvalidUser_ReturnsFalse()
         {
             _authRepoMock.Setup(r => r.GetUserByEmailOrUsername("missing")).Returns((UserDto?)null);
 
-            var result = _authService.RequestPasswordChange(new PasswordChangeRequestDto { UsernameOrEmail = "missing" });
+            var result = await _authService.RequestPasswordChange(new PasswordChangeRequestDto { UsernameOrEmail = "missing" });
 
             Assert.False(result);
         }

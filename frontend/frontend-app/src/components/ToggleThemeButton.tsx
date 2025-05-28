@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { LanguageContext } from "../contexts/LanguageContext";
 import { Button, Tooltip } from "antd";
-import { HiOutlineSun, HiOutlineMoon } from "react-icons/hi";
+import { SunFilled , MoonOutlined } from "@ant-design/icons";
 
 interface ToggleThemeButtonProps {
   darkTheme: boolean;
@@ -28,7 +28,7 @@ const ToggleThemeButton: React.FC<ToggleThemeButtonProps> = ({
             width: "50px",
           }}
         >
-          {darkTheme ? <HiOutlineSun /> : <HiOutlineMoon />}
+          {darkTheme ? <SunFilled /> : <MoonOutlined />}
         </Button>
       </Tooltip>
     </div>

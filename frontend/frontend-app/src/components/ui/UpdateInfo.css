@@ -8,17 +8,17 @@
     color: var(--text-color) !important;
 }
 
-.ant-form-item-label {
-    font-size: 16px;
-    color: var(--text-color) !important;
-}
-
 .ant-form-item-label > label {
+    font-size: 16px !important;
     color: var(--text-color) !important;
 }
 
+.ant-form-item-explain-error {
+    padding-bottom: 20px !important;
+}
 .ant-input {
     width: 100%;
+    font-size: 16px;
     margin: 0px !important;
     border: 1px solid var(--text-color) !important;
     background-color: var(--background-color) !important;
@@ -29,26 +29,4 @@
 .ant-input:focus  {
     background-color: var(--background-color);
     border: 1px solid var(--button-background-color) !important;
-}
-
-.ant-btn-primary {
-    color: var(--button-text-color);
-    background-color: var(--button-background-color);
-    font-size: 16px;
-    padding: 20px;
-}
-
-.ant-btn-primary:hover {
-    color: var(--button-background-color) !important;
-    background-color: white !important;
-}
-
-.ant-btn-back {
-    color: red;
-    font-size: 16px;
-    padding: 20px;
-}
-
-.ant-btn-back:hover {
-    color: red !important;
 }

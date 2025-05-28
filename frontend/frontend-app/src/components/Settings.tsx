@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Card, Switch, Button, Typography, Modal, notification } from "antd";
-import { HiEye, HiEyeOff } from "react-icons/hi";
+import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { UserSession } from "../types/Session";
 import "./ui/Settings.css";
+import { LanguageContext } from "../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 
@@ -16,6 +17,9 @@ const Settings: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { locale } = useContext(LanguageContext);
+  const isBG = locale.startsWith("bg");
 
   const validateSession = async () => {
     const storedSession = localStorage.getItem("userSession");
@@ -37,7 +41,6 @@ const Settings: React.FC = () => {
         if (response.ok) {
           setSession(JSON.parse(storedSession));
         } else {
-          console.warn("Session is invalid or expired. Logging out...");
           localStorage.removeItem("userSession");
           localStorage.removeItem("authToken");
           setSession(null);
@@ -60,7 +63,6 @@ const Settings: React.FC = () => {
     if (session) {
       const fetchUserData = async () => {
         try {
-          console.log(session);
           const token = localStorage.getItem("authToken");
           const userResponse = await fetch(
             `${process.env.REACT_APP_API_URL}/api/user/${session.userId}`,
@@ -75,8 +77,10 @@ const Settings: React.FC = () => {
 
           if (!userResponse.ok) {
             notification.error({
-              message: "Error",
-              description: "Failed to fetch users. Please try again.",
+              message: isBG ? "Грешка" : "Error",
+              description: isBG
+                ? "Неуспешно зареждане на потребител. Опитайте отново."
+                : "Failed to fetch users. Please try again.",
             });
             return;
           }
@@ -90,28 +94,34 @@ const Settings: React.FC = () => {
             setAutoFillDocs(user.personalSettings?.autoFilling ?? true);
           } else {
             notification.error({
-              message: "Error",
-              description: "User not found.",
+              message: isBG ? "Грешка" : "Error",
+              description: isBG
+                ? "Потребителят не е намерен."
+                : "User not found.",
             });
           }
         } catch (error) {
           console.error("An error occurred while fetching user data:", error);
           notification.error({
-            message: "Error",
-            description: "An error occurred. Please try again.",
+            message: isBG ? "Грешка" : "Error",
+            description: isBG
+              ? "Възникна грешка. Опитайте отново."
+              : "An error occurred. Please try again.",
           });
         }
       };
 
       fetchUserData();
     }
-  }, [session]);
+  }, [session, isBG]);
 
   const handleSavePreferences = async () => {
     if (!session) {
       notification.error({
-        message: "Error",
-        description: "You must be logged in to save preferences.",
+        message: isBG ? "Грешка" : "Error",
+        description: isBG
+          ? "Трябва да влезете, за да запазите настройките."
+          : "You must be logged in to save preferences.",
       });
       return;
     }
@@ -135,7 +145,11 @@ const Settings: React.FC = () => {
       );
 
       if (!response.ok) {
-        setError("Invalid password. Please try again.");
+        setError(
+          isBG
+            ? "Невалидна парола. Опитайте отново."
+            : "Invalid password. Please try again."
+        );
         return;
       }
 
@@ -143,7 +157,11 @@ const Settings: React.FC = () => {
       await savePreferences();
       setShowPasswordModal(false);
     } catch (error) {
-      setError("An error occurred while validating your password.");
+      setError(
+        isBG
+          ? "Възникна грешка при проверката на паролата."
+          : "An error occurred while validating your password."
+      );
       console.error("Error validating password:", error);
     }
   };
@@ -166,8 +184,10 @@ const Settings: React.FC = () => {
 
         if (!userResponse.ok) {
           notification.error({
-            message: "Error",
-            description: "Failed to fetch users. Please try again.",
+            message: isBG ? "Грешка" : "Error",
+            description: isBG
+              ? "Неуспешно зареждане на потребител. Опитайте отново."
+              : "Failed to fetch users. Please try again.",
           });
           return;
         }
@@ -176,8 +196,10 @@ const Settings: React.FC = () => {
 
         if (!user) {
           notification.error({
-            message: "Error",
-            description: "User not found.",
+            message: isBG ? "Грешка" : "Error",
+            description: isBG
+              ? "Потребителят не е намерен."
+              : "User not found.",
           });
           return;
         }
@@ -209,19 +231,27 @@ const Settings: React.FC = () => {
 
         if (updateResponse.ok) {
           notification.success({
-            message: "Success",
-            description: "Preferences saved successfully!",
+            message: isBG ? "Успешно" : "Success",
+            description: isBG
+              ? "Настройките са запазени успешно!"
+              : "Preferences saved successfully!",
           });
         } else {
           notification.error({
-            message: "Error",
-            description: "Failed to save preferences. Please try again.",
+            message: isBG ? "Грешка" : "Error",
+            description: isBG
+              ? "Неуспешно запазване на настройките. Опитайте отново."
+              : "Failed to save preferences. Please try again.",
           });
         }
       }
     } catch (error) {
       console.error("An error occurred while saving preferences:", error);
-      alert("An error occurred. Please try again.");
+      alert(
+        isBG
+          ? "Възникна грешка. Опитайте отново."
+          : "An error occurred. Please try again."
+      );
     }
   };
 
@@ -231,15 +261,24 @@ const Settings: React.FC = () => {
   };
 
   if (loading) {
-    return <p>Loading session...</p>;
+    return <p>{isBG ? "Зареждане на сесия..." : "Loading session..."}</p>;
   }
 
   if (!session) {
     return (
       <div style={{ padding: "24px", maxWidth: "600px", margin: "auto" }}>
-        <Card style={{ textAlign: "center", marginTop: "100px" }}>
-          <Title level={4}>Please Log In</Title>
-          <Text>You must be logged in to access the settings page.</Text>
+        <Card
+          style={{
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "8px",
+          }}
+        >
+          <Text className="text-card">
+            {isBG
+              ? "Трябва да влезете в профила си, за да достъпите настройките."
+              : "You must be logged in to access the settings page."}
+          </Text>
         </Card>
       </div>
     );
@@ -248,9 +287,11 @@ const Settings: React.FC = () => {
   return (
     <div style={{ padding: "24px", maxWidth: "600px", margin: "auto" }}>
       <Card style={{ marginBottom: "16px" }}>
-        <Title level={4}>Notifications</Title>
-        <Text>
-          Receive notifications about upcoming Olympiads and other updates.
+        <Title level={4}>{isBG ? "Известия" : "Notifications"}</Title>
+        <Text className="text">
+          {isBG
+            ? "Получавайте известия за предстоящи олимпиади и други новини."
+            : "Receive notifications about upcoming Olympiads and other updates."}
         </Text>
         <div
           style={{
@@ -265,14 +306,26 @@ const Settings: React.FC = () => {
             onChange={(checked) => setNotificationsEnabled(checked)}
             style={{ marginRight: "8px", fontSize: "14px", width: "40px" }}
           />
-          <Text>{notificationsEnabled ? "Enabled" : "Disabled"}</Text>
+          <Text className="text">
+            {notificationsEnabled
+              ? isBG
+                ? "Активирани"
+                : "Enabled"
+              : isBG
+              ? "Изключени"
+              : "Disabled"}
+          </Text>
         </div>
       </Card>
+
       <Card style={{ marginBottom: "16px" }}>
-        <Title level={4}>Auto-fill Documents</Title>
-        <Text>
-          Enable auto-fill for document fields to save time during Olympiad
-          registration.
+        <Title level={4}>
+          {isBG ? "Автоматично попълване" : "Auto-fill Documents"}
+        </Title>
+        <Text className="text">
+          {isBG
+            ? "Разрешете автоматично попълване на документи при регистрация за олимпиади."
+            : "Enable auto-fill for document fields to save time during Olympiad registration."}
         </Text>
         <div
           style={{
@@ -285,30 +338,39 @@ const Settings: React.FC = () => {
           <Switch
             checked={autoFillDocs}
             onChange={(checked) => setAutoFillDocs(checked)}
-            style={{ marginRight: "8px", fontSize: "14px", width: "40px" }}
+            style={{ marginRight: "8px", width: "40px" }}
           />
-          <Text>{autoFillDocs ? "Enabled" : "Disabled"}</Text>
+          <Text className="text">
+            {autoFillDocs
+              ? isBG
+                ? "Активирано"
+                : "Enabled"
+              : isBG
+              ? "Изключено"
+              : "Disabled"}
+          </Text>
         </div>
       </Card>
-      <div style={{ textAlign: "center", marginTop: "16px" }}>
+
+      <div className="button-container">
         <Button
-          type="primary"
+          className="button"
           onClick={handleSavePreferences}
-          style={{ marginRight: "8px", width: "150px" }}
+          style={{ width: "180px", height: "45px" }}
         >
-          Save Preferences
+          {isBG ? "Запази настройките" : "Save Preferences"}
         </Button>
         <Button
-          type="default"
+          className="cancel-button"
           onClick={handleResetPreferences}
-          style={{ width: "150px" }}
+          style={{ width: "180px", height: "45px" }}
         >
-          Reset Preferences
+          {isBG ? "Нулирай настройките" : "Reset Preferences"}
         </Button>
       </div>
 
       <Modal
-        title="Verify Password"
+        title={isBG ? "Потвърдете паролата" : "Verify Password"}
         open={showPasswordModal}
         onCancel={() => setShowPasswordModal(false)}
         className="password-modal"
@@ -317,25 +379,23 @@ const Settings: React.FC = () => {
             style={{ display: "flex", justifyContent: "center", gap: "16px" }}
           >
             <Button
-              key="submit"
               onClick={handlePasswordValidation}
               className="modal-button-submit"
             >
-              Verify
+              {isBG ? "Потвърди" : "Verify"}
             </Button>
             <Button
-              key="cancel"
               onClick={() => setShowPasswordModal(false)}
               className="modal-button-cancel"
             >
-              Cancel
+              {isBG ? "Отказ" : "Cancel"}
             </Button>
           </div>
         }
       >
         <div className="password-container">
           <div className="form-group">
-            <label>Password</label>
+            <label>{isBG ? "Парола" : "Password"}</label>
             <div className="password-input-wrapper">
               <input
                 type={showPassword ? "text" : "password"}
@@ -347,7 +407,7 @@ const Settings: React.FC = () => {
                 className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <HiEyeOff /> : <HiEye />}
+                {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
               </span>
             </div>
           </div>

@@ -28,9 +28,9 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost("request-password-change")]
-        public IActionResult RequestPasswordChange([FromBody] PasswordChangeRequestDto requestDto)
+        public async Task<IActionResult> RequestPasswordChange([FromBody] PasswordChangeRequestDto requestDto)
         {
-            var success = _authService.RequestPasswordChange(requestDto);
+            var success = await _authService.RequestPasswordChange(requestDto);
             if (!success)
             {
                 return NotFound(new { message = "User not found." });

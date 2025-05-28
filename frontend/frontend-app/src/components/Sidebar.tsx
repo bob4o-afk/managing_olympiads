@@ -10,7 +10,6 @@ import {
   SnippetsOutlined,
   DatabaseOutlined,
   UnorderedListOutlined,
-  GlobalOutlined,
 } from "@ant-design/icons";
 
 import "./ui/Sidebar.css";
@@ -30,7 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   closeDrawer,
 }) => {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
-  const { locale, setLocale } = useContext(LanguageContext);
+  const { locale, } = useContext(LanguageContext);
   const isBG = locale.startsWith("bg");
 
   const handleOpenChange = (keys: string[]) => {

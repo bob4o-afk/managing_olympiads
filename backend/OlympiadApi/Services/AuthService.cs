@@ -46,7 +46,7 @@ namespace OlympiadApi.Services
             };
         }
 
-        public bool RequestPasswordChange(PasswordChangeRequestDto requestDto)
+        public async Task<bool> RequestPasswordChange(PasswordChangeRequestDto requestDto)
         {
             var user = _authRepository.GetUserByEmailOrUsername(requestDto.UsernameOrEmail);
             if (user == null) return false;
@@ -60,7 +60,7 @@ namespace OlympiadApi.Services
             var resetLink = $"{frontendUrl}/reset-password?token={resetToken}";
             var emailSubject = "Password Reset Request";
             var emailBody = $"To reset your password, click the link below:\n{resetLink}";
-            _emailService.SendEmailAsync(user.Email, emailSubject, emailBody);
+            await _emailService.SendEmailAsync(user.Email, emailSubject, emailBody);
 
             return true;
         }
@@ -90,7 +90,7 @@ namespace OlympiadApi.Services
             }
 
             var userIdClaim = claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
-            
+
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             {
                 return (false, "User ID claim not found in token.");

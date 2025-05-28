@@ -6,6 +6,12 @@
   border-radius: 8px;
 }
 
+.enrollment-page h2 {
+  text-align: center;
+  color: var(--text-color);
+  margin-bottom: 20px;
+}
+
 .enrollment-form {
   background: var(--navigation-button-color);
   padding: 20px;
@@ -17,7 +23,6 @@
   margin-bottom: 16px;
 }
 
-.enrollment-page .ant-btn {
-  width: 100%;
-  background-color: var(--button-background-color);
+.enrollment-form .ant-form-item-label > label {
+  font-size: 16px;
 }

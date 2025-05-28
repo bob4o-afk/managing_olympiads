@@ -38,6 +38,7 @@
     border-radius: 10px;
     width: 30%;
     min-width: 275px;
+    max-width: 375px;
     text-align: center;
     background-color: var(--card-background-color);
     color: var(--text-color);
@@ -90,10 +91,4 @@
     line-clamp: 9;
     overflow: hidden;
     text-align: center;
-}
-
-.button {
-    color: var(--button-text-color);
-    font-size: 16px;
-    width: 175px;
 }

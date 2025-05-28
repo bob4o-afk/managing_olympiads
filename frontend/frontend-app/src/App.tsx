@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Button, Layout, Drawer, Grid } from "antd";
-import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
+import { MenuUnfoldOutlined } from "@ant-design/icons";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import "./App.css";
 
@@ -21,12 +21,12 @@ import Documents from "./components/Documents";
 import StudentOlympiadEnrollments from "./components/StudentOlympiadEnrollments";
 import OlympiadsAnimation from "./components/OlympiadsAnimation";
 import { SESSION_KEY, generateSessionId } from "./constants/storage";
+import { LanguageContext } from "./contexts/LanguageContext";
 
 const { Sider, Header, Content } = Layout;
 const { useBreakpoint } = Grid;
 
 function App() {
-  const [darkTheme, setDarkTheme] = useState(true);
   const [collapsed, setCollapsed] = useState(true);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [, setSelectedKey] = useState("home");
@@ -35,21 +35,49 @@ function App() {
   const screens = useBreakpoint();
   const isMobile = !screens.md;
 
-  const toggleTheme = () => setDarkTheme(!darkTheme);
+  const [darkTheme, setDarkTheme] = useState(() => {
+    const savedTheme = localStorage.getItem("theme");
+    return savedTheme ? savedTheme === "dark" : true;
+  });
+
+  const { locale } = useContext(LanguageContext);
+  const isBG = locale.startsWith("bg");
+
+  const [showDataNotice, setShowDataNotice] = useState(false);
+
+  const toggleTheme = () => {
+    setDarkTheme((prevTheme) => {
+      const newTheme = !prevTheme;
+      localStorage.setItem("theme", newTheme ? "dark" : "light");
+      return newTheme;
+    });
+  };
 
   useEffect(() => {
-    setShowAnimation(false);
     const currentSession = sessionStorage.getItem(SESSION_KEY);
     if (!currentSession) {
       const newSession = generateSessionId();
       sessionStorage.setItem(SESSION_KEY, newSession);
       if (localStorage.getItem(SESSION_KEY) !== newSession) {
-        localStorage.clear();
+        const keepKeys = ["theme", "dataNoticeAccepted"];
+        const allKeys = Object.keys(localStorage);
+
+        allKeys.forEach((key) => {
+          if (!keepKeys.includes(key)) {
+            localStorage.removeItem(key);
+          }
+        });
         localStorage.setItem(SESSION_KEY, newSession);
       }
     }
     if (localStorage.getItem("animation")) {
       setShowAnimation(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!localStorage.getItem("dataNoticeAccepted")) {
+      setShowDataNotice(true);
     }
   }, []);
 
@@ -100,8 +128,11 @@ function App() {
 
           <div className="sidebar-bottom-buttons">
             <ToggleLanguageButton />
-          
-          <ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} />
+
+            <ToggleThemeButton
+              darkTheme={darkTheme}
+              toggleTheme={toggleTheme}
+            />
           </div>
         </Sider>
       )}
@@ -160,10 +191,7 @@ function App() {
                 closeDrawer={() => setDrawerVisible(false)}
               />
 
-              <div
-                style={{ marginTop: "auto" }}
-                className="sidebar-bottom-buttons"
-              >
+              <div className="sidebar-bottom-buttons">
                 <ToggleLanguageButton />
                 <ToggleThemeButton
                   darkTheme={darkTheme}
@@ -220,6 +248,30 @@ function App() {
           </Routes>
         </Content>
       </Layout>
+      {showDataNotice && (
+        <div className="data-notice">
+          <p>
+            {isBG
+              ? "Този сайт събира и съхранява Ваши данни с цел подобряване на функционалността и потребителското изживяване. Използвайки сайта, Вие се съгласявате с това."
+              : "This site collects and stores your data to improve functionality and user experience. By using the site, you consent to this."}
+          </p>
+          <Button
+            type="primary"
+            style={{
+              width: "80%",
+              maxWidth: "300px",
+              minWidth: "180px",
+              marginTop: "8px",
+            }}
+            onClick={() => {
+              localStorage.setItem("dataNoticeAccepted", "true");
+              setShowDataNotice(false);
+            }}
+          >
+            {isBG ? "Разбрах и приемам" : "Understood and accepted"}
+          </Button>
+        </div>
+      )}
     </Layout>
   );
 }
