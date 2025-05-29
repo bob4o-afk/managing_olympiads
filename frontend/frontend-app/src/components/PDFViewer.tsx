@@ -16,6 +16,7 @@ import { Typography } from "antd";
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL!;
 const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const fileName = process.env.REACT_APP_PDF_FILENAME || "zap2049_olimpiadi_01092023.pdf";
 
 const { Title } = Typography;
 
@@ -37,8 +38,6 @@ const PDFViewer: React.FC = () => {
         currentMonth < 9
           ? `${currentYear - 2}-${currentYear - 1}`
           : `${currentYear - 1}-${currentYear}`;
-
-      const fileName = "zap2049_olimpiadi_01092023.pdf";
 
       const { data, error } = await supabase.storage
         .from("olympiads")

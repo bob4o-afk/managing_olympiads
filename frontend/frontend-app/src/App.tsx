@@ -101,7 +101,12 @@ function App() {
   };
 
   return showAnimation ? (
-    <OlympiadsAnimation />
+    <OlympiadsAnimation
+      onSkip={() => {
+        localStorage.setItem("animation", "false");
+        setShowAnimation(false);
+      }}
+    />
   ) : (
     <Layout style={{ height: "100vh" }}>
       {isMobile ? null : (
@@ -240,7 +245,17 @@ function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/update-info" element={<UpdateInfo />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/animation" element={<OlympiadsAnimation />} />
+            <Route
+              path="/animation"
+              element={
+                <OlympiadsAnimation
+                  onSkip={() => {
+                    localStorage.setItem("animation", "false");
+                    setShowAnimation(false);
+                  }}
+                />
+              }
+            />
             <Route
               path="/"
               element={<HomePage onNavigate={handleMenuSelect} />}

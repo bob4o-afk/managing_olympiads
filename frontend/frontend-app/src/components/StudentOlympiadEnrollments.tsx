@@ -64,14 +64,18 @@ const StudentOlympiadEnrollments: React.FC = () => {
           setEnrollments(data);
         } else {
           notification.error({
-            message: "Error",
-            description: "Failed to fetch enrollments",
+            message: isBG ? "Грешка" : "Error",
+            description: isBG
+              ? "Неуспешно зареждане на записванията"
+              : "Failed to fetch enrollments",
           });
         }
       } catch (error) {
         notification.error({
-          message: "Network Error",
-          description: "Failed to connect to the server.",
+          message: isBG ? "Мрежова грешка" : "Network Error",
+          description: isBG
+            ? "Неуспешна връзка със сървъра."
+            : "Failed to connect to the server.",
         });
       } finally {
         setLoading(false);
@@ -79,7 +83,7 @@ const StudentOlympiadEnrollments: React.FC = () => {
     };
 
     fetchEnrollments();
-  }, []);
+  }, [isBG]);
 
   useEffect(() => {
     let hasShownNotification = false;
@@ -163,8 +167,10 @@ const StudentOlympiadEnrollments: React.FC = () => {
 
       if (response.ok) {
         notification.success({
-          message: "Success",
-          description: "Enrollment updated successfully!",
+          message: isBG ? "Успешно" : "Success",
+          description: isBG
+            ? "Записът е обновен успешно!"
+            : "Enrollment updated successfully!",
         });
         setEnrollments((prev) =>
           prev.map((e) =>
@@ -180,14 +186,18 @@ const StudentOlympiadEnrollments: React.FC = () => {
       } else {
         const errorMessage = await response.text();
         notification.error({
-          message: "Error",
-          description: `Failed to update: ${errorMessage}`,
+          message: isBG ? "Грешка" : "Error",
+          description: isBG
+            ? `Неуспешно обновяване: ${errorMessage}`
+            : `Failed to update: ${errorMessage}`,
         });
       }
     } catch (error) {
       notification.error({
-        message: "Network Error",
-        description: "Failed to update enrollment",
+        message: isBG ? "Мрежова грешка" : "Network Error",
+        description: isBG
+          ? "Неуспешно обновяване на записването"
+          : "Failed to update enrollment",
       });
     }
   };
@@ -238,19 +248,25 @@ const StudentOlympiadEnrollments: React.FC = () => {
 
       if (response.ok) {
         notification.success({
-          message: "Email Sent",
-          description: "Notification email sent successfully!",
+          message: isBG ? "Имейл изпратен" : "Email Sent",
+          description: isBG
+            ? "Известие по имейл беше изпратено успешно!"
+            : "Notification email sent successfully!",
         });
       } else {
         notification.error({
-          message: "Email Error",
-          description: "Failed to send notification email.",
+          message: isBG ? "Имейл грешка" : "Email Error",
+          description: isBG
+            ? "Неуспешно изпращане на имейл."
+            : "Failed to send notification email.",
         });
       }
     } catch (error) {
       notification.error({
-        message: "Email Error",
-        description: "Failed to send email notification.",
+        message: isBG ? "Имейл грешка" : "Email Error",
+        description: isBG
+          ? "Неуспешно изпращане на имейл."
+          : "Failed to send notification email.",
       });
     }
   };
@@ -306,22 +322,28 @@ const StudentOlympiadEnrollments: React.FC = () => {
 
       if (response.ok) {
         notification.success({
-          message: "Success",
-          description: "Enrollment deleted successfully!",
+          message: isBG ? "Успешно" : "Success",
+          description: isBG
+            ? "Записването е изтрито успешно!"
+            : "Enrollment deleted successfully!",
         });
         setEnrollments((prev) =>
           prev.filter((e) => e.enrollmentId !== enrollmentId)
         );
       } else {
         notification.error({
-          message: "Error",
-          description: "Failed to delete enrollment",
+          message: isBG ? "Грешка" : "Error",
+          description: isBG
+            ? "Неуспешно изтриване на записването"
+            : "Failed to delete enrollment",
         });
       }
     } catch (error) {
       notification.error({
-        message: "Network Error",
-        description: "Failed to delete enrollment",
+        message: isBG ? "Мрежова грешка" : "Network Error",
+        description: isBG
+          ? "Неуспешна връзка със сървъра."
+          : "Failed to connect to the server.",
       });
     }
   };

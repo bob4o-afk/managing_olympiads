@@ -1,6 +1,5 @@
 export interface AcademicYear {
-    academicYearId: string;
-    startYear: number;
-    endYear: number;
-  }
-  
+  academicYearId: string;
+  startYear: number;
+  endYear: number;
+}

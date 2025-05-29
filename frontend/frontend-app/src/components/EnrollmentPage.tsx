@@ -4,7 +4,6 @@ import "./ui/EnrollmentPage.css";
 
 import { Olympiad } from "../types/OlympiadTypes";
 import { AcademicYear } from "../types/AcademicYearTypes";
-import { EnrollmentEmailData } from "../types/EmailTypes";
 import { StudentOlympiadEnrollmentData } from "../types/EnrollmentTypes";
 import LoadingPage from "../components/LoadingPage";
 import { LanguageContext } from "../contexts/LanguageContext";
@@ -26,66 +25,63 @@ const EnrollmentPage: React.FC = () => {
   const isBG = locale.startsWith("bg");
 
   useEffect(() => {
-    setIsLoading(true);
-    const storedSession = localStorage.getItem("userSession");
-    if (storedSession) {
-      const parsedSession = JSON.parse(storedSession);
-      setEmail(parsedSession.email);
-      setUserId(parsedSession.userId);
-    }
+    const fetchData = async () => {
+      setIsLoading(true);
 
-    fetchOlympiads();
-    fetchAcademicYears();
-    setIsLoading(false);
-  }, []);
-
-  const fetchOlympiads = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/olympiad`
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setOlympiads(data);
-      } else {
-        notification.error({
-          message: "Error",
-          description: "Failed to load Olympiad data.",
-        });
+      const storedSession = localStorage.getItem("userSession");
+      if (storedSession) {
+        const parsedSession = JSON.parse(storedSession);
+        setEmail(parsedSession.email);
+        setUserId(parsedSession.userId);
       }
-    } catch (error) {
-      console.error("Error fetching Olympiads:", error);
-      notification.error({
-        message: "Network Error",
-        description: "There was an issue fetching the Olympiad data.",
-      });
-    }
-  };
 
-  const fetchAcademicYears = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/academicyear`
-      );
+      try {
+        const olympiadResponse = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/olympiad`
+        );
 
-      if (response.ok) {
-        const data = await response.json();
-        setAcademicYears(data);
-      } else {
+        if (olympiadResponse.ok) {
+          const data = await olympiadResponse.json();
+          setOlympiads(data);
+        } else {
+          notification.error({
+            message: isBG ? "Грешка" : "Error",
+            description: isBG
+              ? "Неуспешно зареждане на данни за олимпиадата."
+              : "Failed to load Olympiad data.",
+          });
+        }
+
+        const yearResponse = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/academicyear`
+        );
+
+        if (yearResponse.ok) {
+          const data = await yearResponse.json();
+          setAcademicYears(data);
+        } else {
+          notification.error({
+            message: isBG ? "Грешка" : "Error",
+            description: isBG
+              ? "Неуспешно зареждане на данни за учебната година."
+              : "Failed to load Academic Year data.",
+          });
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
         notification.error({
-          message: "Error",
-          description: "Failed to load Academic Year data.",
+          message: isBG ? "Грешка в мрежата" : "Network Error",
+          description: isBG
+            ? "Проблем при зареждане на данните."
+            : "There was an issue fetching the data.",
         });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching Academic Years:", error);
-      notification.error({
-        message: "Network Error",
-        description: "There was an issue fetching the Academic Year data.",
-      });
-    }
-  };
+    };
+
+    fetchData();
+  }, [isBG]);
 
   const handleSelectChange = (value: string) => {
     setSelectedOlympiadId(value);
@@ -138,27 +134,6 @@ const EnrollmentPage: React.FC = () => {
     return selectedAcademicYear ? selectedAcademicYear.academicYearId : null;
   };
 
-  const sendEnrollmentEmail = async (emailData: EnrollmentEmailData) => {
-    const response = await fetch(
-      `${process.env.REACT_APP_API_URL}/api/email/send`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(emailData),
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Error sending email: ${errorText}`);
-    }
-
-    notification.success({
-      message: "Success",
-      description: "Enrollment email successfully sent!",
-    });
-  };
-
   const enrollStudent = async (
     enrollmentData: StudentOlympiadEnrollmentData
   ) => {
@@ -188,16 +163,20 @@ const EnrollmentPage: React.FC = () => {
     try {
       if (!email) {
         notification.error({
-          message: "Login Required",
-          description: "You must log in to enroll.",
+          message: isBG ? "Трябва Ви профил" : "Login Required",
+          description: isBG
+            ? "Трябва да влезете в профила си, за да се запишете."
+            : "You must log in to enroll.",
         });
         setIsLoading(false);
         return;
       }
       if (!selectedOlympiadId) {
         notification.error({
-          message: "Selection Error",
-          description: "Please select an Olympiad.",
+          message: isBG ? "Грешка при избора" : "Selection Error",
+          description: isBG
+            ? "Моля, изберете олимпиада."
+            : "Please select an Olympiad.",
         });
         setIsLoading(false);
         return;
@@ -208,8 +187,10 @@ const EnrollmentPage: React.FC = () => {
       );
       if (!olympiadDetails) {
         notification.error({
-          message: "Error",
-          description: "Selected Olympiad data is missing.",
+          message: isBG ? "Грешка" : "Error",
+          description: isBG
+            ? "Избраните данни за олимпиадата липсват."
+            : "Selected Olympiad data is missing.",
         });
         setIsLoading(false);
         return;
@@ -218,8 +199,10 @@ const EnrollmentPage: React.FC = () => {
       const academicYearId = getCurrentAcademicYearId();
       if (!academicYearId) {
         notification.error({
-          message: "Academic Year Error",
-          description: "Could not determine the current academic year.",
+          message: isBG ? "Грешка" : "Error",
+          description: isBG
+            ? "Неуспешно зареждане на данни за учебната година."
+            : "Failed to load Academic Year data.",
         });
         setIsLoading(false);
         return;
@@ -227,8 +210,10 @@ const EnrollmentPage: React.FC = () => {
 
       if (!userId) {
         notification.error({
-          message: "Login Required",
-          description: "You must log in to enroll.",
+          message: isBG ? "Трябва Ви профил" : "Login Required",
+          description: isBG
+            ? "Трябва да влезете в профила си, за да се запишете."
+            : "You must log in to enroll.",
         });
         setIsLoading(false);
         return;
@@ -245,40 +230,11 @@ const EnrollmentPage: React.FC = () => {
       await enrollStudent(enrollmentData);
 
       notification.success({
-        message: "Enrollment Successful",
-        description: `You have successfully enrolled in the ${olympiadDetails.subject} Olympiad.`,
+        message: isBG ? "Успешно записване" : "Enrollment Successful",
+        description: isBG
+          ? `Успешно се записахте за олимпиадата по ${olympiadDetails.subject}.`
+          : `You have successfully enrolled in the ${olympiadDetails.subject} Olympiad.`,
       });
-
-      const startTime = formatTimeToLocal(olympiadDetails.startTime ?? null);
-      const dateString = new Date(
-        olympiadDetails.dateOfOlympiad
-      ).toLocaleDateString(isBG ? "bg-BG" : "en-US");
-
-      const emailData = {
-        toEmail: email,
-        subject: isBG
-          ? `Записване за олимпиадата по ${olympiadDetails.subject}`
-          : `${olympiadDetails.subject} Olympiad Enrollment`,
-        body: `
-          <p>${isBG ? "Уважаеми ученик," : "Dear Student,"}</p>
-          <p>
-            ${
-              isBG
-                ? `Вие успешно се записахте за олимпиадата по <strong>${olympiadDetails.subject}</strong>.`
-                : `You have successfully enrolled in the <strong>${olympiadDetails.subject}</strong> Olympiad.`
-            }
-          </p>
-          <p>
-            ${isBG ? "Място" : "Location"}: ${olympiadDetails.location}<br>
-            ${isBG ? "Дата" : "Date"}: ${dateString}<br>
-            ${isBG ? "Начален час" : "Start Time"}: ${startTime}
-          </p>
-          <p>${isBG ? "Поздрави" : "Best regards"},<br>Olympiad System</p>
-        `,
-        ccEmail: process.env.REACT_APP_EMAIL_CC,
-      };
-
-      await sendEnrollmentEmail(emailData);
     } catch (error) {
       const rawMessage =
         error instanceof Error ? error.message : "An unknown error occurred";

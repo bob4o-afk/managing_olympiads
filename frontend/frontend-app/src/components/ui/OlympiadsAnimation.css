@@ -78,6 +78,14 @@
     border-color: green;
 }
 
+.button-wrapper {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
 @keyframes growO {
     0% {
         transform: scale(1);
@@ -166,10 +174,25 @@
         border-radius: 50%;
     }
 
-    .ring:nth-child(1) { left: -90px; top: -5px;}
-    .ring:nth-child(2) { left: 30px; top: -5px; }
-    .ring:nth-child(3) { left: -60px; top: 30px; }
-    .ring:nth-child(4) { left: 0px; top: 30px; }
+    .ring:nth-child(1) {
+        left: -90px;
+        top: -5px;
+    }
+
+    .ring:nth-child(2) {
+        left: 30px;
+        top: -5px;
+    }
+
+    .ring:nth-child(3) {
+        left: -60px;
+        top: 30px;
+    }
+
+    .ring:nth-child(4) {
+        left: 0px;
+        top: 30px;
+    }
 }
 
 @keyframes growOMobile {
