@@ -51,7 +51,7 @@ namespace OlympiadApi.Tests.Controllers
             var users = new List<UserDto> { CreateValidUserDto() };
             _mockService.Setup(s => s.GetAllUsersAsync()).ReturnsAsync(users);
 
-            var result = await _controller.GetAllUsersAsync();
+            var result = await _controller.GetAllUsers();
 
             var ok = Assert.IsType<OkObjectResult>(result);
             Assert.Equal(users, ok.Value);
@@ -63,7 +63,7 @@ namespace OlympiadApi.Tests.Controllers
             var user = CreateValidUser();
             _mockService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync(user);
 
-            var result = await _controller.GetUserByIdAsync(1);
+            var result = await _controller.GetUserById(1);
 
             var ok = Assert.IsType<OkObjectResult>(result);
             Assert.Equal(user, ok.Value);
@@ -74,7 +74,7 @@ namespace OlympiadApi.Tests.Controllers
         {
             _mockService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync((User?)null);
 
-            var result = await _controller.GetUserByIdAsync(1);
+            var result = await _controller.GetUserById(1);
 
             var notFound = Assert.IsType<NotFoundObjectResult>(result);
             var dict = AsDictionary(notFound.Value);
@@ -86,7 +86,7 @@ namespace OlympiadApi.Tests.Controllers
         {
             var user = CreateValidUser();
 
-            var result = await _controller.CreateUserAsync(user);
+            var result = await _controller.CreateUser(user);
 
             _mockService.Verify(s => s.CreateUserAsync(user), Times.Once);
 
@@ -99,7 +99,7 @@ namespace OlympiadApi.Tests.Controllers
         {
             var user = CreateValidUser();
 
-            var result = await _controller.UpdateUserAsync(1, user);
+            var result = await _controller.UpdateUser(1, user);
 
             _mockService.Verify(s => s.UpdateUserAsync(user), Times.Once);
             Assert.IsType<NoContentResult>(result);
@@ -110,7 +110,7 @@ namespace OlympiadApi.Tests.Controllers
         {
             var user = CreateValidUser(2);
 
-            var result = await _controller.UpdateUserAsync(1, user);
+            var result = await _controller.UpdateUser(1, user);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
             var dict = AsDictionary(bad.Value);
@@ -125,7 +125,7 @@ namespace OlympiadApi.Tests.Controllers
 
             _mockService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync(user);
 
-            var result = await _controller.UpdateUserNameAndEmailAsync(1, dto);
+            var result = await _controller.UpdateUserNameAndEmail(1, dto);
 
             _mockService.Verify(s => s.UpdateUserNameAndEmailAsync(1, dto.Name, dto.Email), Times.Once);
             Assert.IsType<NoContentResult>(result);
@@ -138,7 +138,7 @@ namespace OlympiadApi.Tests.Controllers
 
             _mockService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync((User?)null);
 
-            var result = await _controller.UpdateUserNameAndEmailAsync(1, dto);
+            var result = await _controller.UpdateUserNameAndEmail(1, dto);
 
             var notFound = Assert.IsType<NotFoundObjectResult>(result);
             var dict = AsDictionary(notFound.Value);
@@ -148,7 +148,7 @@ namespace OlympiadApi.Tests.Controllers
         [Fact]
         public async Task DeleteUser_ReturnsNoContent()
         {
-            var result = await _controller.DeleteUserAsync(1);
+            var result = await _controller.DeleteUser(1);
 
             _mockService.Verify(s => s.DeleteUserAsync(1), Times.Once);
             Assert.IsType<NoContentResult>(result);

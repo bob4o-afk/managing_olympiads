@@ -45,7 +45,7 @@ namespace OlympiadApi.Tests.Controllers
 
             _serviceMock.Setup(s => s.GetAllOlympiadsAsync()).ReturnsAsync(olympiads);
 
-            var result = await _controller.GetAllOlympiadsAsync();
+            var result = await _controller.GetAllOlympiads();
 
             var okResult = Assert.IsType<OkObjectResult>(result);
             var returnValue = Assert.IsAssignableFrom<IEnumerable<Olympiad>>(okResult.Value);
@@ -57,7 +57,7 @@ namespace OlympiadApi.Tests.Controllers
         {
             _serviceMock.Setup(s => s.GetAllOlympiadsAsync()).Throws(new Exception("DB error"));
 
-            var result = await _controller.GetAllOlympiadsAsync();
+            var result = await _controller.GetAllOlympiads();
 
             var objectResult = Assert.IsType<ObjectResult>(result);
             Assert.Equal(500, objectResult.StatusCode);
@@ -78,7 +78,7 @@ namespace OlympiadApi.Tests.Controllers
             };
             _serviceMock.Setup(s => s.GetOlympiadByIdAsync(1)).ReturnsAsync(olympiad);
 
-            var result = await _controller.GetOlympiadByIdAsync(1);
+            var result = await _controller.GetOlympiadById(1);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
             var returnedOlympiad = Assert.IsType<Olympiad>(okResult.Value);
@@ -90,7 +90,7 @@ namespace OlympiadApi.Tests.Controllers
         {
             _serviceMock.Setup(s => s.GetOlympiadByIdAsync(1)).ReturnsAsync((Olympiad?)null);
 
-            var result = await _controller.GetOlympiadByIdAsync(1);
+            var result = await _controller.GetOlympiadById(1);
 
             Assert.IsType<NotFoundObjectResult>(result);
         }
@@ -100,7 +100,7 @@ namespace OlympiadApi.Tests.Controllers
         {
             _serviceMock.Setup(s => s.GetOlympiadByIdAsync(It.IsAny<int>())).Throws(new Exception("Something went wrong"));
 
-            var result = await _controller.GetOlympiadByIdAsync(2);
+            var result = await _controller.GetOlympiadById(2);
 
             var objectResult = Assert.IsType<ObjectResult>(result);
             Assert.Equal(500, objectResult.StatusCode);
@@ -123,18 +123,18 @@ namespace OlympiadApi.Tests.Controllers
 
             _serviceMock.Setup(s => s.AddOlympiadAsync(It.IsAny<Olympiad>())).Returns((Olympiad o) => Task.FromResult(o));
 
-            var result = await _controller.CreateOlympiadAsync(olympiad);
+            var result = await _controller.CreateOlympiad(olympiad);
 
             var created = Assert.IsType<CreatedAtActionResult>(result);
             Assert.Equal(olympiad, created.Value);
-            Assert.Equal("GetOlympiadByIdAsync", created.ActionName);
+            Assert.Equal("GetOlympiadById", created.ActionName);
             Assert.Equal(olympiad.OlympiadId, created.RouteValues!["id"]);
         }
 
         [Fact]
         public async Task CreateOlympiad_ReturnsBadRequest_WhenNull()
         {
-            var result = await _controller.CreateOlympiadAsync(null!);
+            var result = await _controller.CreateOlympiad(null!);
 
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Contains("Invalid data", badRequest.Value!.ToString());
@@ -157,7 +157,7 @@ namespace OlympiadApi.Tests.Controllers
 
             _serviceMock.Setup(s => s.AddOlympiadAsync(It.IsAny<Olympiad>())).Throws(new Exception("Insert error"));
 
-            var result = await _controller.CreateOlympiadAsync(olympiad);
+            var result = await _controller.CreateOlympiad(olympiad);
 
             var error = Assert.IsType<ObjectResult>(result);
             Assert.Equal(500, error.StatusCode);

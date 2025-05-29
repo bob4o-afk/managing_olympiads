@@ -27,7 +27,7 @@ namespace OlympiadApi.Tests.Controllers
             };
             _serviceMock.Setup(s => s.GetAllAcademicYearsAsync()).ReturnsAsync(academicYears);
 
-            var result = await _controller.GetAllAcademicYearAsync();
+            var result = await _controller.GetAllAcademicYear();
 
             var okResult = Assert.IsType<OkObjectResult>(result);
             var returnValue = Assert.IsType<List<AcademicYear>>(okResult.Value);
@@ -39,7 +39,7 @@ namespace OlympiadApi.Tests.Controllers
         {
             _serviceMock.Setup(s => s.GetAllAcademicYearsAsync()).Throws(new Exception("Database failure"));
 
-            var result = await _controller.GetAllAcademicYearAsync();
+            var result = await _controller.GetAllAcademicYear();
 
             var errorResult = Assert.IsType<ObjectResult>(result);
             Assert.Equal(500, errorResult.StatusCode);
@@ -51,7 +51,7 @@ namespace OlympiadApi.Tests.Controllers
             var year = new AcademicYear { AcademicYearId = 1, StartYear = 2022, EndYear = 2023 };
             _serviceMock.Setup(s => s.GetAcademicYearByIdAsync(1)).ReturnsAsync(year);
 
-            var result = await _controller.GetAcademicYearByIdAsync(1);
+            var result = await _controller.GetAcademicYearById(1);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
             var returnValue = Assert.IsType<AcademicYear>(okResult.Value);
@@ -63,7 +63,7 @@ namespace OlympiadApi.Tests.Controllers
         {
             _serviceMock.Setup(s => s.GetAcademicYearByIdAsync(1)).ReturnsAsync((AcademicYear?)null);
 
-            var result = await _controller.GetAcademicYearByIdAsync(1);
+            var result = await _controller.GetAcademicYearById(1);
 
             Assert.IsType<NotFoundObjectResult>(result);
         }
@@ -73,7 +73,7 @@ namespace OlympiadApi.Tests.Controllers
         {
             _serviceMock.Setup(s => s.GetAcademicYearByIdAsync(It.IsAny<int>())).Throws(new Exception("Unexpected error"));
 
-            var result = await _controller.GetAcademicYearByIdAsync(1);
+            var result = await _controller.GetAcademicYearById(1);
 
             var errorResult = Assert.IsType<ObjectResult>(result);
             Assert.Equal(500, errorResult.StatusCode);
@@ -84,7 +84,7 @@ namespace OlympiadApi.Tests.Controllers
         {
             var newYear = new AcademicYear { AcademicYearId = 3, StartYear = 2024, EndYear = 2025 };
 
-            var result = await _controller.CreateAcademicYearAsync(newYear);
+            var result = await _controller.CreateAcademicYear(newYear);
 
             var createdAtAction = Assert.IsType<CreatedAtActionResult>(result);
             var returnValue = Assert.IsType<AcademicYear>(createdAtAction.Value);
@@ -94,7 +94,7 @@ namespace OlympiadApi.Tests.Controllers
         [Fact]
         public async Task CreateAcademicYear_ReturnsBadRequest_WhenNull()
         {
-            var result = await _controller.CreateAcademicYearAsync(null!);
+            var result = await _controller.CreateAcademicYear(null!);
 
             Assert.IsType<BadRequestObjectResult>(result);
         }
@@ -105,7 +105,7 @@ namespace OlympiadApi.Tests.Controllers
             var year = new AcademicYear { AcademicYearId = 4, StartYear = 2025, EndYear = 2026 };
             _serviceMock.Setup(s => s.AddAcademicYearAsync(It.IsAny<int>(), It.IsAny<int>())).Throws(new Exception("DB Error"));
 
-            var result = await _controller.CreateAcademicYearAsync(year);
+            var result = await _controller.CreateAcademicYear(year);
 
             var errorResult = Assert.IsType<ObjectResult>(result);
             Assert.Equal(500, errorResult.StatusCode);

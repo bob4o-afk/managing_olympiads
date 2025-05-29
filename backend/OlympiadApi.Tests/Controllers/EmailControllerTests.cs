@@ -70,7 +70,7 @@ namespace OlympiadApi.Tests.Controllers
                     request.CcEmail))
                 .Returns(Task.CompletedTask);
 
-            var result = await _controller.SendDocumentAsync(request);
+            var result = await _controller.SendDocument(request);
 
             var ok = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Email with document sent successfully.", ok.Value);
@@ -88,7 +88,7 @@ namespace OlympiadApi.Tests.Controllers
                 CcEmail = "cc@example.com"
             };
 
-            var result = await _controller.SendDocumentAsync(request);
+            var result = await _controller.SendDocument(request);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Please provide a valid document to attach.", bad.Value);
@@ -108,7 +108,7 @@ namespace OlympiadApi.Tests.Controllers
                 CcEmail = null
             };
 
-            var result = await _controller.SendDocumentAsync(request);
+            var result = await _controller.SendDocument(request);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Please provide a valid document to attach.", bad.Value);
