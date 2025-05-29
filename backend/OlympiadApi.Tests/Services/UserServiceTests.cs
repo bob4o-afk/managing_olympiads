@@ -1,11 +1,8 @@
-using Xunit;
 using Moq;
 using OlympiadApi.Services;
 using OlympiadApi.Repositories.Interfaces;
 using OlympiadApi.Models;
 using OlympiadApi.DTOs;
-using System.Collections.Generic;
-using System;
 
 namespace OlympiadApi.Tests.Services
 {
@@ -21,23 +18,23 @@ namespace OlympiadApi.Tests.Services
         }
 
         [Fact]
-        public void GetAllUsers_ReturnsUserDtos()
+        public async Task GetAllUsers_ReturnsUserDtos()
         {
             var users = new List<UserDto>
             {
                 new UserDto { UserId = 1, Username = "test1", Name = "Test One", Email = "test1@example.com" },
                 new UserDto { UserId = 2, Username = "test2", Name = "Test Two", Email = "test2@example.com" }
             };
-            _userRepositoryMock.Setup(repo => repo.GetAllUsers()).Returns(users);
+            _userRepositoryMock.Setup(repo => repo.GetAllUsersAsync()).ReturnsAsync(users);
 
-            var result = _userService.GetAllUsers();
+            var result = await _userService.GetAllUsersAsync();
 
             Assert.NotNull(result);
             Assert.Equal(2, result.Count());
         }
 
         [Fact]
-        public void GetUserById_UserExists_ReturnsUser()
+        public async Task GetUserById_UserExists_ReturnsUser()
         {
             var user = new User
             {
@@ -49,16 +46,16 @@ namespace OlympiadApi.Tests.Services
                 DateOfBirth = DateTime.UtcNow.AddYears(-18),
                 AcademicYearId = 1
             };
-            _userRepositoryMock.Setup(r => r.GetUserById(1)).Returns(user);
+            _userRepositoryMock.Setup(r => r.GetUserByIdAsync(1)).ReturnsAsync(user);
 
-            var result = _userService.GetUserById(1);
+            var result = await _userService.GetUserByIdAsync(1);
 
             Assert.NotNull(result);
             Assert.Equal("test", result.Username);
         }
 
         [Fact]
-        public void GetUserByUsername_ReturnsUserDto()
+        public async Task GetUserByUsername_ReturnsUserDto()
         {
             var dto = new UserDto
             {
@@ -67,16 +64,16 @@ namespace OlympiadApi.Tests.Services
                 Name = "John Doe",
                 Email = "john@example.com"
             };
-            _userRepositoryMock.Setup(r => r.GetUserByUsername("john")).Returns(dto);
+            _userRepositoryMock.Setup(r => r.GetUserByUsernameAsync("john")).ReturnsAsync(dto);
 
-            var result = _userService.GetUserByUsername("john");
+            var result = await _userService.GetUserByUsernameAsync("john");
 
             Assert.NotNull(result);
             Assert.Equal("john", result.Username);
         }
 
         [Fact]
-        public void CreateUser_HashesPassword()
+        public async Task CreateUser_HashesPassword()
         {
             var user = new User
             {
@@ -88,9 +85,9 @@ namespace OlympiadApi.Tests.Services
                 AcademicYearId = 2
             };
 
-            _userService.CreateUser(user);
+            await _userService.CreateUserAsync(user);
 
-            _userRepositoryMock.Verify(r => r.CreateUser(It.Is<User>(u =>
+            _userRepositoryMock.Verify(r => r.CreateUserAsync(It.Is<User>(u =>
                 u.Username == "john" &&
                 !string.IsNullOrWhiteSpace(u.Password) &&
                 u.Password != "1234"
@@ -98,7 +95,7 @@ namespace OlympiadApi.Tests.Services
         }
 
         [Fact]
-        public void UpdateUser_WithPassword_HashesIt()
+        public async Task UpdateUser_WithPassword_HashesIt()
         {
             var user = new User
             {
@@ -111,15 +108,15 @@ namespace OlympiadApi.Tests.Services
                 AcademicYearId = 1
             };
 
-            _userService.UpdateUser(user);
+            await _userService.UpdateUserAsync(user);
 
-            _userRepositoryMock.Verify(r => r.UpdateUser(It.Is<User>(u =>
+            _userRepositoryMock.Verify(r => r.UpdateUserAsync(It.Is<User>(u =>
                 !string.IsNullOrWhiteSpace(u.Password) && u.Password != "secret123"
             )), Times.Once);
         }
 
         [Fact]
-        public void UpdateUser_WithoutPassword_DoesNotHash()
+        public async Task UpdateUser_WithoutPassword_DoesNotHash()
         {
             var user = new User
             {
@@ -132,15 +129,15 @@ namespace OlympiadApi.Tests.Services
                 AcademicYearId = 2
             };
 
-            _userService.UpdateUser(user);
+            await _userService.UpdateUserAsync(user);
 
-            _userRepositoryMock.Verify(r => r.UpdateUser(It.Is<User>(u =>
+            _userRepositoryMock.Verify(r => r.UpdateUserAsync(It.Is<User>(u =>
                 u.Password == ""
             )), Times.Once);
         }
 
         [Fact]
-        public void UpdateUserNameAndEmail_ValidId_UpdatesUser()
+        public async Task UpdateUserNameAndEmail_ValidId_UpdatesUser()
         {
             var user = new User
             {
@@ -152,32 +149,32 @@ namespace OlympiadApi.Tests.Services
                 DateOfBirth = DateTime.UtcNow.AddYears(-18),
                 AcademicYearId = 1
             };
-            _userRepositoryMock.Setup(r => r.GetUserById(1)).Returns(user);
+            _userRepositoryMock.Setup(r => r.GetUserByIdAsync(1)).ReturnsAsync(user);
 
-            _userService.UpdateUserNameAndEmail(1, "New", "new@example.com");
+            await _userService.UpdateUserNameAndEmailAsync(1, "New", "new@example.com");
 
             Assert.Equal("New", user.Name);
             Assert.Equal("new@example.com", user.Email);
-            _userRepositoryMock.Verify(r => r.UpdateUser(user), Times.Once);
+            _userRepositoryMock.Verify(r => r.UpdateUserAsync(user), Times.Once);
         }
 
         [Fact]
-        public void UpdateUserNameAndEmail_UserNotFound_ThrowsException()
+        public async Task UpdateUserNameAndEmail_UserNotFound_ThrowsException()
         {
-            _userRepositoryMock.Setup(r => r.GetUserById(99)).Returns((User?)null);
+            _userRepositoryMock.Setup(r => r.GetUserByIdAsync(99)).ReturnsAsync((User?)null);
 
-            var ex = Assert.Throws<Exception>(() =>
-                _userService.UpdateUserNameAndEmail(99, "Test", "test@example.com"));
+            var ex = await Assert.ThrowsAsync<Exception>(async () =>
+                await _userService.UpdateUserNameAndEmailAsync(99, "Test", "test@example.com"));
 
             Assert.Equal("User not found.", ex.Message);
         }
 
         [Fact]
-        public void DeleteUser_CallsRepository()
+        public async Task DeleteUser_CallsRepository()
         {
-            _userService.DeleteUser(5);
+            await _userService.DeleteUserAsync(5);
 
-            _userRepositoryMock.Verify(r => r.DeleteUser(5), Times.Once);
+            _userRepositoryMock.Verify(r => r.DeleteUserAsync(5), Times.Once);
         }
     }
 }

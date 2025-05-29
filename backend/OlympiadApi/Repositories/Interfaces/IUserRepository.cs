@@ -5,12 +5,12 @@ namespace OlympiadApi.Repositories.Interfaces
 {
     public interface IUserRepository
     {
-        IEnumerable<UserDto> GetAllUsers();
-        User? GetUserById(int id);
-        UserDto? GetUserByUsername(string username);
-        User? FindUserByUsernameOrEmail(string usernameOrEmail);
-        void CreateUser(User user);
-        void UpdateUser(User user);
-        void DeleteUser(int id);
+        Task <IEnumerable<UserDto>> GetAllUsersAsync();
+        Task <User?> GetUserByIdAsync(int id);
+        Task <UserDto?> GetUserByUsernameAsync(string username);
+        Task <User?> FindUserByUsernameOrEmailAsync(string usernameOrEmail);
+        Task CreateUserAsync(User user);
+        Task UpdateUserAsync(User user);
+        Task DeleteUserAsync(int id);
     }
 }

@@ -14,53 +14,53 @@ namespace OlympiadApi.Services
             _userRepository = userRepository;
         }
 
-        public IEnumerable<UserDto> GetAllUsers()
+        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
-            return _userRepository.GetAllUsers();
+            return await _userRepository.GetAllUsersAsync();
         }
 
-        public User? GetUserById(int id)
+        public async Task<User?> GetUserByIdAsync(int id)
         {
-            return _userRepository.GetUserById(id);
+            return await _userRepository.GetUserByIdAsync(id);
         }
 
         // This method returns a UserDto based on the username
-        public UserDto? GetUserByUsername(string username)
+        public async Task<UserDto?> GetUserByUsernameAsync(string username)
         {
-            return _userRepository.GetUserByUsername(username);
+            return await _userRepository.GetUserByUsernameAsync(username);
         }
 
-        public void CreateUser(User user)
+        public async Task CreateUserAsync(User user)
         {
             // Hash password before storing it
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-            _userRepository.CreateUser(user);
+            await _userRepository.CreateUserAsync(user);
         }
 
-        public void UpdateUser(User user)
+        public async Task UpdateUserAsync(User user)
         {
             if(!string.IsNullOrEmpty(user.Password))
             {
                 user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             }
-            _userRepository.UpdateUser(user);
+            await _userRepository.UpdateUserAsync(user);
         }
 
-        public void UpdateUserNameAndEmail(int id, string name, string email)
+        public async Task UpdateUserNameAndEmailAsync(int id, string name, string email)
         {
-            var user = _userRepository.GetUserById(id);
+            var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null)
                 throw new Exception("User not found.");
 
             user.Name = name;
             user.Email = email;
 
-            _userRepository.UpdateUser(user);
+            await _userRepository.UpdateUserAsync(user);
         }
 
-        public void DeleteUser(int id)
+        public async Task DeleteUserAsync(int id)
         {
-            _userRepository.DeleteUser(id);
+            await _userRepository.DeleteUserAsync(id);
         }
     }
 }

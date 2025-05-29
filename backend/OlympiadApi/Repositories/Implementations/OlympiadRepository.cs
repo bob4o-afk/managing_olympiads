@@ -14,7 +14,7 @@ namespace OlympiadApi.Repositories.Implementations
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public void AddOlympiad(Olympiad olympiad)
+        public async Task AddOlympiadAsync(Olympiad olympiad)
         {
             if (olympiad == null)
                 throw new ArgumentNullException(nameof(olympiad));
@@ -25,18 +25,24 @@ namespace OlympiadApi.Repositories.Implementations
             if (olympiad.DateOfOlympiad == default)
                 throw new ArgumentException("Olympiad DateOfOlympiad cannot be default.", nameof(olympiad.DateOfOlympiad));
 
-            _context.Olympiads.Add(olympiad);
-            _context.SaveChanges();
+            await _context.Olympiads.AddAsync(olympiad);
+            await _context.SaveChangesAsync();
         }
 
-        public IEnumerable<Olympiad> GetAllOlympiads()
+        public async Task<IEnumerable<Olympiad>> GetAllOlympiadsAsync()
         {
-            return _context.Olympiads?.Include(o => o.AcademicYear).ToList() ?? new List<Olympiad>();
+            if (_context.Olympiads == null)
+                return new List<Olympiad>();
+
+            return await _context.Olympiads.Include(o => o.AcademicYear).ToListAsync();
         }
 
-        public Olympiad GetOlympiadById(int id)
+        public async Task <Olympiad> GetOlympiadByIdAsync(int id)
         {
-            var olympiad = _context.Olympiads?.Include(o => o.AcademicYear).FirstOrDefault(o => o.OlympiadId == id);
+            if (_context.Olympiads == null)
+                throw new InvalidOperationException("Olympiads DbSet is not initialized.");
+
+            var olympiad = await _context.Olympiads.Include(o => o.AcademicYear).FirstOrDefaultAsync(o => o.OlympiadId == id);
 
             if (olympiad == null)
                 throw new KeyNotFoundException($"Olympiad with ID {id} not found.");

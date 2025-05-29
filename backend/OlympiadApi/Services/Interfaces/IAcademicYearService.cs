@@ -4,8 +4,8 @@ namespace OlympiadApi.Services.Interfaces
 {
     public interface IAcademicYearService
     {
-        IEnumerable<AcademicYear> GetAllAcademicYears();
-        AcademicYear? GetAcademicYearById(int id);
-        void AddAcademicYear(int startYear, int endYear);
+        Task<IEnumerable<AcademicYear>> GetAllAcademicYearsAsync();
+        Task <AcademicYear?> GetAcademicYearByIdAsync(int id);
+        Task AddAcademicYearAsync(int startYear, int endYear);
     }
 }

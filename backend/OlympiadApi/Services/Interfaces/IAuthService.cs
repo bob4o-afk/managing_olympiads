@@ -5,9 +5,9 @@ namespace OlympiadApi.Services.Interfaces
     public interface IAuthService
     {
         Task<object?> LoginAsync(LoginDto loginDto);
-        Task<bool> RequestPasswordChange(PasswordChangeRequestDto requestDto);
-        bool ResetPassword(string token, ResetPasswordDto resetPasswordDto);
+        Task<bool> RequestPasswordChangeAsync(PasswordChangeRequestDto requestDto);
+        Task<bool> ResetPasswordAsync(string token, ResetPasswordDto resetPasswordDto);
         bool ValidateToken(string token);
-        (bool IsValid, string Message) ValidatePassword(string token, ValidatePasswordDto validatePasswordDto);
+        Task<(bool IsValid, string Message)> ValidatePasswordAsync(string token, ValidatePasswordDto validatePasswordDto);
     }
 }

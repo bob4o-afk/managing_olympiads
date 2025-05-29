@@ -17,7 +17,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpGet]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> GetAllEnrollments()
         {
             try
@@ -32,7 +32,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpGet("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> GetEnrollmentById(int id)
         {
             try
@@ -51,7 +51,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpGet("user/{userId}")]
-        [ServiceFilter(typeof(AdminOrStudentRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin", "Student")]
         public async Task<IActionResult> GetEnrollmentsByUserId(int userId)
         {
             try
@@ -70,7 +70,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost]
-        [ServiceFilter(typeof(AdminOrStudentRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin", "Student")]
         public async Task<IActionResult> CreateEnrollment([FromBody] StudentOlympiadEnrollment enrollment)
         {
             try
@@ -90,7 +90,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPut("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> UpdateEnrollment(int id, [FromBody] StudentOlympiadEnrollment updatedEnrollment)
         {
             try
@@ -114,7 +114,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> DeleteEnrollment(int id)
         {
             try

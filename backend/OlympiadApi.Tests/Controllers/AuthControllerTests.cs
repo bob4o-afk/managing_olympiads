@@ -6,7 +6,6 @@ using OlympiadApi.DTOs;
 using OlympiadApi.Services.Interfaces;
 using OlympiadApi.Helpers;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace OlympiadApi.Tests.Controllers
 {
@@ -54,7 +53,7 @@ namespace OlympiadApi.Tests.Controllers
         [Fact]
         public async Task RequestPasswordChange_ReturnsOk_WhenSuccessful()
         {
-            _authServiceMock.Setup(s => s.RequestPasswordChange(It.IsAny<PasswordChangeRequestDto>())).ReturnsAsync(true);
+            _authServiceMock.Setup(s => s.RequestPasswordChangeAsync(It.IsAny<PasswordChangeRequestDto>())).ReturnsAsync(true);
 
             var result = await _controller.RequestPasswordChange(new PasswordChangeRequestDto { UsernameOrEmail = "user" });
 
@@ -66,7 +65,7 @@ namespace OlympiadApi.Tests.Controllers
         [Fact]
         public async Task RequestPasswordChange_ReturnsNotFound_WhenUserNotFound()
         {
-            _authServiceMock.Setup(s => s.RequestPasswordChange(It.IsAny<PasswordChangeRequestDto>())).ReturnsAsync(false);
+            _authServiceMock.Setup(s => s.RequestPasswordChangeAsync(It.IsAny<PasswordChangeRequestDto>())).ReturnsAsync(false);
 
             var result = await _controller.RequestPasswordChange(new PasswordChangeRequestDto { UsernameOrEmail = "invalid" });
 
@@ -76,11 +75,11 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void ResetPassword_ReturnsOk_WhenTokenValid()
+        public async Task ResetPassword_ReturnsOk_WhenTokenValid()
         {
-            _authServiceMock.Setup(s => s.ResetPassword("token123", It.IsAny<ResetPasswordDto>())).Returns(true);
+            _authServiceMock.Setup(s => s.ResetPasswordAsync("token123", It.IsAny<ResetPasswordDto>())).ReturnsAsync(true);
 
-            var result = _controller.ResetPassword(new ResetPasswordDto { NewPassword = "newpass" }, "token123");
+            var result = await _controller.ResetPasswordAsync(new ResetPasswordDto { NewPassword = "newpass" }, "token123");
 
             var ok = Assert.IsType<OkObjectResult>(result);
             var dict = AsDictionary(ok.Value);
@@ -88,11 +87,11 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void ResetPassword_ReturnsBadRequest_WhenTokenInvalid()
+        public async Task ResetPassword_ReturnsBadRequest_WhenTokenInvalid()
         {
-            _authServiceMock.Setup(s => s.ResetPassword("invalid", It.IsAny<ResetPasswordDto>())).Returns(false);
+            _authServiceMock.Setup(s => s.ResetPasswordAsync("invalid", It.IsAny<ResetPasswordDto>())).ReturnsAsync(false);
 
-            var result = _controller.ResetPassword(new ResetPasswordDto { NewPassword = "pass" }, "invalid");
+            var result = await _controller.ResetPasswordAsync(new ResetPasswordDto { NewPassword = "pass" }, "invalid");
 
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var dict = AsDictionary(badRequest.Value);
@@ -114,14 +113,14 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void ValidatePassword_ReturnsOk_WhenPasswordValid()
+        public async Task ValidatePassword_ReturnsOk_WhenPasswordValid()
         {
             _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
             _controller.Request.Headers["Authorization"] = "Bearer token";
 
-            _authServiceMock.Setup(s => s.ValidatePassword("token", It.IsAny<ValidatePasswordDto>())).Returns((true, "Password validated successfully."));
+            _authServiceMock.Setup(s => s.ValidatePasswordAsync("token", It.IsAny<ValidatePasswordDto>())).ReturnsAsync((true, "Password validated successfully."));
 
-            var result = _controller.ValidatePassword(new ValidatePasswordDto { Password = "pass" });
+            var result = await _controller.ValidatePasswordAsync(new ValidatePasswordDto { Password = "pass" });
 
             var ok = Assert.IsType<OkObjectResult>(result);
             var dict = AsDictionary(ok.Value);
@@ -169,12 +168,12 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void ValidatePassword_ReturnsUnauthorized_WhenTokenMalformed()
+        public async Task ValidatePassword_ReturnsUnauthorized_WhenTokenMalformed()
         {
             _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
             _controller.Request.Headers["Authorization"] = "Token xyz";
 
-            var result = _controller.ValidatePassword(new ValidatePasswordDto { Password = "pass" });
+            var result = await _controller.ValidatePasswordAsync(new ValidatePasswordDto { Password = "pass" });
 
             var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result);
             var dict = AsDictionary(unauthorized.Value);
@@ -182,7 +181,7 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void ValidatePassword_ReturnsUnauthorized_WhenAuthHeaderWhitespaceOnly()
+        public async Task ValidatePassword_ReturnsUnauthorized_WhenAuthHeaderWhitespaceOnly()
         {
             _controller.ControllerContext = new ControllerContext
             {
@@ -190,7 +189,7 @@ namespace OlympiadApi.Tests.Controllers
             };
             _controller.Request.Headers["Authorization"] = "     ";
 
-            var result = _controller.ValidatePassword(new ValidatePasswordDto { Password = "pass" });
+            var result = await _controller.ValidatePasswordAsync(new ValidatePasswordDto { Password = "pass" });
 
             var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result);
             var dict = AsDictionary(unauthorized.Value);
@@ -198,14 +197,14 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void ValidatePassword_ReturnsUnauthorized_WhenPasswordInvalid()
+        public async Task ValidatePassword_ReturnsUnauthorized_WhenPasswordInvalid()
         {
             _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
             _controller.Request.Headers["Authorization"] = "Bearer token";
 
-            _authServiceMock.Setup(s => s.ValidatePassword("token", It.IsAny<ValidatePasswordDto>())).Returns((false, "Invalid password."));
+            _authServiceMock.Setup(s => s.ValidatePasswordAsync("token", It.IsAny<ValidatePasswordDto>())).ReturnsAsync((false, "Invalid password."));
 
-            var result = _controller.ValidatePassword(new ValidatePasswordDto { Password = "bad" });
+            var result = await _controller.ValidatePasswordAsync(new ValidatePasswordDto { Password = "bad" });
 
             var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result);
             var dict = AsDictionary(unauthorized.Value);
@@ -213,12 +212,12 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void ValidatePassword_ReturnsUnauthorized_WhenTokenMissingBearerPrefix()
+        public async Task ValidatePassword_ReturnsUnauthorized_WhenTokenMissingBearerPrefix()
         {
             _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
             _controller.Request.Headers["Authorization"] = "Basic token123";
 
-            var result = _controller.ValidatePassword(new ValidatePasswordDto { Password = "pass" });
+            var result = await _controller.ValidatePasswordAsync(new ValidatePasswordDto { Password = "pass" });
 
             var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result);
             var dict = AsDictionary(unauthorized.Value);
@@ -226,9 +225,9 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void ValidatePassword_ReturnsBadRequest_WhenMissingPassword()
+        public async Task ValidatePassword_ReturnsBadRequest_WhenMissingPassword()
         {
-            var result = _controller.ValidatePassword(new ValidatePasswordDto { Password = "" });
+            var result = await _controller.ValidatePasswordAsync(new ValidatePasswordDto { Password = "" });
 
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var dict = AsDictionary(badRequest.Value);
@@ -236,9 +235,9 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void ValidatePassword_ReturnsBadRequest_WhenDtoIsNull()
+        public async Task ValidatePassword_ReturnsBadRequest_WhenDtoIsNull()
         {
-            var result = _controller.ValidatePassword(null!);
+            var result = await _controller.ValidatePasswordAsync(null!);
 
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var dict = AsDictionary(badRequest.Value);

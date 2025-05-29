@@ -1,12 +1,8 @@
-using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
 using OlympiadApi.Models;
 using OlympiadApi.Repositories.Interfaces;
 using OlympiadApi.Services;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace OlympiadApi.Tests.Services
 {

@@ -35,7 +35,7 @@ namespace OlympiadApi.Tests.Helpers
             var config = new ConfigurationBuilder().AddInMemoryCollection(configData!).Build();
 
             var userService = new Mock<IUserService>();
-            userService.Setup(s => s.GetUserById(It.IsAny<int>())).Returns(user);
+            userService.Setup(s => s.GetUserByIdAsync(It.IsAny<int>())).ReturnsAsync(user);
 
             return new JwtHelper(config, userService.Object);
         }
@@ -270,30 +270,30 @@ namespace OlympiadApi.Tests.Helpers
 
 
         [Fact]
-        public void ValidatePassword_ReturnsTrue_WhenCorrect()
+        public async Task ValidatePassword_ReturnsTrue_WhenCorrect()
         {
             var hashed = BCrypt.Net.BCrypt.HashPassword("secret123");
             var user = CreateTestUser(hashed);
 
             var jwt = CreateHelper(user);
-            Assert.True(jwt.ValidatePassword(1, "secret123"));
+            Assert.True(await jwt.ValidatePasswordAsync(1, "secret123"));
         }
 
         [Fact]
-        public void ValidatePassword_ReturnsFalse_WhenIncorrect()
+        public async Task ValidatePassword_ReturnsFalse_WhenIncorrect()
         {
             var hashed = BCrypt.Net.BCrypt.HashPassword("secret123");
             var user = CreateTestUser(hashed);
 
             var jwt = CreateHelper(user);
-            Assert.False(jwt.ValidatePassword(1, "wrong"));
+            Assert.False(await jwt.ValidatePasswordAsync(1, "wrong"));
         }
 
         [Fact]
-        public void ValidatePassword_ReturnsFalse_WhenUserNotFound()
+        public async Task ValidatePassword_ReturnsFalse_WhenUserNotFound()
         {
             var jwt = CreateHelper(user: null);
-            Assert.False(jwt.ValidatePassword(42, "any"));
+            Assert.False(await jwt.ValidatePasswordAsync(42, "any"));
         }
     }
 }

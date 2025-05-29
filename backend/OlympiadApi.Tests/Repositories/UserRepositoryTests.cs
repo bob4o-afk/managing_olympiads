@@ -33,19 +33,19 @@ namespace OlympiadApi.Tests.Repositories
         }
 
         [Fact]
-        public void CreateUser_AddsUser()
+        public async Task CreateUser_AddsUser()
         {
             using var context = GetInMemoryDbContext();
             var repo = new UserRepository(context);
 
             var user = CreateSampleUser();
-            repo.CreateUser(user);
+            await repo.CreateUserAsync(user);
 
             Assert.Single(context.Users);
         }
 
         [Fact]
-        public void GetAllUsers_ReturnsAllUsers()
+        public async Task GetAllUsers_ReturnsAllUsers()
         {
             using var context = GetInMemoryDbContext();
             var user1 = CreateSampleUser();
@@ -56,14 +56,14 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new UserRepository(context);
-            var users = repo.GetAllUsers().ToList();
+            var users = (await repo.GetAllUsersAsync()).ToList();
 
             Assert.Equal(2, users.Count);
             Assert.All(users, u => Assert.False(string.IsNullOrEmpty(u.Username)));
         }
 
         [Fact]
-        public void GetUserById_ReturnsCorrectUser()
+        public async Task GetUserById_ReturnsCorrectUser()
         {
             using var context = GetInMemoryDbContext();
             var user = CreateSampleUser();
@@ -71,14 +71,14 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new UserRepository(context);
-            var result = repo.GetUserById(user.UserId);
+            var result = await repo.GetUserByIdAsync(user.UserId);
 
             Assert.NotNull(result);
             Assert.Equal("testuser", result.Username);
         }
 
         [Fact]
-        public void GetUserByUsername_ReturnsDto()
+        public async Task GetUserByUsername_ReturnsDto()
         {
             using var context = GetInMemoryDbContext();
             var user = CreateSampleUser();
@@ -86,25 +86,25 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new UserRepository(context);
-            var result = repo.GetUserByUsername("testuser");
+            var result = await repo.GetUserByUsernameAsync("testuser");
 
             Assert.NotNull(result);
             Assert.Equal("testuser", result.Username);
         }
 
         [Fact]
-        public void GetUserByUsername_ReturnsNull_WhenUserNotFound()
+        public async Task GetUserByUsername_ReturnsNull_WhenUserNotFound()
         {
             using var context = GetInMemoryDbContext();
 
             var repo = new UserRepository(context);
-            var result = repo.GetUserByUsername("nonexistent");
+            var result = await repo.GetUserByUsernameAsync("nonexistent");
 
             Assert.Null(result);
         }
 
         [Fact]
-        public void FindUserByUsernameOrEmail_ReturnsCorrectUser()
+        public async Task FindUserByUsernameOrEmail_ReturnsCorrectUser()
         {
             using var context = GetInMemoryDbContext();
             var user = CreateSampleUser();
@@ -112,15 +112,15 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new UserRepository(context);
-            var resultByUsername = repo.FindUserByUsernameOrEmail("testuser");
-            var resultByEmail = repo.FindUserByUsernameOrEmail("test@example.com");
+            var resultByUsername = await repo.FindUserByUsernameOrEmailAsync("testuser");
+            var resultByEmail = await repo.FindUserByUsernameOrEmailAsync("test@example.com");
 
             Assert.NotNull(resultByUsername);
             Assert.NotNull(resultByEmail);
         }
 
         [Fact]
-        public void UpdateUser_ChangesData()
+        public async Task UpdateUser_ChangesData()
         {
             using var context = GetInMemoryDbContext();
             var user = CreateSampleUser();
@@ -129,14 +129,14 @@ namespace OlympiadApi.Tests.Repositories
 
             user.Name = "Updated Name";
             var repo = new UserRepository(context);
-            repo.UpdateUser(user);
+            await repo.UpdateUserAsync(user);
 
             var updated = context.Users.FirstOrDefault(u => u.UserId == user.UserId);
             Assert.Equal("Updated Name", updated!.Name);
         }
 
         [Fact]
-        public void DeleteUser_RemovesUser()
+        public async Task DeleteUser_RemovesUser()
         {
             using var context = GetInMemoryDbContext();
             var user = CreateSampleUser();
@@ -144,13 +144,13 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new UserRepository(context);
-            repo.DeleteUser(user.UserId);
+            await repo.DeleteUserAsync(user.UserId);
 
             Assert.Empty(context.Users);
         }
 
         [Fact]
-        public void UpdateUser_ThrowsException_WhenUserNotFound()
+        public async Task UpdateUser_ThrowsException_WhenUserNotFound()
         {
             using var context = GetInMemoryDbContext();
             var user = CreateSampleUser();
@@ -158,7 +158,7 @@ namespace OlympiadApi.Tests.Repositories
 
             var repo = new UserRepository(context);
 
-            Assert.Throws<ArgumentException>(() => repo.UpdateUser(user));
+            await Assert.ThrowsAsync<ArgumentException>(() => repo.UpdateUserAsync(user));
         }
     }
 }

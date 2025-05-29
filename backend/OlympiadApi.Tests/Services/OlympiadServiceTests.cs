@@ -34,43 +34,43 @@ namespace OlympiadApi.Tests.Services
         }
 
         [Fact]
-        public void AddOlympiad_ValidOlympiad_CallsRepository()
+        public async Task AddOlympiad_ValidOlympiad_CallsRepository()
         {
             var olympiad = CreateValidOlympiad();
 
-            _service.AddOlympiad(olympiad);
+            await _service.AddOlympiadAsync(olympiad);
 
-            _repositoryMock.Verify(r => r.AddOlympiad(olympiad), Times.Once);
+            _repositoryMock.Verify(r => r.AddOlympiadAsync(olympiad), Times.Once);
         }
 
         [Fact]
-        public void AddOlympiad_NullOlympiad_ThrowsArgumentNullException()
+        public async Task AddOlympiad_NullOlympiad_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => _service.AddOlympiad(null!));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _service.AddOlympiadAsync(null!));
         }
 
         [Fact]
-        public void AddOlympiad_EmptySubject_ThrowsArgumentException()
+        public async Task AddOlympiad_EmptySubject_ThrowsArgumentException()
         {
             var olympiad = CreateValidOlympiad();
             olympiad.Subject = "";
 
-            var ex = Assert.Throws<ArgumentException>(() => _service.AddOlympiad(olympiad));
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => _service.AddOlympiadAsync(olympiad));
             Assert.Equal("Subject is required. (Parameter 'Subject')", ex.Message);
         }
 
         [Fact]
-        public void AddOlympiad_DefaultDate_ThrowsArgumentException()
+        public async Task AddOlympiad_DefaultDate_ThrowsArgumentException()
         {
             var olympiad = CreateValidOlympiad();
             olympiad.DateOfOlympiad = default;
 
-            var ex = Assert.Throws<ArgumentException>(() => _service.AddOlympiad(olympiad));
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => _service.AddOlympiadAsync(olympiad));
             Assert.Equal("Date of Olympiad is required. (Parameter 'DateOfOlympiad')", ex.Message);
         }
 
         [Fact]
-        public void GetAllOlympiads_ReturnsOlympiads()
+        public async Task GetAllOlympiads_ReturnsOlympiads()
         {
             var olympiads = new List<Olympiad>
             {
@@ -78,22 +78,22 @@ namespace OlympiadApi.Tests.Services
                 CreateValidOlympiad()
             };
 
-            _repositoryMock.Setup(r => r.GetAllOlympiads()).Returns(olympiads);
+            _repositoryMock.Setup(r => r.GetAllOlympiadsAsync()).ReturnsAsync(olympiads);
 
-            var result = _service.GetAllOlympiads().ToList();
+            var result = (await _service.GetAllOlympiadsAsync()).ToList();
 
             Assert.Equal(2, result.Count);
         }
 
         [Fact]
-        public void GetOlympiadById_ValidId_ReturnsOlympiad()
+        public async Task GetOlympiadById_ValidId_ReturnsOlympiad()
         {
             var olympiad = CreateValidOlympiad();
             olympiad.Subject = "Chemistry";
 
-            _repositoryMock.Setup(r => r.GetOlympiadById(1)).Returns(olympiad);
+            _repositoryMock.Setup(r => r.GetOlympiadByIdAsync(1)).ReturnsAsync(olympiad);
 
-            var result = _service.GetOlympiadById(1);
+            var result = await _service.GetOlympiadByIdAsync(1);
 
             Assert.NotNull(result);
             Assert.Equal("Chemistry", result.Subject);

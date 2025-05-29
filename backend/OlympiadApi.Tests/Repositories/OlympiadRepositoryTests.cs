@@ -25,7 +25,7 @@ namespace OlympiadApi.Tests.Repositories
         }
 
         [Fact]
-        public void AddOlympiad_SuccessfullyAddsValidOlympiad()
+        public async Task AddOlympiad_SuccessfullyAddsValidOlympiad()
         {
             using var context = GetInMemoryDbContext();
             var repo = new OlympiadRepository(context);
@@ -40,7 +40,7 @@ namespace OlympiadApi.Tests.Repositories
                 AcademicYearId = 1
             };
 
-            repo.AddOlympiad(olympiad);
+            await repo.AddOlympiadAsync(olympiad);
 
             var saved = context.Olympiads.FirstOrDefault();
             Assert.NotNull(saved);
@@ -48,7 +48,7 @@ namespace OlympiadApi.Tests.Repositories
         }
 
         [Fact]
-        public void AddOlympiad_ThrowsException_WhenSubjectIsNull()
+        public async Task AddOlympiad_ThrowsException_WhenSubjectIsNull()
         {
             using var context = GetInMemoryDbContext();
             var repo = new OlympiadRepository(context);
@@ -63,12 +63,12 @@ namespace OlympiadApi.Tests.Repositories
                 AcademicYearId = 1
             };
 
-            var ex = Assert.Throws<ArgumentException>(() => repo.AddOlympiad(olympiad));
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => repo.AddOlympiadAsync(olympiad));
             Assert.Contains("Olympiad subject cannot be null or empty", ex.Message);
         }
 
         [Fact]
-        public void AddOlympiad_ThrowsException_WhenDateIsDefault()
+        public async Task AddOlympiad_ThrowsException_WhenDateIsDefault()
         {
             using var context = GetInMemoryDbContext();
             var repo = new OlympiadRepository(context);
@@ -83,12 +83,12 @@ namespace OlympiadApi.Tests.Repositories
                 AcademicYearId = 1
             };
 
-            var ex = Assert.Throws<ArgumentException>(() => repo.AddOlympiad(olympiad));
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => repo.AddOlympiadAsync(olympiad));
             Assert.Contains("Olympiad DateOfOlympiad cannot be default", ex.Message);
         }
 
         [Fact]
-        public void GetAllOlympiads_ReturnsOlympiads()
+        public async Task GetAllOlympiads_ReturnsOlympiads()
         {
             using var context = GetInMemoryDbContext();
 
@@ -119,7 +119,7 @@ namespace OlympiadApi.Tests.Repositories
 
             var repo = new OlympiadRepository(context);
 
-            var result = repo.GetAllOlympiads().ToList();
+            var result = (await repo.GetAllOlympiadsAsync()).ToList();
 
             Assert.Equal(2, result.Count);
             Assert.All(result, o => Assert.NotNull(o.AcademicYear));
@@ -127,7 +127,7 @@ namespace OlympiadApi.Tests.Repositories
 
 
         [Fact]
-        public void GetAllOlympiads_ReturnsEmptyList_WhenOlympiadsIsNull()
+        public async Task GetAllOlympiads_ReturnsEmptyList_WhenOlympiadsIsNull()
         {
             var mockContext = new Mock<ApplicationDbContext>(
                 new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -139,14 +139,14 @@ namespace OlympiadApi.Tests.Repositories
 
             var repo = new OlympiadRepository(mockContext.Object);
 
-            var result = repo.GetAllOlympiads();
+            var result = await repo.GetAllOlympiadsAsync();
 
             Assert.NotNull(result);
             Assert.Empty(result);
         }
 
         [Fact]
-        public void GetOlympiadById_ReturnsCorrectOlympiad()
+        public async Task GetOlympiadById_ReturnsCorrectOlympiad()
         {
             using var context = GetInMemoryDbContext();
 
@@ -169,7 +169,7 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new OlympiadRepository(context);
-            var result = repo.GetOlympiadById(99);
+            var result = await repo.GetOlympiadByIdAsync(99);
 
             Assert.NotNull(result);
             Assert.Equal("Biology", result.Subject);
@@ -178,17 +178,17 @@ namespace OlympiadApi.Tests.Repositories
         }
 
         [Fact]
-        public void GetOlympiadById_Throws_WhenNotFound()
+        public async Task GetOlympiadById_Throws_WhenNotFound()
         {
             using var context = GetInMemoryDbContext();
             var repo = new OlympiadRepository(context);
 
-            var ex = Assert.Throws<KeyNotFoundException>(() => repo.GetOlympiadById(1000));
+            var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => repo.GetOlympiadByIdAsync(1000));
             Assert.Contains("Olympiad with ID 1000 not found", ex.Message);
         }
 
         [Fact]
-        public void GetOlympiadById_ThrowsKeyNotFound_WhenDbSetIsNull()
+        public async Task GetOlympiadById_ThrowsKeyNotFound_WhenDbSetIsNull()
         {
             var mockContext = new Mock<ApplicationDbContext>(
                 new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -200,22 +200,22 @@ namespace OlympiadApi.Tests.Repositories
 
             var repo = new OlympiadRepository(mockContext.Object);
 
-            var ex = Assert.Throws<KeyNotFoundException>(() => repo.GetOlympiadById(1));
-            Assert.Equal("Olympiad with ID 1 not found.", ex.Message);
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => repo.GetOlympiadByIdAsync(1));
+            Assert.Equal("Olympiads DbSet is not initialized.", ex.Message);
         }
 
         [Fact]
-        public void AddOlympiad_ThrowsArgumentNullException_WhenOlympiadIsNull()
+        public async Task AddOlympiad_ThrowsArgumentNullException_WhenOlympiadIsNull()
         {
             using var context = GetInMemoryDbContext();
             var repo = new OlympiadRepository(context);
 
-            var ex = Assert.Throws<ArgumentNullException>(() => repo.AddOlympiad(null!));
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => repo.AddOlympiadAsync(null!));
             Assert.Equal("olympiad", ex.ParamName);
         }
 
         [Fact]
-        public void AddOlympiad_ThrowsArgumentException_WhenSubjectIsEmpty()
+        public async Task AddOlympiad_ThrowsArgumentException_WhenSubjectIsEmpty()
         {
             using var context = GetInMemoryDbContext();
             var repo = new OlympiadRepository(context);
@@ -230,12 +230,12 @@ namespace OlympiadApi.Tests.Repositories
                 AcademicYearId = 1
             };
 
-            var ex = Assert.Throws<ArgumentException>(() => repo.AddOlympiad(olympiad));
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => repo.AddOlympiadAsync(olympiad));
             Assert.Equal("Olympiad subject cannot be null or empty. (Parameter 'Subject')", ex.Message);
         }
 
         [Fact]
-        public void AddOlympiad_ThrowsArgumentException_WhenDateOfOlympiadIsDefault()
+        public async Task AddOlympiad_ThrowsArgumentException_WhenDateOfOlympiadIsDefault()
         {
             using var context = GetInMemoryDbContext();
             var repo = new OlympiadRepository(context);
@@ -250,12 +250,12 @@ namespace OlympiadApi.Tests.Repositories
                 AcademicYearId = 1
             };
 
-            var ex = Assert.Throws<ArgumentException>(() => repo.AddOlympiad(olympiad));
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => repo.AddOlympiadAsync(olympiad));
             Assert.Contains("Olympiad DateOfOlympiad cannot be default", ex.Message);
         }
 
         [Fact]
-        public void AddOlympiad_ThrowsArgumentException_WhenSubjectIsNull()
+        public async Task AddOlympiad_ThrowsArgumentException_WhenSubjectIsNull()
         {
             using var context = GetInMemoryDbContext();
             var repo = new OlympiadRepository(context);
@@ -270,17 +270,17 @@ namespace OlympiadApi.Tests.Repositories
                 AcademicYearId = 1
             };
 
-            var ex = Assert.Throws<ArgumentException>(() => repo.AddOlympiad(olympiad));
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => repo.AddOlympiadAsync(olympiad));
             Assert.Contains("Olympiad subject cannot be null or empty.", ex.Message);
         }
 
         [Fact]
-        public void GetOlympiadById_ThrowsKeyNotFound_WhenOlympiadNotFound()
+        public async Task GetOlympiadById_ThrowsKeyNotFound_WhenOlympiadNotFound()
         {
             using var context = GetInMemoryDbContext();
             var repo = new OlympiadRepository(context);
 
-            var ex = Assert.Throws<KeyNotFoundException>(() => repo.GetOlympiadById(999));
+            var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => repo.GetOlympiadByIdAsync(999));
             Assert.Equal("Olympiad with ID 999 not found.", ex.Message);
         }
     }

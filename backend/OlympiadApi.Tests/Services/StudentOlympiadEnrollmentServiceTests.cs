@@ -2,18 +2,25 @@ using Moq;
 using OlympiadApi.Models;
 using OlympiadApi.Repositories.Interfaces;
 using OlympiadApi.Services;
+using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Tests.Services
 {
     public class StudentOlympiadEnrollmentServiceTests
     {
         private readonly Mock<IStudentOlympiadEnrollmentRepository> _repositoryMock;
+        private readonly Mock<IUserRepository> _userRepositoryMock;
+        private readonly Mock<IOlympiadRepository> _olympiadRepositoryMock;
+        private readonly Mock<IEmailService> _emailServiceMock;
         private readonly StudentOlympiadEnrollmentService _service;
 
         public StudentOlympiadEnrollmentServiceTests()
         {
             _repositoryMock = new Mock<IStudentOlympiadEnrollmentRepository>();
-            _service = new StudentOlympiadEnrollmentService(_repositoryMock.Object);
+            _userRepositoryMock = new Mock<IUserRepository>();
+            _olympiadRepositoryMock = new Mock<IOlympiadRepository>();
+            _emailServiceMock = new Mock<IEmailService>();
+            _service = new StudentOlympiadEnrollmentService(_repositoryMock.Object, _userRepositoryMock.Object, _olympiadRepositoryMock.Object, _emailServiceMock.Object);
         }
 
         private StudentOlympiadEnrollment CreateValidEnrollment() => new StudentOlympiadEnrollment
@@ -135,6 +142,111 @@ namespace OlympiadApi.Tests.Services
 
             Assert.Equal(newEnrollment, result);
         }
+
+        [Fact]
+        public async Task CreateEnrollmentAsync_SendsEmail_WhenUserAndOlympiadExist()
+        {
+            var enrollment = CreateValidEnrollment();
+
+            var user = new User
+            {
+                UserId = enrollment.UserId,
+                Email = "student@example.com",
+                Name = "Test Student",
+                DateOfBirth = new DateTime(2005, 1, 1),
+                AcademicYearId = 1,
+                Username = "teststudent",
+                Password = "TestPassword123"
+            };
+
+            var olympiad = new Olympiad
+            {
+                OlympiadId = enrollment.OlympiadId,
+                Subject = "Математика",
+                Location = "София",
+                DateOfOlympiad = new DateTime(2025, 5, 10),
+                StartTime = new DateTime(2025, 5, 10, 10, 0, 0),
+                Round = "Областен",
+                ClassNumber = 12
+            };
+
+            _repositoryMock.Setup(r => r.GetAllEnrollmentsAsync())
+                .ReturnsAsync(new List<StudentOlympiadEnrollment>());
+            _repositoryMock.Setup(r => r.CreateEnrollmentAsync(enrollment))
+                .ReturnsAsync(enrollment);
+
+            _userRepositoryMock.Setup(r => r.GetUserByIdAsync(enrollment.UserId))
+                .ReturnsAsync(user);
+            _olympiadRepositoryMock.Setup(r => r.GetOlympiadByIdAsync(enrollment.OlympiadId))
+                .ReturnsAsync(olympiad);
+
+            _emailServiceMock.Setup(e =>
+                e.SendEmailAsync(
+                    user.Email,
+                    It.Is<string>(s => s.Contains("олимпиадата по")),
+                    It.Is<string>(b => b.Contains("Уважаеми ученик") && b.Contains(olympiad.Location)),
+                    null
+                )
+            ).Returns(Task.CompletedTask).Verifiable();
+
+            var result = await _service.CreateEnrollmentAsync(enrollment);
+
+            Assert.Equal(enrollment, result);
+            _emailServiceMock.Verify();
+        }
+
+        [Fact]
+        public async Task CreateEnrollmentAsync_SendsEmail_WhenOlympiadHasNoStartTime()
+        {
+            var enrollment = CreateValidEnrollment();
+
+            var user = new User
+            {
+                UserId = enrollment.UserId,
+                Email = "student@example.com",
+                Name = "Test Student",
+                DateOfBirth = new DateTime(2005, 1, 1),
+                AcademicYearId = 1,
+                Username = "teststudent",
+                Password = "TestPassword123"
+            };
+
+            var olympiad = new Olympiad
+            {
+                OlympiadId = enrollment.OlympiadId,
+                Subject = "Физика",
+                Location = "Варна",
+                DateOfOlympiad = new DateTime(2025, 6, 5),
+                StartTime = null,
+                Round = "Областен",
+                ClassNumber = 11
+            };
+
+            _repositoryMock.Setup(r => r.GetAllEnrollmentsAsync())
+                .ReturnsAsync(new List<StudentOlympiadEnrollment>());
+            _repositoryMock.Setup(r => r.CreateEnrollmentAsync(enrollment))
+                .ReturnsAsync(enrollment);
+
+            _userRepositoryMock.Setup(r => r.GetUserByIdAsync(enrollment.UserId))
+                .ReturnsAsync(user);
+            _olympiadRepositoryMock.Setup(r => r.GetOlympiadByIdAsync(enrollment.OlympiadId))
+                .ReturnsAsync(olympiad);
+
+            _emailServiceMock.Setup(e =>
+                e.SendEmailAsync(
+                    user.Email,
+                    It.Is<string>(s => s.Contains("олимпиадата по")),
+                    It.Is<string>(b => b.Contains("няма конкретен час")),
+                    null
+                )
+            ).Returns(Task.CompletedTask).Verifiable();
+
+            var result = await _service.CreateEnrollmentAsync(enrollment);
+
+            Assert.Equal(enrollment, result);
+            _emailServiceMock.Verify();
+        }
+
 
         [Fact]
         public async Task UpdateEnrollmentAsync_ValidCall_CallsRepository()

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using OlympiadApi.Data;
 using OlympiadApi.Models;
 using OlympiadApi.Repositories.Interfaces;
@@ -13,20 +14,20 @@ namespace OlympiadApi.Repositories.Implementations
             _context = context;
         }
 
-        public void AddAcademicYear(AcademicYear academicYear)
+        public async Task AddAcademicYearAsync(AcademicYear academicYear)
         {
-            _context.AcademicYear.Add(academicYear);
-            _context.SaveChanges();
+            await _context.AcademicYear.AddAsync(academicYear);
+            await _context.SaveChangesAsync();
         }
 
-        public IEnumerable<AcademicYear> GetAllAcademicYears()
+        public async Task<IEnumerable<AcademicYear>> GetAllAcademicYearsAsync()
         {
-            return _context.AcademicYear.ToList();
+            return await _context.AcademicYear.ToListAsync();
         }
 
-        public AcademicYear? GetAcademicYearById(int id)
+        public async Task<AcademicYear?> GetAcademicYearByIdAsync(int id)
         {
-            return _context.AcademicYear.FirstOrDefault(ay => ay.AcademicYearId == id);
+            return await _context.AcademicYear.FirstOrDefaultAsync(ay => ay.AcademicYearId == id);
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using OlympiadApi.DTOs;
 using OlympiadApi.Helpers;
 using OlympiadApi.Repositories.Interfaces;
@@ -13,7 +14,12 @@ namespace OlympiadApi.Services
         private readonly IConfiguration _configuration;
         private readonly IUserRepository _userRepository;
 
-        public AuthService(IAuthRepository authRepository, IJwtHelper jwtHelper, IEmailService emailService, IConfiguration configuration, IUserRepository userRepository)
+        public AuthService(
+            IAuthRepository authRepository,
+            IJwtHelper jwtHelper,
+            IEmailService emailService,
+            IConfiguration configuration,
+            IUserRepository userRepository)
         {
             _authRepository = authRepository;
             _jwtHelper = jwtHelper;
@@ -24,11 +30,11 @@ namespace OlympiadApi.Services
 
         public async Task<object?> LoginAsync(LoginDto loginDto)
         {
-            var userdto = await _authRepository.AuthenticateUserAsync(loginDto.UsernameOrEmail, loginDto.Password);
-            if (userdto == null) return null;
+            var userDto = await _authRepository.AuthenticateUserAsync(loginDto.UsernameOrEmail, loginDto.Password);
+            if (userDto == null) return null;
 
-            var userRolesWithPermissions = await _authRepository.GetUserRolesWithPermissionsAsync(userdto.UserId);
-            var user = _userRepository.FindUserByUsernameOrEmail(userdto.Email);
+            var userRolesWithPermissions = await _authRepository.GetUserRolesWithPermissionsAsync(userDto.UserId);
+            var user = await _userRepository.FindUserByUsernameOrEmailAsync(userDto.Email);
             if (user == null) return null;
 
             var token = _jwtHelper.GenerateJwtToken(user, userRolesWithPermissions);
@@ -46,14 +52,14 @@ namespace OlympiadApi.Services
             };
         }
 
-        public async Task<bool> RequestPasswordChange(PasswordChangeRequestDto requestDto)
+        public async Task<bool> RequestPasswordChangeAsync(PasswordChangeRequestDto requestDto)
         {
-            var user = _authRepository.GetUserByEmailOrUsername(requestDto.UsernameOrEmail);
+            var user = await _authRepository.GetUserByEmailOrUsernameAsync(requestDto.UsernameOrEmail);
             if (user == null) return false;
 
             var resetToken = Guid.NewGuid().ToString();
             var expiration = DateTime.Now.AddHours(1);
-            _authRepository.StorePasswordResetToken(user.UserId, resetToken, expiration);
+            await _authRepository.StorePasswordResetTokenAsync(user.UserId, resetToken, expiration);
 
             // Create and send email
             var frontendUrl = _configuration["FrontendUrl"];
@@ -65,14 +71,12 @@ namespace OlympiadApi.Services
             return true;
         }
 
-        public bool ResetPassword(string token, ResetPasswordDto resetPasswordDto)
+        public async Task<bool> ResetPasswordAsync(string token, ResetPasswordDto resetPasswordDto)
         {
-            if (!_authRepository.ValidateResetToken(token))
-            {
-                return false;
-            }
+            var isValid = await _authRepository.ValidateResetTokenAsync(token);
+            if (!isValid) return false;
 
-            return _authRepository.ResetPasswordWithToken(token, resetPasswordDto.NewPassword);
+            return await _authRepository.ResetPasswordWithTokenAsync(token, resetPasswordDto.NewPassword);
         }
 
         public bool ValidateToken(string token)
@@ -80,7 +84,7 @@ namespace OlympiadApi.Services
             return _jwtHelper.ValidateJwtToken(token);
         }
 
-        public (bool IsValid, string Message) ValidatePassword(string token, ValidatePasswordDto validatePasswordDto)
+        public async Task<(bool IsValid, string Message)> ValidatePasswordAsync(string token, ValidatePasswordDto validatePasswordDto)
         {
             var claims = _jwtHelper.GetClaimsFromJwt(token);
 
@@ -89,14 +93,14 @@ namespace OlympiadApi.Services
                 return (false, "Token is invalid.");
             }
 
-            var userIdClaim = claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
+            var userIdClaim = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
 
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             {
                 return (false, "User ID claim not found in token.");
             }
 
-            var isPasswordValid = _authRepository.ValidateUserPassword(userId, validatePasswordDto.Password);
+            var isPasswordValid = await _authRepository.ValidateUserPasswordAsync(userId, validatePasswordDto.Password);
             if (!isPasswordValid)
             {
                 return (false, "Invalid password.");
@@ -104,6 +108,5 @@ namespace OlympiadApi.Services
 
             return (true, "Password validated successfully.");
         }
-
     }
 }

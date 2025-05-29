@@ -4,8 +4,8 @@ namespace OlympiadApi.Repositories.Interfaces
 {
     public interface IAcademicYearRepository
     {
-        void AddAcademicYear(AcademicYear academicYear);
-        IEnumerable<AcademicYear> GetAllAcademicYears();
-        AcademicYear? GetAcademicYearById(int id);
+        Task AddAcademicYearAsync(AcademicYear academicYear);
+        Task<IEnumerable<AcademicYear>> GetAllAcademicYearsAsync();
+        Task<AcademicYear?> GetAcademicYearByIdAsync(int id);
     }
 }

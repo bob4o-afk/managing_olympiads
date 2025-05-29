@@ -38,7 +38,7 @@ namespace OlympiadApi.Tests.Infrastructure
                     .Returns([new System.Security.Claims.Claim("Roles", "Admin")]);
 
                 var userServiceMock = new Mock<IUserService>();
-                userServiceMock.Setup(u => u.GetUserById(It.IsAny<int>())).Returns(new OlympiadApi.Models.User
+                userServiceMock.Setup(u => u.GetUserByIdAsync(It.IsAny<int>())).ReturnsAsync(new OlympiadApi.Models.User
                 {
                     UserId = 1,
                     Name = "Test",

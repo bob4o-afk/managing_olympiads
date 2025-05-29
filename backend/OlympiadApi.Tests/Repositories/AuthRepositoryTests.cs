@@ -93,7 +93,7 @@ namespace OlympiadApi.Tests.Repositories
         }
 
         [Fact]
-        public void GetUserByEmailOrUsername_ReturnsUserDto_WhenExists()
+        public async Task GetUserByEmailOrUsername_ReturnsUserDto_WhenExists()
         {
             using var context = GetInMemoryDbContext();
             var user = CreateUser();
@@ -102,24 +102,24 @@ namespace OlympiadApi.Tests.Repositories
 
             var repo = new AuthRepository(context);
 
-            var byUsername = repo.GetUserByEmailOrUsername("user");
-            var byEmail = repo.GetUserByEmailOrUsername("user@example.com");
+            var byUsername = await repo.GetUserByEmailOrUsernameAsync("user");
+            var byEmail = await repo.GetUserByEmailOrUsernameAsync("user@example.com");
 
             Assert.NotNull(byUsername);
             Assert.NotNull(byEmail);
         }
 
         [Fact]
-        public void GetUserByEmailOrUsername_ReturnsNull_WhenNotExists()
+        public async Task GetUserByEmailOrUsername_ReturnsNull_WhenNotExists()
         {
             using var context = GetInMemoryDbContext();
             var repo = new AuthRepository(context);
-            var result = repo.GetUserByEmailOrUsername("notfound");
+            var result = await repo.GetUserByEmailOrUsernameAsync("notfound");
             Assert.Null(result);
         }
 
         [Fact]
-        public void StorePasswordResetToken_CreatesToken()
+        public async Task StorePasswordResetToken_CreatesToken()
         {
             using var context = GetInMemoryDbContext();
             var user = CreateUser();
@@ -127,7 +127,7 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new AuthRepository(context);
-            repo.StorePasswordResetToken(user.UserId, "token123", DateTime.Now.AddHours(1));
+            await repo.StorePasswordResetTokenAsync(user.UserId, "token123", DateTime.Now.AddHours(1));
 
             Assert.Single(context.UserToken);
             Assert.Equal("token123", context.UserToken.First().Token);
@@ -135,7 +135,7 @@ namespace OlympiadApi.Tests.Repositories
 
 
         [Fact]
-        public void ValidateResetToken_ReturnsTrue_WhenValid()
+        public async Task ValidateResetToken_ReturnsTrue_WhenValid()
         {
             using var context = GetInMemoryDbContext();
             var user = CreateUser();
@@ -153,11 +153,11 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new AuthRepository(context);
-            Assert.True(repo.ValidateResetToken("token123"));
+            Assert.True(await repo.ValidateResetTokenAsync("token123"));
         }
 
         [Fact]
-        public void ValidateResetToken_ReturnsFalse_WhenInvalidOrExpired()
+        public async Task ValidateResetToken_ReturnsFalse_WhenInvalidOrExpired()
         {
             using var context = GetInMemoryDbContext();
             context.UserToken.Add(new UserToken
@@ -171,12 +171,12 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new AuthRepository(context);
-            Assert.False(repo.ValidateResetToken("expired"));
-            Assert.False(repo.ValidateResetToken("nonexistent"));
+            Assert.False(await repo.ValidateResetTokenAsync("expired"));
+            Assert.False(await repo.ValidateResetTokenAsync("nonexistent"));
         }
 
         [Fact]
-        public void ValidateUserPassword_ReturnsTrue_WhenPasswordMatches()
+        public async Task ValidateUserPassword_ReturnsTrue_WhenPasswordMatches()
         {
             using var context = GetInMemoryDbContext();
             var user = CreateUser();
@@ -184,11 +184,11 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new AuthRepository(context);
-            Assert.True(repo.ValidateUserPassword(user.UserId, "Password123"));
+            Assert.True(await repo.ValidateUserPasswordAsync(user.UserId, "Password123"));
         }
 
         [Fact]
-        public void ValidateUserPassword_ReturnsFalse_WhenNoUserOrWrongPassword()
+        public async Task ValidateUserPassword_ReturnsFalse_WhenNoUserOrWrongPassword()
         {
             using var context = GetInMemoryDbContext();
             var user = CreateUser();
@@ -196,8 +196,8 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new AuthRepository(context);
-            Assert.False(repo.ValidateUserPassword(user.UserId, "WrongPass"));
-            Assert.False(repo.ValidateUserPassword(9999, "Password123"));
+            Assert.False(await repo.ValidateUserPasswordAsync(user.UserId, "WrongPass"));
+            Assert.False(await repo.ValidateUserPasswordAsync(9999, "Password123"));
         }
 
         [Fact]
@@ -241,7 +241,7 @@ namespace OlympiadApi.Tests.Repositories
         }
 
         [Fact]
-        public void StorePasswordResetToken_ReplacesExistingToken()
+        public async Task StorePasswordResetToken_ReplacesExistingToken()
         {
             using var context = GetInMemoryDbContext();
             var user = CreateUser();
@@ -255,7 +255,7 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new AuthRepository(context);
-            repo.StorePasswordResetToken(user.UserId, "newToken", DateTime.Now.AddHours(2));
+            await repo.StorePasswordResetTokenAsync(user.UserId, "newToken", DateTime.Now.AddHours(2));
 
             var token = context.UserToken.FirstOrDefault(ut => ut.UserId == user.UserId);
             Assert.NotNull(token);
@@ -263,7 +263,7 @@ namespace OlympiadApi.Tests.Repositories
         }
 
         [Fact]
-        public void ResetPasswordWithToken_ReturnsFalse_WhenTokenIsExpired()
+        public async Task ResetPasswordWithToken_ReturnsFalse_WhenTokenIsExpired()
         {
             using var context = GetInMemoryDbContext();
             var user = CreateUser();
@@ -277,24 +277,24 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new AuthRepository(context);
-            var result = repo.ResetPasswordWithToken("expiredToken", "newPass");
+            var result = await repo.ResetPasswordWithTokenAsync("expiredToken", "newPass");
 
             Assert.False(result);
             Assert.Empty(context.UserToken);
         }
 
         [Fact]
-        public void ResetPasswordWithToken_ReturnsFalse_WhenTokenNotFound()
+        public async Task ResetPasswordWithToken_ReturnsFalse_WhenTokenNotFound()
         {
             using var context = GetInMemoryDbContext();
             var repo = new AuthRepository(context);
 
-            var result = repo.ResetPasswordWithToken("nonexistent", "newPass");
+            var result = await repo.ResetPasswordWithTokenAsync("nonexistent", "newPass");
             Assert.False(result);
         }
 
         [Fact]
-        public void ResetPasswordWithToken_ReturnsFalse_WhenUserNotFound()
+        public async Task ResetPasswordWithToken_ReturnsFalse_WhenUserNotFound()
         {
             using var context = GetInMemoryDbContext();
             context.UserToken.Add(new UserToken
@@ -306,13 +306,13 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new AuthRepository(context);
-            var result = repo.ResetPasswordWithToken("validToken", "newPass");
+            var result = await repo.ResetPasswordWithTokenAsync("validToken", "newPass");
 
             Assert.False(result);
         }
 
         [Fact]
-        public void ResetPasswordWithToken_ResetsPassword_WhenValid()
+        public async Task ResetPasswordWithToken_ResetsPassword_WhenValid()
         {
             using var context = GetInMemoryDbContext();
             var user = CreateUser();
@@ -326,7 +326,7 @@ namespace OlympiadApi.Tests.Repositories
             context.SaveChanges();
 
             var repo = new AuthRepository(context);
-            var result = repo.ResetPasswordWithToken("validToken", "newSecurePass");
+            var result = await repo.ResetPasswordWithTokenAsync("validToken", "newSecurePass");
 
             Assert.True(result);
             var updatedUser = context.Users.First(u => u.UserId == user.UserId);

@@ -18,11 +18,11 @@ namespace OlympiadApi.Controllers
 
         // GET: api/olympiad
         [HttpGet]
-        public IActionResult GetAllOlympiads()
+        public async Task<IActionResult> GetAllOlympiadsAsync()
         {
             try
             {
-                var olympiads = _olympiadService.GetAllOlympiads();
+                var olympiads = await _olympiadService.GetAllOlympiadsAsync();
                 return Ok(olympiads); // Return all Olympiads
             }
             catch (Exception ex)
@@ -33,11 +33,11 @@ namespace OlympiadApi.Controllers
 
         // GET: api/olympiad/{id}
         [HttpGet("{id}")]
-        public IActionResult GetOlympiadById(int id)
+        public async Task<IActionResult> GetOlympiadByIdAsync(int id)
         {
             try
             {
-                var olympiad = _olympiadService.GetOlympiadById(id);
+                var olympiad = await _olympiadService.GetOlympiadByIdAsync(id);
                 if (olympiad == null)
                 {
                     return NotFound(new { message = "Olympiad not found." });
@@ -52,8 +52,8 @@ namespace OlympiadApi.Controllers
 
         // POST: api/olympiad
         [HttpPost]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
-        public IActionResult CreateOlympiad([FromBody] Olympiad olympiad)
+        [RoleAuthorize("Admin")]
+        public async Task<IActionResult> CreateOlympiadAsync([FromBody] Olympiad olympiad)
         {
             try
             {
@@ -62,10 +62,10 @@ namespace OlympiadApi.Controllers
                     return BadRequest(new { message = "Invalid data." });
                 }
 
-                _olympiadService.AddOlympiad(olympiad);
+                await _olympiadService.AddOlympiadAsync(olympiad);
 
 
-                return CreatedAtAction(nameof(GetOlympiadById), new { id = olympiad.OlympiadId }, olympiad);
+                return CreatedAtAction(nameof(GetOlympiadByIdAsync), new { id = olympiad.OlympiadId }, olympiad);
             }
             catch (Exception ex)
             {

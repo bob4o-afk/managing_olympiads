@@ -46,35 +46,35 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void GetAllUsers_ReturnsOkWithUsers()
+        public async Task GetAllUsers_ReturnsOkWithUsers()
         {
             var users = new List<UserDto> { CreateValidUserDto() };
-            _mockService.Setup(s => s.GetAllUsers()).Returns(users);
+            _mockService.Setup(s => s.GetAllUsersAsync()).ReturnsAsync(users);
 
-            var result = _controller.GetAllUsers();
+            var result = await _controller.GetAllUsersAsync();
 
             var ok = Assert.IsType<OkObjectResult>(result);
             Assert.Equal(users, ok.Value);
         }
 
         [Fact]
-        public void GetUserById_ReturnsOk_WhenFound()
+        public async Task GetUserById_ReturnsOk_WhenFound()
         {
             var user = CreateValidUser();
-            _mockService.Setup(s => s.GetUserById(1)).Returns(user);
+            _mockService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync(user);
 
-            var result = _controller.GetUserById(1);
+            var result = await _controller.GetUserByIdAsync(1);
 
             var ok = Assert.IsType<OkObjectResult>(result);
             Assert.Equal(user, ok.Value);
         }
 
         [Fact]
-        public void GetUserById_ReturnsNotFound_WhenMissing()
+        public async Task GetUserById_ReturnsNotFound_WhenMissing()
         {
-            _mockService.Setup(s => s.GetUserById(1)).Returns((User?)null);
+            _mockService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync((User?)null);
 
-            var result = _controller.GetUserById(1);
+            var result = await _controller.GetUserByIdAsync(1);
 
             var notFound = Assert.IsType<NotFoundObjectResult>(result);
             var dict = AsDictionary(notFound.Value);
@@ -82,35 +82,35 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void CreateUser_ReturnsCreatedAt()
+        public async Task CreateUser_ReturnsCreatedAt()
         {
             var user = CreateValidUser();
 
-            var result = _controller.CreateUser(user);
+            var result = await _controller.CreateUserAsync(user);
 
-            _mockService.Verify(s => s.CreateUser(user), Times.Once);
+            _mockService.Verify(s => s.CreateUserAsync(user), Times.Once);
 
             var created = Assert.IsType<CreatedAtActionResult>(result);
             Assert.Equal(user, created.Value);
         }
 
         [Fact]
-        public void UpdateUser_ReturnsNoContent_WhenValid()
+        public async Task UpdateUser_ReturnsNoContent_WhenValid()
         {
             var user = CreateValidUser();
 
-            var result = _controller.UpdateUser(1, user);
+            var result = await _controller.UpdateUserAsync(1, user);
 
-            _mockService.Verify(s => s.UpdateUser(user), Times.Once);
+            _mockService.Verify(s => s.UpdateUserAsync(user), Times.Once);
             Assert.IsType<NoContentResult>(result);
         }
 
         [Fact]
-        public void UpdateUser_ReturnsBadRequest_WhenIdMismatch()
+        public async Task UpdateUser_ReturnsBadRequest_WhenIdMismatch()
         {
             var user = CreateValidUser(2);
 
-            var result = _controller.UpdateUser(1, user);
+            var result = await _controller.UpdateUserAsync(1, user);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
             var dict = AsDictionary(bad.Value);
@@ -118,27 +118,27 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void UpdateUserNameAndEmail_ReturnsNoContent_WhenValid()
+        public async Task UpdateUserNameAndEmail_ReturnsNoContent_WhenValid()
         {
             var user = CreateValidUser();
             var dto = new UserUpdateDto { Name = "New", Email = "new@test.com" };
 
-            _mockService.Setup(s => s.GetUserById(1)).Returns(user);
+            _mockService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync(user);
 
-            var result = _controller.UpdateUserNameAndEmail(1, dto);
+            var result = await _controller.UpdateUserNameAndEmailAsync(1, dto);
 
-            _mockService.Verify(s => s.UpdateUserNameAndEmail(1, dto.Name, dto.Email), Times.Once);
+            _mockService.Verify(s => s.UpdateUserNameAndEmailAsync(1, dto.Name, dto.Email), Times.Once);
             Assert.IsType<NoContentResult>(result);
         }
 
         [Fact]
-        public void UpdateUserNameAndEmail_ReturnsNotFound_WhenMissing()
+        public async Task UpdateUserNameAndEmail_ReturnsNotFound_WhenMissing()
         {
             var dto = new UserUpdateDto { Name = "New", Email = "new@test.com" };
 
-            _mockService.Setup(s => s.GetUserById(1)).Returns((User?)null);
+            _mockService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync((User?)null);
 
-            var result = _controller.UpdateUserNameAndEmail(1, dto);
+            var result = await _controller.UpdateUserNameAndEmailAsync(1, dto);
 
             var notFound = Assert.IsType<NotFoundObjectResult>(result);
             var dict = AsDictionary(notFound.Value);
@@ -146,11 +146,11 @@ namespace OlympiadApi.Tests.Controllers
         }
 
         [Fact]
-        public void DeleteUser_ReturnsNoContent()
+        public async Task DeleteUser_ReturnsNoContent()
         {
-            var result = _controller.DeleteUser(1);
+            var result = await _controller.DeleteUserAsync(1);
 
-            _mockService.Verify(s => s.DeleteUser(1), Times.Once);
+            _mockService.Verify(s => s.DeleteUserAsync(1), Times.Once);
             Assert.IsType<NoContentResult>(result);
         }
     }

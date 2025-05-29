@@ -4,10 +4,10 @@ namespace OlympiadApi.Repositories.Interfaces
 {
     public interface IOlympiadRepository
     {
-        void AddOlympiad(Olympiad olympiad);
+        Task AddOlympiadAsync(Olympiad olympiad);
 
-        IEnumerable<Olympiad> GetAllOlympiads();
+        Task<IEnumerable<Olympiad>> GetAllOlympiadsAsync();
 
-        Olympiad GetOlympiadById(int id);
+        Task<Olympiad> GetOlympiadByIdAsync(int id);
     }
 }

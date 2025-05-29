@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Services.Interfaces;
 using OlympiadApi.DTOs;
+using OlympiadApi.Filters;
 
 namespace OlympiadApi.Controllers
 {
@@ -19,6 +20,7 @@ namespace OlympiadApi.Controllers
         //here should be made a checking for group - so only with the elsys emails
 
         [HttpPost("send")]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> SendEmail([FromBody] EmailRequest request)
         {
             await _emailService.SendEmailAsync(request.ToEmail, request.Subject, request.Body, request.CcEmail);
@@ -26,6 +28,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost("send-document")]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> SendDocumentAsync([FromForm] SendEmailWithDocumentDto request)
         {
             if (request.Document == null || request.Document.Length == 0)

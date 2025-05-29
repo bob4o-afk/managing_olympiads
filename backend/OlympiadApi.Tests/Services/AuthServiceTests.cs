@@ -7,7 +7,6 @@ using OlympiadApi.DTOs;
 using OlympiadApi.Models;
 using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace OlympiadApi.Tests.Services
 {
@@ -72,7 +71,7 @@ namespace OlympiadApi.Tests.Services
 
             _authRepoMock.Setup(x => x.AuthenticateUserAsync(dto.UsernameOrEmail, dto.Password)).ReturnsAsync(userDto);
             _authRepoMock.Setup(x => x.GetUserRolesWithPermissionsAsync(userDto.UserId)).ReturnsAsync(roles);
-            _userRepoMock.Setup(x => x.FindUserByUsernameOrEmail(userDto.Email)).Returns(user);
+            _userRepoMock.Setup(x => x.FindUserByUsernameOrEmailAsync(userDto.Email)).ReturnsAsync(user);
             _jwtHelperMock.Setup(x => x.GenerateJwtToken(user, roles)).Returns("fake-jwt-token");
 
             var result = await _authService.LoginAsync(dto);
@@ -121,8 +120,8 @@ namespace OlympiadApi.Tests.Services
                 .ReturnsAsync(fakeRoles);
 
             _userRepoMock
-                .Setup(x => x.FindUserByUsernameOrEmail(userDto.Email))
-                .Returns((User?)null);
+                .Setup(x => x.FindUserByUsernameOrEmailAsync(userDto.Email))
+                .ReturnsAsync((User?)null);
 
             var result = await _authService.LoginAsync(loginDto);
 
@@ -142,10 +141,10 @@ namespace OlympiadApi.Tests.Services
                 Email = "user@test.com"
             };
 
-            _authRepoMock.Setup(r => r.GetUserByEmailOrUsername(request.UsernameOrEmail)).Returns(userDto);
+            _authRepoMock.Setup(r => r.GetUserByEmailOrUsernameAsync(request.UsernameOrEmail)).ReturnsAsync(userDto);
             _configMock.Setup(c => c["FrontendUrl"]).Returns("http://frontend");
 
-            var result = await _authService.RequestPasswordChange(request);
+            var result = await _authService.RequestPasswordChangeAsync(request);
 
             Assert.True(result);
             _emailServiceMock.Verify(e => e.SendEmailAsync(
@@ -159,30 +158,30 @@ namespace OlympiadApi.Tests.Services
         [Fact]
         public async Task RequestPasswordChange_InvalidUser_ReturnsFalse()
         {
-            _authRepoMock.Setup(r => r.GetUserByEmailOrUsername("missing")).Returns((UserDto?)null);
+            _authRepoMock.Setup(r => r.GetUserByEmailOrUsernameAsync("missing")).ReturnsAsync((UserDto?)null);
 
-            var result = await _authService.RequestPasswordChange(new PasswordChangeRequestDto { UsernameOrEmail = "missing" });
+            var result = await _authService.RequestPasswordChangeAsync(new PasswordChangeRequestDto { UsernameOrEmail = "missing" });
 
             Assert.False(result);
         }
 
         [Fact]
-        public void ResetPassword_ValidToken_ReturnsTrue()
+        public async Task ResetPassword_ValidToken_ReturnsTrue()
         {
-            _authRepoMock.Setup(r => r.ValidateResetToken("valid")).Returns(true);
-            _authRepoMock.Setup(r => r.ResetPasswordWithToken("valid", "newpass")).Returns(true);
+            _authRepoMock.Setup(r => r.ValidateResetTokenAsync("valid")).ReturnsAsync(true);
+            _authRepoMock.Setup(r => r.ResetPasswordWithTokenAsync("valid", "newpass")).ReturnsAsync(true);
 
-            var result = _authService.ResetPassword("valid", new ResetPasswordDto { NewPassword = "newpass" });
+            var result = await _authService.ResetPasswordAsync("valid", new ResetPasswordDto { NewPassword = "newpass" });
 
             Assert.True(result);
         }
 
         [Fact]
-        public void ResetPassword_InvalidToken_ReturnsFalse()
+        public async Task ResetPassword_InvalidToken_ReturnsFalse()
         {
-            _authRepoMock.Setup(r => r.ValidateResetToken("invalid")).Returns(false);
+            _authRepoMock.Setup(r => r.ValidateResetTokenAsync("invalid")).ReturnsAsync(false);
 
-            var result = _authService.ResetPassword("invalid", new ResetPasswordDto { NewPassword = "pass" });
+            var result = await _authService.ResetPasswordAsync("invalid", new ResetPasswordDto { NewPassword = "pass" });
 
             Assert.False(result);
         }
@@ -196,44 +195,44 @@ namespace OlympiadApi.Tests.Services
         }
 
         [Fact]
-        public void ValidatePassword_ValidTokenAndPassword_ReturnsTrue()
+        public async Task ValidatePassword_ValidTokenAndPassword_ReturnsTrue()
         {
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "1") };
             _jwtHelperMock.Setup(j => j.GetClaimsFromJwt("valid-token")).Returns(claims);
-            _authRepoMock.Setup(r => r.ValidateUserPassword(1, "pass")).Returns(true);
+            _authRepoMock.Setup(r => r.ValidateUserPasswordAsync(1, "pass")).ReturnsAsync(true);
 
-            var result = _authService.ValidatePassword("valid-token", new ValidatePasswordDto { Password = "pass" });
+            var result = await _authService.ValidatePasswordAsync("valid-token", new ValidatePasswordDto { Password = "pass" });
 
             Assert.True(result.IsValid);
             Assert.Equal("Password validated successfully.", result.Message);
         }
 
         [Fact]
-        public void ValidatePassword_InvalidToken_ReturnsFalse()
+        public async Task ValidatePassword_InvalidToken_ReturnsFalse()
         {
             _jwtHelperMock.Setup(j => j.GetClaimsFromJwt("bad-token")).Returns((IEnumerable<Claim>?)null);
 
-            var result = _authService.ValidatePassword("bad-token", new ValidatePasswordDto { Password = "pass" });
+            var result = await _authService.ValidatePasswordAsync("bad-token", new ValidatePasswordDto { Password = "pass" });
 
             Assert.False(result.IsValid);
             Assert.Equal("Token is invalid.", result.Message);
         }
 
         [Fact]
-        public void ValidatePassword_InvalidPassword_ReturnsFalse()
+        public async Task ValidatePassword_InvalidPassword_ReturnsFalse()
         {
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "1") };
             _jwtHelperMock.Setup(j => j.GetClaimsFromJwt("valid-token")).Returns(claims);
-            _authRepoMock.Setup(r => r.ValidateUserPassword(1, "wrong")).Returns(false);
+            _authRepoMock.Setup(r => r.ValidateUserPasswordAsync(1, "wrong")).ReturnsAsync(false);
 
-            var result = _authService.ValidatePassword("valid-token", new ValidatePasswordDto { Password = "wrong" });
+            var result = await _authService.ValidatePasswordAsync("valid-token", new ValidatePasswordDto { Password = "wrong" });
 
             Assert.False(result.IsValid);
             Assert.Equal("Invalid password.", result.Message);
         }
 
         [Fact]
-        public void ValidatePassword_InvalidUserIdFormat_ReturnsFalse()
+        public async Task ValidatePassword_InvalidUserIdFormat_ReturnsFalse()
         {
             var claims = new List<Claim>
             {
@@ -242,7 +241,7 @@ namespace OlympiadApi.Tests.Services
 
             _jwtHelperMock.Setup(j => j.GetClaimsFromJwt("token-bad-id")).Returns(claims);
 
-            var result = _authService.ValidatePassword("token-bad-id", new ValidatePasswordDto { Password = "pass" });
+            var result = await _authService.ValidatePasswordAsync("token-bad-id", new ValidatePasswordDto { Password = "pass" });
 
             Assert.False(result.IsValid);
             Assert.Equal("User ID claim not found in token.", result.Message);
@@ -250,7 +249,7 @@ namespace OlympiadApi.Tests.Services
 
 
         [Fact]
-        public void ValidatePassword_MissingUserIdClaim_ReturnsFalse()
+        public async Task ValidatePassword_MissingUserIdClaim_ReturnsFalse()
         {
             var claims = new List<Claim>
             {
@@ -259,7 +258,7 @@ namespace OlympiadApi.Tests.Services
 
             _jwtHelperMock.Setup(j => j.GetClaimsFromJwt("token-no-id")).Returns(claims);
 
-            var result = _authService.ValidatePassword("token-no-id", new ValidatePasswordDto { Password = "pass" });
+            var result = await _authService.ValidatePasswordAsync("token-no-id", new ValidatePasswordDto { Password = "pass" });
 
             Assert.False(result.IsValid);
             Assert.Equal("User ID claim not found in token.", result.Message);

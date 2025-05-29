@@ -18,11 +18,11 @@ namespace OlympiadApi.Controllers
 
         // GET: api/academicyear
         [HttpGet]
-        public IActionResult GetAllAcademicYear()
+        public async Task<IActionResult> GetAllAcademicYearAsync()
         {
             try
             {
-                var academicYears = _academicYearService.GetAllAcademicYears();
+                var academicYears = await _academicYearService.GetAllAcademicYearsAsync();
                 return Ok(academicYears);
             }
             catch (Exception ex)
@@ -33,11 +33,11 @@ namespace OlympiadApi.Controllers
 
         // GET: api/academicyear/{id}
         [HttpGet("{id}")]
-        public IActionResult GetAcademicYearById(int id)
+        public async Task<IActionResult> GetAcademicYearByIdAsync(int id)
         {
             try
             {
-                var academicYear = _academicYearService.GetAcademicYearById(id);
+                var academicYear = await _academicYearService.GetAcademicYearByIdAsync(id);
                 if (academicYear == null)
                 {
                     return NotFound(new { message = "Academic Year not found." });
@@ -52,8 +52,8 @@ namespace OlympiadApi.Controllers
 
         // POST: api/academicyear
         [HttpPost]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
-        public IActionResult CreateAcademicYear([FromBody] AcademicYear academicYear)
+        [RoleAuthorize("Admin")]
+        public async Task<IActionResult> CreateAcademicYearAsync([FromBody] AcademicYear academicYear)
         {
             try
             {
@@ -62,9 +62,9 @@ namespace OlympiadApi.Controllers
                     return BadRequest(new { message = "Invalid data." });
                 }
 
-                _academicYearService.AddAcademicYear(academicYear.StartYear, academicYear.EndYear);
+                await _academicYearService.AddAcademicYearAsync(academicYear.StartYear, academicYear.EndYear);
 
-                return CreatedAtAction(nameof(GetAcademicYearById), new { id = academicYear.AcademicYearId }, academicYear);
+                return CreatedAtAction(nameof(GetAcademicYearByIdAsync), new { id = academicYear.AcademicYearId }, academicYear);
             }
             catch (Exception ex)
             {

@@ -74,8 +74,8 @@ namespace OlympiadApi
             builder.Services.AddScoped<IUserRoleAssignmentRepository, UserRoleAssignmentRepository>();
             builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 
-            builder.Services.AddScoped<AdminRoleAuthorizeAttribute>();
-            builder.Services.AddScoped<AdminOrStudentRoleAuthorizeAttribute>();
+            // builder.Services.AddScoped<AdminRoleAuthorizeAttribute>();
+            // builder.Services.AddScoped<AdminOrStudentRoleAuthorizeAttribute>();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();

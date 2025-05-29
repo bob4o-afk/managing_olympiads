@@ -19,7 +19,7 @@ namespace OlympiadApi.Controllers
 
         // GET: api/role
         [HttpGet]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> GetRoles()
         {
             try
@@ -35,7 +35,7 @@ namespace OlympiadApi.Controllers
 
         // POST: api/role
         [HttpPost]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> CreateRole([FromBody] Role role)
         {
             try
@@ -55,7 +55,7 @@ namespace OlympiadApi.Controllers
         }
         // DELETE: api/role/{id}
         [HttpDelete("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> DeleteRole(int id)
         {
             try

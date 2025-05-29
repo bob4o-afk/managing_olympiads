@@ -17,14 +17,14 @@ namespace OlympiadApi.Tests.Repositories
         }
 
         [Fact]
-        public void AddAcademicYear_AddsCorrectly()
+        public async Task AddAcademicYear_AddsCorrectly()
         {
             using var context = GetInMemoryDbContext();
             var repository = new AcademicYearRepository(context);
 
             var year = new AcademicYear { StartYear = 2024, EndYear = 2025 };
 
-            repository.AddAcademicYear(year);
+            await repository.AddAcademicYearAsync(year);
 
             var result = context.AcademicYear.FirstOrDefault();
             Assert.NotNull(result);
@@ -33,7 +33,7 @@ namespace OlympiadApi.Tests.Repositories
         }
 
         [Fact]
-        public void GetAllAcademicYears_ReturnsAll()
+        public async Task GetAllAcademicYears_ReturnsAll()
         {
             using var context = GetInMemoryDbContext();
             context.AcademicYear.AddRange(
@@ -43,7 +43,7 @@ namespace OlympiadApi.Tests.Repositories
 
             var repository = new AcademicYearRepository(context);
 
-            var result = repository.GetAllAcademicYears().ToList();
+            var result = (await repository.GetAllAcademicYearsAsync()).ToList();
 
             Assert.Equal(2, result.Count);
             Assert.Contains(result, ay => ay.StartYear == 2022 && ay.EndYear == 2023);
@@ -51,7 +51,7 @@ namespace OlympiadApi.Tests.Repositories
         }
 
         [Fact]
-        public void GetAcademicYearById_ReturnsCorrectYear()
+        public async Task GetAcademicYearById_ReturnsCorrectYear()
         {
             using var context = GetInMemoryDbContext();
             context.AcademicYear.Add(new AcademicYear { AcademicYearId = 5, StartYear = 2021, EndYear = 2022 });
@@ -59,7 +59,7 @@ namespace OlympiadApi.Tests.Repositories
 
             var repository = new AcademicYearRepository(context);
 
-            var result = repository.GetAcademicYearById(5);
+            var result = await repository.GetAcademicYearByIdAsync(5);
 
             Assert.NotNull(result);
             Assert.Equal(2021, result!.StartYear);
@@ -67,12 +67,12 @@ namespace OlympiadApi.Tests.Repositories
         }
 
         [Fact]
-        public void GetAcademicYearById_ReturnsNull_WhenNotFound()
+        public async Task GetAcademicYearById_ReturnsNull_WhenNotFound()
         {
             using var context = GetInMemoryDbContext();
             var repository = new AcademicYearRepository(context);
 
-            var result = repository.GetAcademicYearById(999);
+            var result = await repository.GetAcademicYearByIdAsync(999);
 
             Assert.Null(result);
         }

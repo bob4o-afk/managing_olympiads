@@ -97,9 +97,9 @@ namespace OlympiadApi.Helpers
             }
         }
 
-        public bool ValidatePassword(int userId, string password)
+        public async Task<bool> ValidatePasswordAsync(int userId, string password)
         {
-            var user = _userService.GetUserById(userId);
+            var user = await _userService.GetUserByIdAsync(userId);
             if (user == null)
             {
                 return false;
