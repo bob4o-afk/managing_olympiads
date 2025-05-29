@@ -1,0 +1,109 @@
+.password-modal .ant-modal-content {
+    background-color: var(--card-background-color);
+    color: var(--text-color);
+}
+
+.password-modal .ant-modal-header {
+    background-color: var(--card-background-color);
+}
+
+.password-modal .ant-modal-title {
+    color: var(--text-color);
+}
+
+.password-modal .ant-modal-close-x {
+    color: var(--text-color);
+}
+
+.password-modal .ant-modal-footer {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.modal-button-submit {
+    background-color: var(--button-background-color);
+    color: white;
+    width: 150px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+    font-size: 16px;
+}
+.modal-button-cancel {
+    background-color: var(--cancel-button-color) !important;
+    color: var(--cancel-button-text-color);
+    width: 150px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.modal-button-cancel:hover {
+    background-color: var(--cancel-button-color) !important;
+    color: var(--cancel-button-text-color) !important;
+    border-color: red !important;
+}
+
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-input-wrapper input {
+    width: 100%;
+    padding: 10px;
+    padding-right: 40px;
+    border: 1px solid var(--text-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    caret-color: var(--text-color);
+}
+
+.password-input-wrapper input:focus {
+    outline: none;
+    border-color: var(--button-background-color);
+    box-shadow: 0 0 4px var(--button-background-color);
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 18px;
+}
+
+.error-text {
+    color: red;
+    margin-top: 10px;
+    display: block;
+}
+
+.text {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+@media (max-width: 600px) {
+  .button-container {
+    flex-direction: column;
+    align-items: center;
+  }
+}

@@ -9,13 +9,13 @@ namespace OlympiadApi.Data
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-        public DbSet<AcademicYear> AcademicYear { get; set; } = null!;
-        public DbSet<Olympiad> Olympiads { get; set; } = null!;
-        public DbSet<Role> Roles { get; set; } = null!;
-        public DbSet<User> Users { get; set; } = null!;
-        public DbSet<UserRoleAssignment> UserRoleAssignments { get; set; } = null!;
-        public DbSet<StudentOlympiadEnrollment> StudentOlympiadEnrollment { get; set; } = null!;
-        public DbSet<UserToken> UserToken { get; set; }  = null!;
+        public virtual DbSet<AcademicYear> AcademicYear { get; set; } = null!;
+        public virtual DbSet<Olympiad> Olympiads { get; set; } = null!;
+        public virtual DbSet<Role> Roles { get; set; } = null!;
+        public virtual DbSet<User> Users { get; set; } = null!;
+        public virtual DbSet<UserRoleAssignment> UserRoleAssignments { get; set; } = null!;
+        public virtual DbSet<StudentOlympiadEnrollment> StudentOlympiadEnrollment { get; set; } = null!;
+        public virtual DbSet<UserToken> UserToken { get; set; }  = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

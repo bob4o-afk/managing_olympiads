@@ -1,309 +1,337 @@
-import React, { useState, FormEvent, useRef, useEffect, useMemo } from "react";
-import { Card, Typography, notification } from "antd";
+import React, { useState, useRef, useEffect, useContext } from "react";
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  Select,
+  Typography,
+  notification,
+} from "antd";
 import "./ui/Documents.css";
-
+import LoadingPage from "../components/LoadingPage";
+import { LanguageContext } from "../contexts/LanguageContext";
 import { Particle } from "./particles/Particle";
 import { spawnParticles } from "./particles/particleUtils";
+import { motion } from "framer-motion";
 
-const { Title } = Typography;
-const { Text } = Typography;
+import { CONFIG } from "../config/config";
+import { decryptSession } from "../utils/encryption";
+import { defaultFetchOptions } from "../config/apiConfig";
+const { Title, Text } = Typography;
+const { Option } = Select;
 
 const Documents: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [sessionName, setSessionName] = useState<string>("");
-  const particlesRef = useRef<Particle[]>([]);
-  const colors = useMemo(
-    () => ["#FF0080", "#FF8C00", "#40E0D0", "#00BFFF", "#FFB6C1"],
-    []
-  );
+  const [isLoading, setIsLoading] = useState(false);
+  const [form] = Form.useForm();
+  const { locale } = useContext(LanguageContext);
+  const isBG = locale.startsWith("bg");
 
+  const predefinedSchool = CONFIG.predefinedSchool;
+
+  const [schoolSuggestion, setSchoolSuggestion] = useState("");
 
   useEffect(() => {
-    const storedSession = localStorage.getItem("userSession");
-    if (storedSession) {
-      const parsedSession = JSON.parse(storedSession);
-      setEmail(parsedSession.email);
-      setSessionName(parsedSession.name); 
+    const session = localStorage.getItem("userSession");
+    if (session) {
+      try {
+        const parsed = decryptSession(session);
+        setEmail(parsed.email);
+        setSessionName(parsed.full_name);
+      } catch (error) {
+        console.error("Failed to decrypt session:", error);
+      }
     }
 
     const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
 
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 
-    const particles = particlesRef.current;
+    const particles: Particle[] = [];
+    const colors = ["#FF0080", "#FF8C00", "#40E0D0", "#00BFFF", "#FFB6C1"];
 
-    function animate() {
-      if (!ctx || !canvas) return;
+    const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      particles.forEach((particle, index) => {
-        particle.update();
-        particle.draw(ctx);
-        if (particle.life <= 0) {
-          particles.splice(index, 1);
-        }
+      particles.forEach((p, i) => {
+        p.update();
+        p.draw(ctx);
+        if (p.life <= 0) particles.splice(i, 1);
       });
-
       spawnParticles(canvas, colors, particles);
       requestAnimationFrame(animate);
-    }
-
+    };
     animate();
-
     return () => {
       particles.length = 0;
     };
-  }, [colors, particlesRef]);
+  }, []);
 
-  const formFields = [
-    { label: "Parent Name", name: "parentName" },
-    { label: "Address", name: "address" },
-    { label: "Telephone", name: "telephone" },
-    { label: "Student Name", name: "studentName" },
-    { label: "Grade", name: "grade" },
-    { label: "School", name: "school" },
-    { label: "Gender", name: "gender" },
-    { label: "Test", name: "test" },
-  ];
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    const values = form.getFieldsValue();
+    const fullPhone = `+359${values.telephone}`;
 
-  const [formData, setFormData] = useState(
-    formFields.reduce((acc, field) => {
-      acc[field.name] = "";
-      return acc;
-    }, {} as Record<string, string>)
-  );
-
-  const [schoolSuggestion, setSchoolSuggestion] = useState<string>("");
-
-  const predefinedSchool =
-    'Технологично училище "Електронни системи" към ТУ-София';
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleGradeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { value } = e.target;
-    setFormData((prev) => ({ ...prev, grade: value }));
-  };
-
-  const handleSchoolChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setFormData((prev) => ({ ...prev, school: value }));
-
-    // Show suggestion only if input matches correctly so far
-    if (predefinedSchool.startsWith(value) && value !== predefinedSchool) {
-      setSchoolSuggestion(predefinedSchool);
-    } else {
-      setSchoolSuggestion("");
-    }
-  };
-
-  const handleSchoolKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Tab") {
-      if (schoolSuggestion) {
-        setFormData((prev) => ({
-          ...prev,
-          school: predefinedSchool,
-        }));
-        setSchoolSuggestion("");
-      } else {
-        e.preventDefault();
-      }
-    }
-  };
-
-  const handleSchoolBlur = () => {
-    setSchoolSuggestion("");
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+    const nameParts = (val: string) =>
+      val
+        .trim()
+        .split(/[\s-]+/)
+        .filter(Boolean);
 
     if (!email) {
       notification.error({
-        message: "Login Required",
-        description: "You must log in to fill out the form.",
+        message: "Login",
+        description: isBG ? "Моля, влезте." : "Please log in.",
       });
+      setIsLoading(false);
       return;
     }
 
-    const data = { ...formData, email };
+    if (nameParts(sessionName).length !== 3) {
+      notification.error({
+        message: isBG ? "Невалидно име" : "Invalid Name",
+        description: isBG
+          ? "Трябва да въведете трите имена на ученика."
+          : "Please enter the student's full name.",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    const data = {
+      ...values,
+      telephone: fullPhone,
+      email,
+      studentName: sessionName,
+    };
 
     try {
       const response = await fetch(
         `${process.env.REACT_APP_PYTHON_API_URL}/fill_pdf`,
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          ...defaultFetchOptions,
           body: JSON.stringify(data),
         }
       );
-
-      if (!response.ok) {
-        throw new Error("Form submission failed");
-      }
-
+      if (!response.ok) throw new Error("Failed");
       const result = await response.json();
       notification.success({
-        message: "Form Submitted",
+        message: isBG ? "Изпратено" : "Submitted",
         description:
-          result.message || "Your form has been submitted successfully!",
+          result.message ||
+          (isBG ? "Формулярът е изпратен!" : "Form submitted!"),
       });
-
-      setFormData(
-        formFields.reduce((acc, field) => {
-          acc[field.name] = "";
-          return acc;
-        }, {} as Record<string, string>)
-      );
-    } catch (error) {
-      if (error instanceof Error) {
-        notification.error({
-          message: "Submission Error",
-          description: error.message || "An error occurred while submitting the form.",
-        });
-      } else {
-        notification.error({
-          message: "Unknown Error",
-          description: "An unexpected error occurred.",
-        });
-      }    
+      form.resetFields();
+    } catch (e) {
+      notification.error({
+        message: isBG ? "Грешка" : "Error",
+        description: isBG ? "Нещо се обърка." : "Something went wrong.",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="document-container">
-      <div className="form-container">
-        <Title level={3}>Document Form</Title>
-        {email ? (
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="name">Name</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={sessionName}
-                readOnly
-                className="readonly-field"
-                style={{ color: "white", backgroundColor: "transparent" }} 
-                autoFocus
-              />
-            </div>
+    <>
+      {isLoading && <LoadingPage />}
+      <div className="document-container">
+        <div className="form-container">
+          <Title level={3}>
+            {isBG ? "Формуляр за документи" : "Document Form"}
+          </Title>
 
-            {formFields.map((field) => {
-              if (field.name === "grade") {
-                return (
-                  <div key={field.name} className="form-group">
-                    <label htmlFor={field.name}>{field.label}</label>
-                    <select
-                      id={field.name}
-                      name={field.name}
-                      value={formData[field.name]}
-                      onChange={handleGradeChange}
-                      required
-                      className="custom-dropdown"
-                    >
-                      {[
-                        "8А",
-                        "8Б",
-                        "8В",
-                        "8Г",
-                        "9А",
-                        "9Б",
-                        "9В",
-                        "9Г",
-                        "10А",
-                        "10Б",
-                        "10В",
-                        "10Г",
-                        "11А",
-                        "11Б",
-                        "11В",
-                        "11Г",
-                        "12А",
-                        "12Б",
-                        "12В",
-                        "12Г",
-                      ].map((grade) => (
-                        <option key={grade} value={grade}>
-                          {grade}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                );
-              } else if (field.name === "school") {
-                return (
-                  <div key={field.name} className="form-group">
-                    <label htmlFor={field.name}>{field.label}</label>
-                    <input
-                      type="text"
-                      id={field.name}
-                      name={field.name}
-                      value={formData[field.name]}
-                      onChange={handleSchoolChange}
-                      onKeyDown={handleSchoolKeyPress}
-                      onBlur={handleSchoolBlur}
-                      required
-                      placeholder="Enter school name"
-                    />
-                    {schoolSuggestion && (
-                      <div className="suggestion">{schoolSuggestion}</div>
-                    )}
-                  </div>
-                );
-              } else {
-                return (
-                  <div key={field.name} className="form-group">
-                    <label htmlFor={field.name}>{field.label}</label>
-                    <input
-                      type="text"
-                      id={field.name}
-                      name={field.name}
-                      value={formData[field.name]}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                );
-              }
-            })}
-            <button type="submit" className="submit-button">
-              Submit
-            </button>
-          </form>
-        ) : (
-          <Card
-            style={{
-              backgroundColor: "white",
-              padding: "20px",
-              borderRadius: "8px",
-            }}
-          >
-            <Text
-              style={{ fontSize: "16px", fontWeight: "600", color: "#888" }}
+          {email ? (
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleSubmit}
+              initialValues={{ studentName: sessionName }}
+              style={{ width: "100%" }}
             >
-              You need to log in to enroll in an Olympiad.
-            </Text>
-          </Card>
-        )}
-      </div>
+              <Form.Item
+                label={isBG ? "Име на ученик" : "Student Name"}
+                name="studentName"
+              >
+                <Input readOnly />
+              </Form.Item>
 
-      <div className="cool-container">
-        <canvas ref={canvasRef} className="animated-canvas"></canvas>
+              <Form.Item
+                label={isBG ? "Име на родител" : "Parent Name"}
+                name="parentName"
+                rules={[
+                  {
+                    required: true,
+                    message: isBG ? "Въведете име" : "Enter name",
+                  },
+                  {
+                    validator: (_, val) => {
+                      return val && val.trim().split(/[\s-]+/).length === 3
+                        ? Promise.resolve()
+                        : Promise.reject(
+                            isBG
+                              ? "Трябва да въведете три имена"
+                              : "Enter full (3-part) name"
+                          );
+                    },
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+
+              <Form.Item
+                label={isBG ? "Адрес" : "Address"}
+                name="address"
+                rules={[
+                  {
+                    required: true,
+                    message: isBG
+                      ? "Моля, въведете адрес"
+                      : "Please enter address",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+
+              <Form.Item
+                label={isBG ? "Телефон" : "Telephone"}
+                name="telephone"
+                rules={[
+                  {
+                    required: true,
+                    message: isBG ? "Въведете телефон" : "Enter phone",
+                  },
+                  {
+                    pattern: /^\d{9}$/,
+                    message: isBG
+                      ? "Въведете 9 цифри без кода (напр. 888123456)"
+                      : "Enter 9 digits without prefix (e.g. 888123456)",
+                  },
+                ]}
+              >
+                <Input
+                  addonBefore={
+                    <span style={{ color: "var(--text-color)" }}>+359</span>
+                  }
+                  placeholder="888123456"
+                  style={{ color: "var(--text-color)" }}
+                />
+              </Form.Item>
+
+              <Form.Item
+                label={isBG ? "Клас" : "Grade"}
+                name="grade"
+                rules={[
+                  {
+                    required: true,
+                    message: isBG ? "Изберете клас" : "Select grade",
+                  },
+                ]}
+              >
+                <Select className="grade-select">
+                  {[
+                    "8А",
+                    "8Б",
+                    "8В",
+                    "8Г",
+                    "9А",
+                    "9Б",
+                    "9В",
+                    "9Г",
+                    "10А",
+                    "10Б",
+                    "10В",
+                    "10Г",
+                    "11А",
+                    "11Б",
+                    "11В",
+                    "11Г",
+                    "12А",
+                    "12Б",
+                    "12В",
+                    "12Г",
+                  ].map((g) => (
+                    <Option key={g} value={g}>
+                      {g}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item
+                label={isBG ? "Училище" : "School"}
+                name="school"
+                rules={[
+                  {
+                    required: true,
+                    message: isBG ? "Въведете училище" : "Enter school",
+                  },
+                ]}
+              >
+                <Input
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (
+                      predefinedSchool.startsWith(val) &&
+                      val !== predefinedSchool
+                    )
+                      setSchoolSuggestion(predefinedSchool);
+                    else setSchoolSuggestion("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Tab" && schoolSuggestion) {
+                      e.preventDefault();
+                      form.setFieldValue("school", predefinedSchool);
+                      setSchoolSuggestion("");
+                    }
+                  }}
+                  onBlur={() => setSchoolSuggestion("")}
+                />
+              </Form.Item>
+
+              {schoolSuggestion && (
+                <div
+                  className="school-autocomplete-suggestion"
+                  onMouseDown={() => {
+                    form.setFieldValue("school", predefinedSchool);
+                    setSchoolSuggestion("");
+                  }}
+                >
+                  {schoolSuggestion}
+                </div>
+              )}
+
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Button className="button" htmlType="submit">
+                  {isBG ? "Изпрати" : "Submit"}
+                </Button>
+              </motion.div>
+            </Form>
+          ) : (
+            <Card
+              style={{ backgroundColor: "white", padding: 20, borderRadius: 8 }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: 600, color: "#888" }}>
+                {isBG
+                  ? "Трябва да влезете, за да попълните формуляра."
+                  : "You need to log in to fill out the form."}
+              </Text>
+            </Card>
+          )}
+        </div>
+
+        <div className="cool-container">
+          <canvas ref={canvasRef} className="animated-canvas"></canvas>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -1,9 +1,10 @@
 using OlympiadApi.Repositories.Interfaces;
+using OlympiadApi.Services.Interfaces;
 using OlympiadApi.Models;
 
 namespace OlympiadApi.Services
 {
-    public class AcademicYearService
+    public class AcademicYearService : IAcademicYearService
     {
         private readonly IAcademicYearRepository _academicYearRepository;
 
@@ -12,20 +13,20 @@ namespace OlympiadApi.Services
             _academicYearRepository = academicYearRepository;
         }
 
-        public void AddAcademicYear(int startYear, int endYear)
+        public async Task AddAcademicYearAsync(int startYear, int endYear)
         {
             var academicYear = new AcademicYear { StartYear = startYear, EndYear = endYear };
-            _academicYearRepository.AddAcademicYear(academicYear);
+            await _academicYearRepository.AddAcademicYearAsync(academicYear);
         }
 
-        public IEnumerable<AcademicYear> GetAllAcademicYears()
+        public async Task<IEnumerable<AcademicYear>> GetAllAcademicYearsAsync()
         {
-            return _academicYearRepository.GetAllAcademicYears();
+            return await _academicYearRepository.GetAllAcademicYearsAsync();
         }
 
-        public AcademicYear? GetAcademicYearById(int id)
+        public async Task<AcademicYear?> GetAcademicYearByIdAsync(int id)
         {
-            return _academicYearRepository.GetAcademicYearById(id);
+            return await _academicYearRepository.GetAcademicYearByIdAsync(id);
         }
     }
 }

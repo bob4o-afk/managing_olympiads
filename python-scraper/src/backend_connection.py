@@ -123,7 +123,7 @@ def process_and_send_data():
     token = authenticate()
 
     user1 = {
-        "Name": "Borislav Milanov",
+        "Name": "Borislav Boqnov Milanov",
         "DateOfBirth": "2006-05-30",
         "AcademicYearId": int(academic_year),
         "Username": "bob4o",
@@ -134,7 +134,7 @@ def process_and_send_data():
     }
 
     user2 = {
-        "Name": "Milan Borislavov",
+        "Name": "Milan Penkov Borislavov",
         "DateOfBirth": "2006-06-30",
         "AcademicYearId": int(academic_year),
         "Username": "bob4oto",

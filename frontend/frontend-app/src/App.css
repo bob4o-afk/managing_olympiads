@@ -2,6 +2,7 @@
 .light-theme {
   --background-color: #ffffff;
   --text-color: #000000;
+  --text-color-inverse: #ffffff;
   --card-background-color: #f0f2f5;
   --button-background-color: #1890ff;
   --button-text-color: #ffffff;
@@ -12,14 +13,19 @@
   --cv-devider: #2300ec;
   --cv-sub-text: #000000;
   --cv-bar: #173ad6;
+  --pop-up-background-color: #202020;
+  --text-card-color: #888;
+  --cancel-button-color: #ffffff;
+  --cancel-button-text-color: red;
 }
 
 /* Dark Theme */
 .dark-theme {
   --background-color: #0a0d1d;
   --text-color: #ffffff;
-  --card-background-color: #1f1e1e;
-  --button-background-color: #4a90e2;
+  --text-color-inverse: #000000;
+  --card-background-color: #1a1a2e;
+  --button-background-color: #007bff;
   --button-text-color: #ffffff;
   --header-background-color: #001529;
   --navigation-button-color: #ddddddce;
@@ -28,6 +34,14 @@
   --cv-devider: #ffffff;
   --cv-sub-text: #8bb8f1;
   --cv-bar: #3f57c2;
+  --pop-up-background-color: #202020;
+  --text-card-color: #888;
+  --cancel-button-color: #ddddddce;
+  --cancel-button-text-color: red;
+}
+
+* {
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 body {
@@ -60,14 +74,25 @@ body {
 }
 
 .button {
+  width: 100%;
+  height: 40px;
+  margin-bottom: 5px;
   background-color: var(--button-background-color);
   color: var(--button-text-color);
+  font-size: 18px;
   transition: background-color 0.3s, color 0.3s;
+  border: 1px solid white;
 }
 
 .sidebar {
   background-color: var(--header-background-color);
   transition: width 0.3s ease, margin-left 1.5s ease;
+}
+
+.h2 {
+  color: var(--text-color);
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .header {
@@ -93,11 +118,93 @@ body {
   color: #61dafb;
 }
 
+.drawer .ant-drawer-body {
+  padding: 0;
+  padding-top: 40px;
+  background-color: var(--header-background-color);
+}
+
+.sidebar-menu {
+  height: 88vh;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  font-size: 1rem;
+  position: relative;
+}
+
+.sidebar-bottom-buttons {
+  position: absolute;
+  flex-direction: column;
+  bottom: 30px;
+  left: 15px;
+  display: flex;
+  gap: 15px;
+}
+
+.toggle {
+  margin-left: 15px;
+}
+
+.data-notice {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: var(--pop-up-background-color);
+  color: white;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  z-index: 2000;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.data-notice p {
+  margin: 0;
+}
+
+.text-card {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-card-color);
+}
+
+.cancel-button {
+  width: 100%;
+  height: 40px;
+  background-color: var(--cancel-button-color);
+  color: var(--cancel-button-text-color);
+  border-radius: 4px;
+  font-size: 16px !important;
+}
+
+.cancel-button:hover {
+  background-color: var(--cancel-button-color) !important;
+  color: var(--cancel-button-text-color) !important;
+  border-color: red !important;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media screen and (max-width: 768px),
+only screen and (max-height: 500px) {
+  .sidebar-bottom-buttons {
+    position: static;
+    margin-top: auto;
+    padding: 20px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
   }
 }

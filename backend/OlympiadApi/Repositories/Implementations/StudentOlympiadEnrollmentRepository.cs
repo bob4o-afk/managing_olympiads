@@ -31,6 +31,16 @@ namespace OlympiadApi.Repositories.Implementations
                 .Include(e => e.AcademicYear)
                 .FirstOrDefaultAsync(e => e.EnrollmentId == id);
         }
+        
+        public async Task<List<StudentOlympiadEnrollment>> GetEnrollmentsByUserIdAsync(int userId)
+        {
+            return await _context.StudentOlympiadEnrollment
+                .Include(e => e.User)
+                .Include(e => e.Olympiad)
+                .Include(e => e.AcademicYear)
+                .Where(e => e.UserId == userId)
+                .ToListAsync();
+        }
 
         public async Task<StudentOlympiadEnrollment> CreateEnrollmentAsync(StudentOlympiadEnrollment enrollment)
         {
@@ -48,7 +58,7 @@ namespace OlympiadApi.Repositories.Implementations
             enrollment.EnrollmentStatus = updatedEnrollment.EnrollmentStatus;
             enrollment.StatusHistory = updatedEnrollment.StatusHistory;
             enrollment.Score = updatedEnrollment.Score;
-            enrollment.UpdatedAt = DateTime.UtcNow;
+            enrollment.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
             return enrollment;

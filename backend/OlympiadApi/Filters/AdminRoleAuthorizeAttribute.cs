@@ -6,9 +6,9 @@ namespace OlympiadApi.Filters
 {
     public class AdminRoleAuthorizeAttribute : Attribute, IAuthorizationFilter
     {
-        private readonly JwtHelper _jwtHelper;
+        private readonly IJwtHelper _jwtHelper;
 
-        public AdminRoleAuthorizeAttribute(JwtHelper jwtHelper)
+        public AdminRoleAuthorizeAttribute(IJwtHelper jwtHelper)
         {
             _jwtHelper = jwtHelper;
         }

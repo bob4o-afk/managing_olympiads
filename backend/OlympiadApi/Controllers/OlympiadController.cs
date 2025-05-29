@@ -1,29 +1,29 @@
 using Microsoft.AspNetCore.Mvc;
-using OlympiadApi.Services;
+using OlympiadApi.Services.Interfaces;
 using OlympiadApi.Models;
 using OlympiadApi.Filters;
 
 namespace OlympiadApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/olympiads")]
     public class OlympiadController : ControllerBase
     {
-        private readonly OlympiadService _olympiadService;
+        private readonly IOlympiadService _olympiadService;
 
-        public OlympiadController(OlympiadService olympiadService)
+        public OlympiadController(IOlympiadService olympiadService)
         {
             _olympiadService = olympiadService;
         }
 
-        // GET: api/olympiad
+        // GET: api/olympiads
         [HttpGet]
-        public IActionResult GetAllOlympiads()
+        public async Task<IActionResult> GetAllOlympiads()
         {
             try
             {
-                var olympiads = _olympiadService.GetAllOlympiads();
-                return Ok(olympiads); // Return all Olympiads
+                var olympiads = await _olympiadService.GetAllOlympiadsAsync();
+                return Ok(olympiads);
             }
             catch (Exception ex)
             {
@@ -31,13 +31,13 @@ namespace OlympiadApi.Controllers
             }
         }
 
-        // GET: api/olympiad/{id}
+        // GET: api/olympiads/{id}
         [HttpGet("{id}")]
-        public IActionResult GetOlympiadById(int id)
+        public async Task<IActionResult> GetOlympiadById(int id)
         {
             try
             {
-                var olympiad = _olympiadService.GetOlympiadById(id);
+                var olympiad = await _olympiadService.GetOlympiadByIdAsync(id);
                 if (olympiad == null)
                 {
                     return NotFound(new { message = "Olympiad not found." });
@@ -50,10 +50,10 @@ namespace OlympiadApi.Controllers
             }
         }
 
-        // POST: api/olympiad
+        // POST: api/olympiads
         [HttpPost]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
-        public IActionResult CreateOlympiad([FromBody] Olympiad olympiad)
+        [RoleAuthorize("Admin")]
+        public async Task<IActionResult> CreateOlympiad([FromBody] Olympiad olympiad)
         {
             try
             {
@@ -62,10 +62,9 @@ namespace OlympiadApi.Controllers
                     return BadRequest(new { message = "Invalid data." });
                 }
 
-                _olympiadService.AddOlympiad(olympiad);
+                var createdOlympiad = await _olympiadService.AddOlympiadAsync(olympiad);
 
-
-                return CreatedAtAction(nameof(GetOlympiadById), new { id = olympiad.OlympiadId }, olympiad);
+                return CreatedAtAction(nameof(GetOlympiadById), new { id = createdOlympiad.OlympiadId }, createdOlympiad);
             }
             catch (Exception ex)
             {

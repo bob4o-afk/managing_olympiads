@@ -1,5 +1,5 @@
-    namespace OlympiadApi.DTOs;
-
+namespace OlympiadApi.DTOs
+{
     public class EmailRequest
     {
         public required string ToEmail { get; set; }
@@ -7,3 +7,4 @@
         public required string Body { get; set; }
         public required string CcEmail { get; set; }
     }
+}

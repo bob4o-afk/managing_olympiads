@@ -1,13 +1,14 @@
 .document-container {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     max-width: 900px;
-    margin: 0 auto;
+    margin: 20px auto;
     padding: 20px;
     background-color: var(--card-background-color);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
 }
 
 .form-container {
@@ -17,6 +18,7 @@
     background-color: var(--background-color);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
 }
 
 .form-container h3 {
@@ -51,61 +53,21 @@
     box-shadow: 0 0 3px var(--button-background-color);
 }
 
-.submit-button {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 4px;
-    background-color: var(--button-background-color);
-    color: var(--button-text-color);
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 10px;
-    transition: background-color 0.3s ease;
+.grade-select .ant-select-selector {
+    background-color: var(--background-color) !important;
+    border-color: var(--text-color) !important;
+    color: var(--text-color) !important;
 }
 
-.submit-button:hover {
-    background-color: darken(var(--button-background-color), 10%);
+.grade-select .ant-select-arrow {
+    color: var(--text-color) !important;
 }
 
-.image-container {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-left: 20px;
-}
-
-.document-image {
-    max-width: 100%;
-    max-height: 400px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.custom-dropdown {
-    width: 100%;
-    padding: 10px;
-    border: 2px solid #007bff;
-    border-radius: 5px;
-    background-color: var(--background-color);
-    font-size: 16px;
-    color: var(--text-color);
-}
-
-.custom-dropdown:hover {
-    border-color: var(--text-color);
-}
-
-.custom-dropdown:focus {
-    outline: none;
-    border-color: #0056b3;
-}
-
-.suggestion {
+.school-autocomplete-suggestion {
     color: grey;
     font-size: 14px;
-    margin-top: 5px;
+    margin-bottom: 10px;
+    cursor: pointer;
 }
 
 .cool-container {
@@ -118,7 +80,7 @@
     border-radius: 10px;
     overflow: hidden;
     margin-left: 20px;
-    height: auto; 
+    height: 60%;
 }
 
 .animated-canvas {
@@ -126,14 +88,14 @@
     height: 100%;
 }
 
+@media (max-width: 768px) {
+    .document-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+    }
 
-.canvas-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-canvas {
-    display: block;
+    .cool-container {
+        margin-left: 0;
+    }
 }

@@ -1,160 +1,290 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Card, Button, Typography } from "antd";
+import React, { useState, useEffect, useCallback, useContext } from "react";
+import { Card, Button, Typography, Progress } from "antd";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { UserSession } from "../types/Session";
+import "./ui/MyProfile.css";
+import LoadingPage from "./LoadingPage";
+import { LanguageContext } from "../contexts/LanguageContext";
+import { decryptSession } from "../utils/encryption";
+import {
+  getAuthGetOptions,
+  getAuthPostOptionsNoBody,
+} from "../config/apiConfig";
+import { API_ROUTES } from "../config/api";
 
 const { Title, Text } = Typography;
 
 const MyProfile: React.FC = () => {
-    const [session, setSession] = useState<UserSession | null>(null);
-    const [role, setRole] = useState<string>(""); 
-    const [loading, setLoading] = useState<boolean>(true);
-    const navigate = useNavigate();
+  const { locale } = useContext(LanguageContext);
+  const isBG = locale.startsWith("bg");
 
-    const handleLogout = useCallback(() => {
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("userSession");
-        setSession(null);
-        setRole("");
-        navigate("/login");
-    }, [navigate]);
+  const [session, setSession] = useState<UserSession | null>(null);
+  const [role, setRole] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [enrolledOlympiads, setEnrolledOlympiads] = useState<
+    {
+      name: string;
+      status: string;
+      academicYear: string;
+      dateOfOlympiad: string;
+      round: string;
+      location: string;
+      startTime: string;
+    }[]
+  >([]);
+  const navigate = useNavigate();
 
-    const validateSession = useCallback(async () => {
-        const storedSession = localStorage.getItem("userSession");
-        const token = localStorage.getItem("authToken");
+  const ranking = 5;
+  const totalStudents = 100;
+  const progressPercentage = 75;
 
-        if (storedSession && token) {
-            try {
-                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/validate-token`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userSession");
+    setSession(null);
+    setRole("");
+    navigate("/login");
+  }, [navigate]);
 
-                if (response.ok) {
-                    return true;
-                } else if (response.status === 401) {
-                    console.warn("Session validation failed: Unauthorized. Logging out...");
-                    handleLogout();
-                } else if (response.status === 500) {
-                    console.error("Server error occurred. Redirecting to login...");
-                    handleLogout();
-                } else {
-                    console.warn(`Session validation failed: ${response.statusText} (${response.status}).`);
-                    handleLogout();
-                }
-            } catch (error) {
-                console.error("An error occurred during session validation:", error);
-                handleLogout();
-            }
+  const validateSession = useCallback(async () => {
+    const storedSession = localStorage.getItem("userSession");
+    const token = localStorage.getItem("authToken");
+
+    if (storedSession && token) {
+      try {
+        const response = await fetch(
+          API_ROUTES.validateToken,
+          getAuthPostOptionsNoBody(token)
+        );
+
+        if (response.ok) {
+          return true;
         } else {
-            console.warn("No stored session or token found. Redirecting to login...");
-            navigate("/login");
+          handleLogout();
         }
-        return false;
-    }, [handleLogout, navigate]);
-
-    useEffect(() => {
-        const initializeSession = async () => {
-            const isValid = await validateSession();
-            if (isValid) {
-                const storedSession = localStorage.getItem("userSession");
-                if (storedSession) {
-                    const parsedSession = JSON.parse(storedSession);
-                    setSession(parsedSession);
-                    setRole(parsedSession.role);
-                }
-            }
-            setLoading(false);
-        };
-        initializeSession();
-    }, [validateSession]);
-
-    const handleAction = useCallback(
-        async (actionUrl: string) => {
-            const isValid = await validateSession();
-            if (isValid) {
-                window.location.href = actionUrl;
-            }
-        },
-        [validateSession]
-    );
-
-    if (loading) {
-        return <p>Loading profile...</p>;
+      } catch (error) {
+        console.error("Session validation error:", error);
+        handleLogout();
+      }
+    } else {
+      navigate("/login");
     }
+    return false;
+  }, [handleLogout, navigate]);
 
-    return (
-        <div style={{ padding: "24px", maxWidth: "600px", margin: "auto" }}>
-            {session ? (
-                <>
-                    <Card style={{ marginBottom: "16px", backgroundColor: "var(--card-background-color)" }}>
-                        <Title style={{ color: "var(--text-color)" }} level={4}>
-                            My Profile
-                        </Title>
-                        <Text style={{ color: "var(--text-color)" }}>
-                            <strong>Name:</strong> {session.full_name || "N/A"}
-                        </Text>
-                        <br />
-                        <Text style={{ color: "var(--text-color)" }}>
-                            <strong>Email:</strong> {session.email}
-                        </Text>
-                        <br />
-                        <Text style={{ color: "var(--text-color)" }}>
-                            <strong>Role:</strong> {role || "Loading role..."}
-                        </Text>
-                    </Card>
-                    <Card style={{ marginBottom: "16px", backgroundColor: "var(--card-background-color)" }}>
-                        <Title style={{ color: "var(--text-color)" }} level={4}>
-                            Account Management
-                        </Title>
-                        <Button
-                            type="default"
-                            style={{
-                                marginBottom: "8px",
-                                color: "var(--button-text-color)",
-                                backgroundColor: "var(--button-background-color)",
-                                border: "none",
-                            }}
-                            onClick={() => handleAction("/request-password-change")}
-                        >
-                            Change Password
-                        </Button>
-                        <br />
-                        <Button
-                            type="default"
-                            style={{
-                                marginBottom: "8px",
-                                color: "var(--button-text-color)",
-                                backgroundColor: "var(--button-background-color)",
-                                border: "none",
-                            }}
-                            onClick={() => handleAction("/update-info")}
-                        >
-                            Update Profile Information
-                        </Button>
-                        <br />
-                        <Button
-                            type="default"
-                            style={{
-                                marginBottom: "8px",
-                                color: "var(--button-text-color)",
-                                backgroundColor: "var(--button-background-color)",
-                                border: "none",
-                            }}
-                            onClick={handleLogout}
-                        >
-                            Logout
-                        </Button>
-                    </Card>
-                </>
-            ) : (
-                <p>Session expired. Redirecting...</p>
-            )}
+  const fetchEnrolledOlympiads = useCallback(
+    async (userId: number) => {
+      setLoading(true);
+      const token = localStorage.getItem("authToken");
+
+      try {
+        const response = await fetch(
+          API_ROUTES.userEnrollments(String(userId)),
+          getAuthGetOptions(token ?? "")
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+
+          const filteredOlympiads = data
+            .filter(
+              (enrollment: any) =>
+                enrollment.enrollmentStatus === "pending" &&
+                enrollment.academicYearId === 2
+            )
+            .sort(
+              (a: any, b: any) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            )
+            .slice(0, 3)
+            .map((enrollment: any) => {
+              const dateObj = new Date(enrollment.olympiad.dateOfOlympiad);
+              const rawTime = enrollment.olympiad.startTime;
+              let formattedTime = "N/A";
+
+              if (rawTime) {
+                const timeObj = new Date(rawTime);
+                if (!isNaN(timeObj.getTime())) {
+                  formattedTime = timeObj.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  });
+                }
+              }
+
+              return {
+                name: enrollment.olympiad.subject,
+                status: enrollment.enrollmentStatus,
+                academicYear: enrollment.academicYearId,
+                dateOfOlympiad: dateObj.toLocaleDateString(
+                  isBG ? "bg-BG" : "en-US",
+                  {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }
+                ),
+                round: enrollment.olympiad.round,
+                location: enrollment.olympiad.location,
+                startTime: formattedTime,
+              };
+            });
+
+          setEnrolledOlympiads(filteredOlympiads);
+        } else {
+          console.error("Failed to fetch enrolled Olympiads.");
+        }
+      } catch (error) {
+        console.error("Error fetching enrolled Olympiads:", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [isBG]
+  );
+
+  useEffect(() => {
+    const initializeSession = async () => {
+      const isValid = await validateSession();
+      if (isValid) {
+        const storedSession = localStorage.getItem("userSession");
+        if (storedSession) {
+          try {
+            const parsedSession = decryptSession(storedSession);
+            setSession(parsedSession);
+            setRole(parsedSession.role);
+            fetchEnrolledOlympiads(parsedSession.userId);
+          } catch (error) {
+            console.error("Failed to decrypt session:", error);
+          }
+        }
+      }
+      setLoading(false);
+    };
+    initializeSession();
+  }, [validateSession, fetchEnrolledOlympiads]);
+
+  return (
+    <>
+      {loading && <LoadingPage />}
+
+      <div className="container">
+        <div className="left-section">
+          <Card className="profile-card">
+            <Title level={2} style={{ color: "var(--text-color)" }}>
+              {isBG ? "Моят профил" : "My Profile"}
+            </Title>
+            <Text className="profile-card-text">
+              <strong>{isBG ? "Име:" : "Name:"}</strong>{" "}
+              {session?.full_name || "N/A"}
+            </Text>
+            <br />
+            <Text className="profile-card-text">
+              <strong>{isBG ? "Имейл:" : "Email:"}</strong> {session?.email}
+            </Text>
+            <br />
+            <Text className="profile-card-text">
+              <strong>{isBG ? "Роля:" : "Role:"}</strong>{" "}
+              {role || (isBG ? "Зареждане..." : "Loading role...")}
+            </Text>
+          </Card>
+          <Card className="account-card">
+            <Title level={2} style={{ color: "var(--text-color)" }}>
+              {isBG ? "Управление на акаунт" : "Account Management"}
+            </Title>
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <Button
+                className="button"
+                onClick={() => navigate("/request-password-change")}
+              >
+                {isBG ? "Смяна на парола" : "Change Password"}
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <Button
+                className="button"
+                onClick={() => navigate("/update-info")}
+              >
+                {isBG ? "Редактирай профила" : "Update Profile"}
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <Button className="logout-button" danger onClick={handleLogout}>
+                {isBG ? "Изход" : "Logout"}
+              </Button>
+            </motion.div>
+          </Card>
         </div>
-    );
+
+        <div className="right-section">
+          <Title level={2} style={{ color: "var(--text-color)" }}>
+            {isBG ? "Прогрес на олимпиади" : "Olympiad Progress"}
+          </Title>
+          <Text className="ranking-text">
+            {isBG
+              ? `Класиране: #${ranking} от ${totalStudents}`
+              : `Ranking: #${ranking} out of ${totalStudents}`}
+          </Text>
+          <Progress
+            percent={progressPercentage}
+            status="active"
+            className="progress-bar"
+          />
+          <Title
+            level={5}
+            style={{ marginTop: "16px", color: "var(--text-color)" }}
+          >
+            {isBG ? "Записани олимпиади:" : "Enrolled Olympiads:"}
+          </Title>
+          {enrolledOlympiads.length > 0 ? (
+            <ul className="olympiads-list">
+              {enrolledOlympiads.map((olympiad, index) => (
+                <li key={index} className="olympiad-item">
+                  <strong>{olympiad.name}</strong> - {olympiad.status} <br />
+                  <Text style={{ color: "var(--text-color)" }}>
+                    <strong>
+                      {isBG ? "Учебна година:" : "Academic Year:"}
+                    </strong>{" "}
+                    {olympiad.academicYear}
+                  </Text>
+                  <br />
+                  <Text style={{ color: "var(--text-color)" }}>
+                    <strong>{isBG ? "Дата:" : "Date:"}</strong>{" "}
+                    {olympiad.dateOfOlympiad}
+                  </Text>
+                  <br />
+                  <Text style={{ color: "var(--text-color)" }}>
+                    <strong>{isBG ? "Кръг:" : "Round:"}</strong>{" "}
+                    {olympiad.round}
+                  </Text>
+                  <br />
+                  <Text style={{ color: "var(--text-color)" }}>
+                    <strong>{isBG ? "Локация:" : "Location:"}</strong>{" "}
+                    {olympiad.location}
+                  </Text>
+                  <br />
+                  <Text style={{ color: "var(--text-color)" }}>
+                    <strong>{isBG ? "Начален час:" : "Start Time:"}</strong>{" "}
+                    {olympiad.startTime}
+                  </Text>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Text style={{ color: "var(--text-color)" }}>
+              {isBG
+                ? "Няма записани олимпиади към момента."
+                : "No recent pending enrollments."}
+            </Text>
+          )}
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default MyProfile;

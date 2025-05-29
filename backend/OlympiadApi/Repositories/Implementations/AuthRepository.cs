@@ -3,7 +3,7 @@ using OlympiadApi.Models;
 using Microsoft.EntityFrameworkCore;
 using OlympiadApi.DTOs;
 
-namespace OlympiadApi.Repositories
+namespace OlympiadApi.Repositories.Interfaces
 {
     public class AuthRepository : IAuthRepository
     {
@@ -45,7 +45,6 @@ namespace OlympiadApi.Repositories
                 .Where(r => userRoleIds.Contains(r.RoleId))
                 .ToListAsync();
 
-            // Roles and permissions
             return roles.ToDictionary(
                 r => r.RoleName,
                 r => r.Permissions != null
@@ -57,9 +56,9 @@ namespace OlympiadApi.Repositories
             );
         }
 
-        public UserDto? GetUserByEmailOrUsername(string usernameOrEmail)
+        public async Task<UserDto?> GetUserByEmailOrUsernameAsync(string usernameOrEmail)
         {
-            var user = _context.Users.FirstOrDefault(u =>
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
                 u.Username == usernameOrEmail || u.Email == usernameOrEmail);
 
             if (user == null)
@@ -75,9 +74,9 @@ namespace OlympiadApi.Repositories
                 Email = user.Email
             };
         }
-        public void StorePasswordResetToken(int userId, string token, DateTime expiration)
+        public async Task StorePasswordResetTokenAsync(int userId, string token, DateTime expiration)
         {
-            var existingToken = _context.UserToken.FirstOrDefault(ut => ut.UserId == userId);
+            var existingToken = await _context.UserToken.FirstOrDefaultAsync(ut => ut.UserId == userId);
             if (existingToken != null)
             {
                 _context.UserToken.Remove(existingToken);
@@ -90,43 +89,43 @@ namespace OlympiadApi.Repositories
                 Expiration = expiration
             };
 
-            _context.UserToken.Add(userToken);
-            _context.SaveChanges();
+            await _context.UserToken.AddAsync(userToken);
+            await _context.SaveChangesAsync();
         }
 
-        public bool ResetPasswordWithToken(string token, string newPassword)
+        public async Task<bool> ResetPasswordWithTokenAsync(string token, string newPassword)
         {
-            var userToken = _context.UserToken.FirstOrDefault(ut => ut.Token == token);
+            var userToken = await _context.UserToken.FirstOrDefaultAsync(ut => ut.Token == token);
             if (userToken == null || userToken.Expiration < DateTime.Now)
             {
                 if (userToken != null)
                 {
                     _context.UserToken.Remove(userToken);
-                    _context.SaveChanges();
+                    await _context.SaveChangesAsync();
                 }
                 return false;
             }
 
-            var user = _context.Users.FirstOrDefault(u => u.UserId == userToken.UserId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userToken.UserId);
             if (user == null) return false;
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
             _context.Users.Update(user);
             _context.UserToken.Remove(userToken);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return true;
         }
 
-        public bool ValidateResetToken(string token)
+        public async Task<bool> ValidateResetTokenAsync(string token)
         {
-            var userToken = _context.UserToken.FirstOrDefault(ut => ut.Token == token);
+            var userToken = await _context.UserToken.FirstOrDefaultAsync(ut => ut.Token == token);
             return userToken != null && userToken.Expiration >= DateTime.Now;
         }
 
-        public bool ValidateUserPassword(int userId, string password)
+        public async Task<bool> ValidateUserPasswordAsync(int userId, string password)
         {
-            var user = _context.Users.FirstOrDefault(u => u.UserId == userId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             return user != null && BCrypt.Net.BCrypt.Verify(password, user.Password);
         }
     }

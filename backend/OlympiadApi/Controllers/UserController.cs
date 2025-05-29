@@ -1,36 +1,36 @@
 using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Models;
-using OlympiadApi.Services;
-using OlympiadApi.Helpers;
+using OlympiadApi.Services.Interfaces;
 using OlympiadApi.Filters;
+using OlympiadApi.DTOs;
 
 namespace OlympiadApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/users")]
     public class UserController : ControllerBase
     {
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
 
-        public UserController(UserService userService, JwtHelper jwtHelper)
+        public UserController(IUserService userService)
         {
             _userService = userService;
         }
 
         [HttpGet]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
-        public IActionResult GetAllUsers()
+        [RoleAuthorize("Admin")]
+        public async Task<IActionResult> GetAllUsers()
         {
-            var users = _userService.GetAllUsers();
+            var users = await _userService.GetAllUsersAsync();
             return Ok(users);
         }
 
         [HttpGet("{id}")]
         //check for matching emails
-        [ServiceFilter(typeof(AdminOrStudentRoleAuthorizeAttribute))]
-        public IActionResult GetUserById(int id)
+        [RoleAuthorize("Admin", "Student")]
+        public async Task<IActionResult> GetUserById(int id)
         {
-            var user = _userService.GetUserById(id);
+            var user = await _userService.GetUserByIdAsync(id);
             if (user == null)
                 return NotFound(new { message = "User not found." });
 
@@ -38,30 +38,43 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
-        public IActionResult CreateUser([FromBody] User user)
+        [RoleAuthorize("Admin")]
+        public async Task<IActionResult> CreateUser([FromBody] User user)
         {
-            _userService.CreateUser(user);
+            await _userService.CreateUserAsync(user);
             return CreatedAtAction(nameof(GetUserById), new { id = user.UserId }, user);
         }
 
         [HttpPut("{id}")]
         //check for matching emails
-        [ServiceFilter(typeof(AdminOrStudentRoleAuthorizeAttribute))]
-        public IActionResult UpdateUser(int id, [FromBody] User user)
+        [RoleAuthorize("Admin", "Student")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
         {
             if (id != user.UserId)
                 return BadRequest(new { message = "User ID mismatch." });
 
-            _userService.UpdateUser(user);
+            await _userService.UpdateUserAsync(user);
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
-        public IActionResult DeleteUser(int id)
+        [HttpPatch("{id}")]
+        [RoleAuthorize("Admin", "Student")]
+        public async Task<IActionResult> UpdateUserNameAndEmail(int id, [FromBody] UserUpdateDto dto)
         {
-            _userService.DeleteUser(id);
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
+                return NotFound(new { message = "User not found." });
+
+            await _userService.UpdateUserNameAndEmailAsync(id, dto.Name, dto.Email);
+            return NoContent();
+        }
+
+
+        [HttpDelete("{id}")]
+        [RoleAuthorize("Admin")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            await _userService.DeleteUserAsync(id);
             return NoContent();
         }
     }

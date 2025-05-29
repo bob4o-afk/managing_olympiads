@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using OlympiadApi.Services;
+using OlympiadApi.Services.Interfaces;
 using OlympiadApi.DTOs;
 
 namespace OlympiadApi.Controllers
@@ -8,9 +8,9 @@ namespace OlympiadApi.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
 
-        public AuthController(AuthService authService)
+        public AuthController(IAuthService authService)
         {
             _authService = authService;
         }
@@ -28,9 +28,9 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost("request-password-change")]
-        public IActionResult RequestPasswordChange([FromBody] PasswordChangeRequestDto requestDto)
+        public async Task<IActionResult> RequestPasswordChange([FromBody] PasswordChangeRequestDto requestDto)
         {
-            var success = _authService.RequestPasswordChange(requestDto);
+            var success = await _authService.RequestPasswordChangeAsync(requestDto);
             if (!success)
             {
                 return NotFound(new { message = "User not found." });
@@ -40,9 +40,9 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost("reset-password")]
-        public IActionResult ResetPassword([FromBody] ResetPasswordDto resetPasswordDto, [FromQuery] string token)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto, [FromQuery] string token)
         {
-            var success = _authService.ResetPassword(token, resetPasswordDto);
+            var success = await _authService.ResetPasswordAsync(token, resetPasswordDto);
             if (!success)
             {
                 return BadRequest(new { message = "Invalid or expired reset token." });
@@ -72,7 +72,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost("validate-password")]
-        public IActionResult ValidatePassword([FromBody] ValidatePasswordDto validatePasswordDto)
+        public async Task<IActionResult> ValidatePassword([FromBody] ValidatePasswordDto validatePasswordDto)
         {
             if (validatePasswordDto == null || string.IsNullOrWhiteSpace(validatePasswordDto.Password))
             {
@@ -86,7 +86,7 @@ namespace OlympiadApi.Controllers
             }
 
             var token = authHeader.Substring("Bearer ".Length).Trim();
-            var result = _authService.ValidatePassword(token, validatePasswordDto);
+            var result = await _authService.ValidatePasswordAsync(token, validatePasswordDto);
 
             if (!result.IsValid)
             {

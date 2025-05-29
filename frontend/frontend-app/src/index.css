@@ -11,10 +11,6 @@
   font-family: 'Poppins', sans-serif;
 }
 
-.sidebar {
-  color: #fff;
-}
-
 .logo {
   display: flex;
   align-items: center;
@@ -22,35 +18,11 @@
   padding: 10px;
 }
 
-.logo-icon{
+.logo-icon {
   min-width: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
   border-radius: 50%;
-}
-
-.sidebar-menu{
-  height: 88vh;
-  margin-top: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  font-size: 1rem;
-  position: relative;
-}
-
-.toggle-theme-btn{
-  position: absolute;
-  bottom: 30px;
-  left: 20px;
-  display: flex;
-  align-items: center;
-  justify-self: center;
-  font-size: 1rem;
-}
-
-.toggle{
-  margin-left: 15px;
 }

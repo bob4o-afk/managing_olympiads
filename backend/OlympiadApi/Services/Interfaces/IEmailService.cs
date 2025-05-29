@@ -1,4 +1,4 @@
-namespace OlympiadApi.Services
+namespace OlympiadApi.Services.Interfaces
 {
     public interface IEmailService
     {

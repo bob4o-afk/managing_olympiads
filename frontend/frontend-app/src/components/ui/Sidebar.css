@@ -1,0 +1,16 @@
+.sidebar-menu {
+    padding: 0;
+    padding-top: 40px;
+    height: auto;
+    background-color: var(--header-background-color) !important;
+}
+
+.sidebar-menu .ant-menu-item,
+.sidebar-menu .ant-menu-submenu-title {
+    margin: 2px;
+}
+
+.sidebar-menu .ant-menu-item .anticon,
+.sidebar-menu .ant-menu-submenu-title .anticon {
+    margin-right: 12px;
+}

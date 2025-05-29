@@ -6,10 +6,8 @@ from src.text_processing import convert_roman_to_arabic, expand_ranges_in_text
 from src.load_env import load_environment_variables
 
 def pdf_to_word_and_extract_table():
-    # Load environment variables from .env file
     PDF_FILE_PATH, OUTPUT_WORD_PATH, OUTPUT_TXT_PATH, _ = load_environment_variables()
 
-    # Define headers for each round of competition corresponding to each page
     headers = {
         1: "ОБЛАСТЕН КРЪГ",  # Page 2 in the PDF (index 1)
         2: "РЕГИОНАЛЕН КРЪГ",  # Page 3 in the PDF (index 2)
@@ -45,19 +43,16 @@ def pdf_to_word_and_extract_table():
                         for i, cell in enumerate(row):
                             formatted_cell = convert_roman_to_arabic(cell).strip().replace('\n', ' ')
                             expanded_cell = expand_ranges_in_text(formatted_cell)
-                            row_cells[i].text = formatted_cell  # Add to Word doc
+                            row_cells[i].text = formatted_cell
                             buffer += expanded_cell + "\t"
 
-                            # Write to the TXT file after a complete row
                             if "Г." in expanded_cell:
                                 txt_file.write(buffer.strip() + '\n')
                                 buffer = ""
 
-                        # In case the buffer wasn't written due to missing "Г."
                         if buffer.strip():
                             txt_file.write(buffer.strip() + '\n')
 
-            # Save the Word document
             doc.save(OUTPUT_WORD_PATH)
             print(f"Word document saved successfully: {OUTPUT_WORD_PATH}")
             print(f"Text file saved successfully: {OUTPUT_TXT_PATH}")

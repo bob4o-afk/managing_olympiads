@@ -10,7 +10,10 @@
 
 /backend/OlympiadApi/.env
 /backend/OlympiadApi/appsettings.json
-
+/backend/OlympiadApi.Tests/bin
+/backend/OlympiadApi.Tests/obj
+/backend/OlympiadApi.Tests/TestResults/*
+/backend/OlympiadApi.Tests/coveragereport/*
 
 /automatic_document_filling/filled_documents
 /automatic_document_filling/.env

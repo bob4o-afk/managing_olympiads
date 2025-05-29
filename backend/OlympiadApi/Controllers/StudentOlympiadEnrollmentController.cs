@@ -1,81 +1,135 @@
 using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Filters;
 using OlympiadApi.Models;
-using OlympiadApi.Services;
+using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/student-olympiad-enrollments")]
     [ApiController]
     public class StudentOlympiadEnrollmentController : ControllerBase
     {
-        private readonly StudentOlympiadEnrollmentService _service;
+        private readonly IStudentOlympiadEnrollmentService _service;
 
-        public StudentOlympiadEnrollmentController(StudentOlympiadEnrollmentService service)
+        public StudentOlympiadEnrollmentController(IStudentOlympiadEnrollmentService service)
         {
             _service = service;
         }
 
         [HttpGet]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> GetAllEnrollments()
         {
-            var enrollments = await _service.GetAllEnrollmentsAsync();
-            return Ok(enrollments);
+            try
+            {
+                var enrollments = await _service.GetAllEnrollmentsAsync();
+                return Ok(enrollments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching enrollments.", error = ex.Message });
+            }
         }
 
         [HttpGet("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> GetEnrollmentById(int id)
         {
-            var enrollment = await _service.GetEnrollmentByIdAsync(id);
-            if (enrollment == null)
+            try
             {
-                return NotFound();
+                var enrollment = await _service.GetEnrollmentByIdAsync(id);
+                if (enrollment == null)
+                {
+                    return NotFound();
+                }
+                return Ok(enrollment);
             }
-            return Ok(enrollment);
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching the enrollment.", error = ex.Message });
+            }
+        }
+
+        [HttpGet("user/{userId}")]
+        [RoleAuthorize("Admin", "Student")]
+        public async Task<IActionResult> GetEnrollmentsByUserId(int userId)
+        {
+            try
+            {
+                var enrollments = await _service.GetEnrollmentsByUserIdAsync(userId);
+                if (enrollments == null || enrollments.Count == 0)
+                {
+                    return NotFound(new { Message = "No enrollments found for this user." });
+                }
+                return Ok(enrollments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching user enrollments.", error = ex.Message });
+            }
         }
 
         [HttpPost]
-        [ServiceFilter(typeof(AdminOrStudentRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin", "Student")]
         public async Task<IActionResult> CreateEnrollment([FromBody] StudentOlympiadEnrollment enrollment)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-            var createdEnrollment = await _service.CreateEnrollmentAsync(enrollment);
-            return CreatedAtAction(nameof(GetEnrollmentById), new { id = createdEnrollment.EnrollmentId }, createdEnrollment);
+                var createdEnrollment = await _service.CreateEnrollmentAsync(enrollment);
+                return CreatedAtAction(nameof(GetEnrollmentById), new { id = createdEnrollment.EnrollmentId }, createdEnrollment);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while creating the enrollment.", error = ex.Message });
+            }
         }
 
         [HttpPut("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> UpdateEnrollment(int id, [FromBody] StudentOlympiadEnrollment updatedEnrollment)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-            var updated = await _service.UpdateEnrollmentAsync(id, updatedEnrollment);
-            if (updated == null)
-            {
-                return NotFound();
+                var updated = await _service.UpdateEnrollmentAsync(id, updatedEnrollment);
+                if (updated == null)
+                {
+                    return NotFound();
+                }
+                return Ok(updated);
             }
-            return Ok(updated);
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while updating the enrollment.", error = ex.Message });
+            }
         }
 
         [HttpDelete("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> DeleteEnrollment(int id)
         {
-            var success = await _service.DeleteEnrollmentAsync(id);
-            if (!success)
+            try
             {
-                return NotFound();
+                var success = await _service.DeleteEnrollmentAsync(id);
+                if (!success)
+                {
+                    return NotFound();
+                }
+                return NoContent();
             }
-            return NoContent();
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while deleting the enrollment.", error = ex.Message });
+            }
         }
     }
 }

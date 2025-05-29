@@ -2,6 +2,7 @@ using OlympiadApi.Data;
 using OlympiadApi.DTOs;
 using OlympiadApi.Models;
 using OlympiadApi.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace OlympiadApi.Repositories.Implementations
 {
@@ -13,10 +14,9 @@ namespace OlympiadApi.Repositories.Implementations
         {
             _context = context;
         }
-
-        public IEnumerable<UserDto> GetAllUsers()
+        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
-            return _context.Users.Select(u => new UserDto
+            return await _context.Users.Select(u => new UserDto
             {
                 UserId = u.UserId,
                 Name = u.Name,
@@ -26,17 +26,17 @@ namespace OlympiadApi.Repositories.Implementations
                 PersonalSettings = u.PersonalSettings,
                 Notifications = u.Notifications,
                 CreatedAt = u.CreatedAt
-            }).ToList();
+            }).ToListAsync();
         }
 
-        public User? GetUserById(int id)
+        public async Task<User?> GetUserByIdAsync(int id)
         {
-            return _context.Users.FirstOrDefault(u => u.UserId == id);
+            return await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
         }
 
-        public UserDto? GetUserByUsername(string username)
+        public async Task<UserDto?> GetUserByUsernameAsync(string username)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null) return null;
 
             return new UserDto
@@ -52,21 +52,20 @@ namespace OlympiadApi.Repositories.Implementations
             };
         }
 
-        public User? FindUserByUsernameOrEmail(string usernameOrEmail)
+        public async Task<User?> FindUserByUsernameOrEmailAsync(string usernameOrEmail)
         {
-            return _context.Users
-                .FirstOrDefault(u => u.Username == usernameOrEmail || u.Email == usernameOrEmail);
-        }
-        
-        public void CreateUser(User user)
-        {
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            return await _context.Users.FirstOrDefaultAsync(u => u.Username == usernameOrEmail || u.Email == usernameOrEmail);
         }
 
-        public void UpdateUser(User user)
+        public async Task CreateUserAsync(User user)
         {
-            var existingUser = _context.Users.FirstOrDefault(u => u.UserId == user.UserId);
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateUserAsync(User user)
+        {
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.UserId == user.UserId);
             if (existingUser == null)
                 throw new ArgumentException("User not found.");
 
@@ -78,16 +77,16 @@ namespace OlympiadApi.Repositories.Implementations
             existingUser.Notifications = user.Notifications;
 
             _context.Users.Update(existingUser);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void DeleteUser(int id)
+        public async Task DeleteUserAsync(int id)
         {
-            var user = _context.Users.FirstOrDefault(u => u.UserId == id);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
             if (user != null)
             {
                 _context.Users.Remove(user);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
     }

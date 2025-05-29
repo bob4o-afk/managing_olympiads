@@ -8,12 +8,64 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 from io import BytesIO
 import os
+import datetime
+import time
+from dotenv import load_dotenv
 
+load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
 SEND_DOCUMENT_URL = os.getenv("SEND_DOCUMENT_URL")
+LOGIN_URL = os.getenv("LOGIN_URL")
+USERNAME = os.getenv("USERNAME")
+PASSWORD = os.getenv("PASSWORD")
 CC_EMAIL = os.getenv("USER_EMAIL")
+FONT_PATH = os.path.join(os.path.dirname(__file__), "fonts", "Arial.ttf")
+INPUT_PDF_PATH = "Deklaracia.pdf"
+OUTPUT_PDF_PATH = "filled_documents/Deklaracia_filled.pdf"
+
+def authenticate():
+    payload = {
+        "usernameOrEmail": CC_EMAIL,
+        "Password": PASSWORD
+    }
+
+    print(payload)
+
+    for attempt in range(5):
+        try:
+            response = requests.post(LOGIN_URL, json=payload)
+            response.raise_for_status()
+            token = response.json().get("token")
+            if token:
+                return token
+            raise ValueError("Authentication failed: No token returned.")
+        except requests.RequestException as e:
+            print(f"Authentication failed ({attempt + 1}/5): {e}")
+            time.sleep(5)
+
+    raise RuntimeError("Authentication failed after multiple attempts.")
+
+def send_document(email: str, file_path: str):
+    token = authenticate()
+
+    payload = {
+        "ToEmail": email,
+        "Subject": "Filled Document",
+        "Body": "Please find the filled document attached.",
+        "CcEmail": CC_EMAIL,
+    }
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
+    with open(file_path, "rb") as pdf_file:
+        files = {
+            "Document": (os.path.basename(file_path), pdf_file, "application/pdf")
+        }
+        return requests.post(SEND_DOCUMENT_URL, data=payload, files=files, headers=headers)
 
 def add_text_to_pdf(input_pdf, output_pdf, texts, coordinates, font_size=12, font_path=None):
     if not os.path.exists(font_path):
@@ -62,7 +114,6 @@ def fill_pdf():
     grade = data.get("grade", "")
     school = data.get("school", "")
     gender = data.get("gender", "").lower()
-    test = data.get("test", "")
 
     max_length = 32
     if len(school) > max_length:
@@ -81,8 +132,7 @@ def fill_pdf():
         grade,
         first_line,
         second_line,
-        "--",
-        test,
+        datetime.datetime.now().strftime('%d.%m.%Y'),
     ]
 
     # Coordinates for text placement
@@ -94,8 +144,7 @@ def fill_pdf():
         [250, 475, 0],  # Grade
         [340, 475, 0],  # School first line
         [75, 445, 0],   # School second line
-        [160, 365, 0],  # Placeholder
-        [0, 0, 1]       # Test (2nd page)
+        [375, 232, 1]   # Date (2nd page)
     ]
 
     gender_coordinates = {
@@ -109,8 +158,6 @@ def fill_pdf():
     input_pdf = "Deklaracia.pdf"
     output_pdf = "filled_documents/Deklaracia_filled.pdf"
 
-    # Font path
-    # font_path = r'C:\Windows\Fonts\Arial.ttf'
     font_path = os.path.join(os.path.dirname(__file__), "fonts", "Arial.ttf")
 
     try:
@@ -126,19 +173,11 @@ def fill_pdf():
     except FileNotFoundError as e:
         return jsonify({"error": f"File not found: {e}"}), 404
     except Exception as e:
+        import traceback
+        traceback.print_exc()
+
+
         return jsonify({"error": str(e)}), 500
-
-def send_document(email, file_path):
-    payload = {
-        "ToEmail": email,
-        "Subject": "Filled Document",
-        "Body": "Please find the filled document attached.",
-        "CcEmail": CC_EMAIL,
-    }
-
-    with open(file_path, "rb") as pdf_file:
-        files = {"Document": ("Deklaracia_filled.pdf", pdf_file, "application/pdf")}
-        return requests.post(SEND_DOCUMENT_URL, data=payload, files=files)
 
 if __name__ == "__main__":
     os.makedirs("filled_documents", exist_ok=True)

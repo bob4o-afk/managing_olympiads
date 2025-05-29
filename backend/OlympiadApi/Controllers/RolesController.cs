@@ -1,25 +1,25 @@
 using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Filters;
 using OlympiadApi.Models;
-using OlympiadApi.Services;
+using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/roles")]
     public class RoleController : ControllerBase
     {
-        private readonly RoleService _roleService;
+        private readonly IRoleService _roleService;
 
         // Inject the RoleService via constructor
-        public RoleController(RoleService roleService)
+        public RoleController(IRoleService roleService)
         {
             _roleService = roleService;
         }
 
-        // GET: api/role
+        // GET: api/roles
         [HttpGet]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> GetRoles()
         {
             try
@@ -33,9 +33,9 @@ namespace OlympiadApi.Controllers
             }
         }
 
-        // POST: api/role
+        // POST: api/roles
         [HttpPost]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> CreateRole([FromBody] Role role)
         {
             try
@@ -53,14 +53,13 @@ namespace OlympiadApi.Controllers
                 return StatusCode(500, new { message = "An error occurred while creating the role.", error = ex.Message });
             }
         }
-        // DELETE: api/role/{id}
+        // DELETE: api/roles/{id}
         [HttpDelete("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> DeleteRole(int id)
         {
             try
             {
-                // Check if role exists
                 var deleted = await _roleService.DeleteRoleAsync(id);
                 if (!deleted)
                 {

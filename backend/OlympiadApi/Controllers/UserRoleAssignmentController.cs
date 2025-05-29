@@ -1,23 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
 using OlympiadApi.Filters;
 using OlympiadApi.Models;
-using OlympiadApi.Services;
+using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/user-role-assignments")]
     [ApiController]
     public class UserRoleAssignmentController : ControllerBase
     {
-        private readonly UserRoleAssignmentService _service;
+        private readonly IUserRoleAssignmentService _service;
 
-        public UserRoleAssignmentController(UserRoleAssignmentService service)
+        public UserRoleAssignmentController(IUserRoleAssignmentService service)
         {
             _service = service;
         }
 
         [HttpGet]
-        [ServiceFilter(typeof(AdminOrStudentRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin", "Student")]
         public async Task<IActionResult> GetAllAssignments()
         {
             var assignments = await _service.GetAllAssignmentsAsync();
@@ -25,7 +25,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpGet("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> GetAssignmentById(int id)
         {
             var assignment = await _service.GetAssignmentByIdAsync(id);
@@ -37,7 +37,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> CreateAssignment([FromBody] UserRoleAssignment assignment)
         {
             if (!ModelState.IsValid)
@@ -50,7 +50,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        [ServiceFilter(typeof(AdminRoleAuthorizeAttribute))]
+        [RoleAuthorize("Admin")]
         public async Task<IActionResult> DeleteAssignment(int id)
         {
             var success = await _service.DeleteAssignmentAsync(id);

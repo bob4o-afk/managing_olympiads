@@ -1,9 +1,10 @@
 using OlympiadApi.Models;
 using OlympiadApi.Repositories.Interfaces;
+using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Services
 {
-    public class OlympiadService
+    public class OlympiadService : IOlympiadService
     {
         private readonly IOlympiadRepository _repository;
 
@@ -12,7 +13,7 @@ namespace OlympiadApi.Services
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
-        public void AddOlympiad(Olympiad olympiad)
+        public async Task<Olympiad> AddOlympiadAsync(Olympiad olympiad)
         {
             if (olympiad == null)
                 throw new ArgumentNullException(nameof(olympiad));
@@ -23,18 +24,17 @@ namespace OlympiadApi.Services
             if (olympiad.DateOfOlympiad == default)
                 throw new ArgumentException("Date of Olympiad is required.", nameof(olympiad.DateOfOlympiad));
 
-            _repository.AddOlympiad(olympiad);
+            return await _repository.AddOlympiadAsync(olympiad);
         }
 
-
-        public IEnumerable<Olympiad> GetAllOlympiads()
+        public async Task<IEnumerable<Olympiad>> GetAllOlympiadsAsync()
         {
-            return _repository.GetAllOlympiads();
+            return await _repository.GetAllOlympiadsAsync();
         }
 
-        public Olympiad GetOlympiadById(int id)
+        public async Task<Olympiad?> GetOlympiadByIdAsync(int id)
         {
-            return _repository.GetOlympiadById(id);
+            return await _repository.GetOlympiadByIdAsync(id);
         }
     }
 }

@@ -1,9 +1,10 @@
 using OlympiadApi.Models;
 using OlympiadApi.Repositories.Interfaces;
+using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Services
 {
-    public class UserRoleAssignmentService
+    public class UserRoleAssignmentService : IUserRoleAssignmentService
     {
         private readonly IUserRoleAssignmentRepository _repository;
         private readonly ILogger<UserRoleAssignmentService> _logger;
@@ -42,13 +43,13 @@ namespace OlympiadApi.Services
 
         public async Task<UserRoleAssignment> CreateAssignmentAsync(UserRoleAssignment assignment)
         {
+            if (assignment == null)
+                throw new ArgumentNullException(nameof(assignment));
             try
             {
-                if (assignment == null)
-                    throw new ArgumentNullException(nameof(assignment));
-
                 var userExists = await _repository.GetAllAssignmentsAsync();
-                if (userExists == null) throw new InvalidOperationException("User or Role does not exist.");
+                if (userExists == null)
+                    throw new InvalidOperationException("User or Role does not exist.");
 
                 return await _repository.CreateAssignmentAsync(assignment);
             }
