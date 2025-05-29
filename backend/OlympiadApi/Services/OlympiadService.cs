@@ -13,7 +13,7 @@ namespace OlympiadApi.Services
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
-        public async Task AddOlympiadAsync(Olympiad olympiad)
+        public async Task<Olympiad> AddOlympiadAsync(Olympiad olympiad)
         {
             if (olympiad == null)
                 throw new ArgumentNullException(nameof(olympiad));
@@ -24,7 +24,7 @@ namespace OlympiadApi.Services
             if (olympiad.DateOfOlympiad == default)
                 throw new ArgumentException("Date of Olympiad is required.", nameof(olympiad.DateOfOlympiad));
 
-            await _repository.AddOlympiadAsync(olympiad);
+            return await _repository.AddOlympiadAsync(olympiad);
         }
 
         public async Task<IEnumerable<Olympiad>> GetAllOlympiadsAsync()

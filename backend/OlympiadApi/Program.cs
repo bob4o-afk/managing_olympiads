@@ -26,7 +26,6 @@ namespace OlympiadApi
 
             MapEnvironmentVariablesToConfiguration(builder.Configuration);
 
-
             // Load configuration from appsettings.json
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             ValidateConnectionString(connectionString);
@@ -36,7 +35,7 @@ namespace OlympiadApi
             var issuer = builder.Configuration["JWT_ISSUER"];
             var audience = builder.Configuration["JWT_AUDIENCE"];
 
-            // Add DatabaseHelper as a singleton and pass the connection string
+            // DatabaseHelper for the connection string
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
@@ -73,9 +72,6 @@ namespace OlympiadApi
             builder.Services.AddScoped<IStudentOlympiadEnrollmentRepository, StudentOlympiadEnrollmentRepository>();
             builder.Services.AddScoped<IUserRoleAssignmentRepository, UserRoleAssignmentRepository>();
             builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-
-            // builder.Services.AddScoped<AdminRoleAuthorizeAttribute>();
-            // builder.Services.AddScoped<AdminOrStudentRoleAuthorizeAttribute>();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();

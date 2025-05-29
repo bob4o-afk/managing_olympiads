@@ -40,7 +40,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPasswordAsync([FromBody] ResetPasswordDto resetPasswordDto, [FromQuery] string token)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto, [FromQuery] string token)
         {
             var success = await _authService.ResetPasswordAsync(token, resetPasswordDto);
             if (!success)
@@ -72,7 +72,7 @@ namespace OlympiadApi.Controllers
         }
 
         [HttpPost("validate-password")]
-        public async Task<IActionResult> ValidatePasswordAsync([FromBody] ValidatePasswordDto validatePasswordDto)
+        public async Task<IActionResult> ValidatePassword([FromBody] ValidatePasswordDto validatePasswordDto)
         {
             if (validatePasswordDto == null || string.IsNullOrWhiteSpace(validatePasswordDto.Password))
             {

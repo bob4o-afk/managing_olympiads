@@ -109,7 +109,6 @@ def fill_pdf():
     input_pdf = "Deklaracia.pdf"
     output_pdf = "filled_documents/Deklaracia_filled.pdf"
 
-    # Font path
     font_path = os.path.join(os.path.dirname(__file__), "fonts", "Arial.ttf")
 
     try:

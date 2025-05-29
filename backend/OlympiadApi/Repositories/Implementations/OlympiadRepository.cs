@@ -14,7 +14,7 @@ namespace OlympiadApi.Repositories.Implementations
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task AddOlympiadAsync(Olympiad olympiad)
+        public async Task<Olympiad> AddOlympiadAsync(Olympiad olympiad)
         {
             if (olympiad == null)
                 throw new ArgumentNullException(nameof(olympiad));
@@ -27,6 +27,8 @@ namespace OlympiadApi.Repositories.Implementations
 
             await _context.Olympiads.AddAsync(olympiad);
             await _context.SaveChangesAsync();
+
+            return olympiad;
         }
 
         public async Task<IEnumerable<Olympiad>> GetAllOlympiadsAsync()

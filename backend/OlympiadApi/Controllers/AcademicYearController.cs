@@ -18,7 +18,7 @@ namespace OlympiadApi.Controllers
 
         // GET: api/academicyear
         [HttpGet]
-        public async Task<IActionResult> GetAllAcademicYearAsync()
+        public async Task<IActionResult> GetAllAcademicYear()
         {
             try
             {
@@ -33,7 +33,7 @@ namespace OlympiadApi.Controllers
 
         // GET: api/academicyear/{id}
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetAcademicYearByIdAsync(int id)
+        public async Task<IActionResult> GetAcademicYearById(int id)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace OlympiadApi.Controllers
         // POST: api/academicyear
         [HttpPost]
         [RoleAuthorize("Admin")]
-        public async Task<IActionResult> CreateAcademicYearAsync([FromBody] AcademicYear academicYear)
+        public async Task<IActionResult> CreateAcademicYear([FromBody] AcademicYear academicYear)
         {
             try
             {
@@ -64,7 +64,7 @@ namespace OlympiadApi.Controllers
 
                 await _academicYearService.AddAcademicYearAsync(academicYear.StartYear, academicYear.EndYear);
 
-                return CreatedAtAction(nameof(GetAcademicYearByIdAsync), new { id = academicYear.AcademicYearId }, academicYear);
+                return CreatedAtAction(nameof(GetAcademicYearById), new { id = academicYear.AcademicYearId }, academicYear);
             }
             catch (Exception ex)
             {

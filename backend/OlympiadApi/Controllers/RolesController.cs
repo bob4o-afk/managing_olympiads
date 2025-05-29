@@ -60,7 +60,6 @@ namespace OlympiadApi.Controllers
         {
             try
             {
-                // Check if role exists
                 var deleted = await _roleService.DeleteRoleAsync(id);
                 if (!deleted)
                 {

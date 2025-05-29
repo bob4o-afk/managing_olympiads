@@ -24,7 +24,6 @@ namespace OlympiadApi.Services
             return await _userRepository.GetUserByIdAsync(id);
         }
 
-        // This method returns a UserDto based on the username
         public async Task<UserDto?> GetUserByUsernameAsync(string username)
         {
             return await _userRepository.GetUserByUsernameAsync(username);

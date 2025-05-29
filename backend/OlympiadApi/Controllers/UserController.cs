@@ -19,7 +19,7 @@ namespace OlympiadApi.Controllers
 
         [HttpGet]
         [RoleAuthorize("Admin")]
-        public async Task<IActionResult> GetAllUsersAsync()
+        public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userService.GetAllUsersAsync();
             return Ok(users);
@@ -28,7 +28,7 @@ namespace OlympiadApi.Controllers
         [HttpGet("{id}")]
         //check for matching emails
         [RoleAuthorize("Admin", "Student")]
-        public async Task<IActionResult> GetUserByIdAsync(int id)
+        public async Task<IActionResult> GetUserById(int id)
         {
             var user = await _userService.GetUserByIdAsync(id);
             if (user == null)
@@ -39,16 +39,16 @@ namespace OlympiadApi.Controllers
 
         [HttpPost]
         [RoleAuthorize("Admin")]
-        public async Task<IActionResult> CreateUserAsync([FromBody] User user)
+        public async Task<IActionResult> CreateUser([FromBody] User user)
         {
             await _userService.CreateUserAsync(user);
-            return CreatedAtAction(nameof(GetUserByIdAsync), new { id = user.UserId }, user);
+            return CreatedAtAction(nameof(GetUserById), new { id = user.UserId }, user);
         }
 
         [HttpPut("{id}")]
         //check for matching emails
         [RoleAuthorize("Admin", "Student")]
-        public async Task<IActionResult> UpdateUserAsync(int id, [FromBody] User user)
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
         {
             if (id != user.UserId)
                 return BadRequest(new { message = "User ID mismatch." });
@@ -59,7 +59,7 @@ namespace OlympiadApi.Controllers
 
         [HttpPatch("{id}")]
         [RoleAuthorize("Admin", "Student")]
-        public async Task<IActionResult> UpdateUserNameAndEmailAsync(int id, [FromBody] UserUpdateDto dto)
+        public async Task<IActionResult> UpdateUserNameAndEmail(int id, [FromBody] UserUpdateDto dto)
         {
             var user = await _userService.GetUserByIdAsync(id);
             if (user == null)
@@ -72,7 +72,7 @@ namespace OlympiadApi.Controllers
 
         [HttpDelete("{id}")]
         [RoleAuthorize("Admin")]
-        public async Task<IActionResult> DeleteUserAsync(int id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
             await _userService.DeleteUserAsync(id);
             return NoContent();

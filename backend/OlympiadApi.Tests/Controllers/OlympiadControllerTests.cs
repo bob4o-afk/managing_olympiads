@@ -121,6 +121,8 @@ namespace OlympiadApi.Tests.Controllers
                 ClassNumber = 8
             };
 
+            _serviceMock.Setup(s => s.AddOlympiadAsync(It.IsAny<Olympiad>())).Returns((Olympiad o) => Task.FromResult(o));
+
             var result = await _controller.CreateOlympiadAsync(olympiad);
 
             var created = Assert.IsType<CreatedAtActionResult>(result);

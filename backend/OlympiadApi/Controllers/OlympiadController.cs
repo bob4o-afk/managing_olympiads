@@ -18,12 +18,12 @@ namespace OlympiadApi.Controllers
 
         // GET: api/olympiad
         [HttpGet]
-        public async Task<IActionResult> GetAllOlympiadsAsync()
+        public async Task<IActionResult> GetAllOlympiads()
         {
             try
             {
                 var olympiads = await _olympiadService.GetAllOlympiadsAsync();
-                return Ok(olympiads); // Return all Olympiads
+                return Ok(olympiads);
             }
             catch (Exception ex)
             {
@@ -33,7 +33,7 @@ namespace OlympiadApi.Controllers
 
         // GET: api/olympiad/{id}
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetOlympiadByIdAsync(int id)
+        public async Task<IActionResult> GetOlympiadById(int id)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace OlympiadApi.Controllers
         // POST: api/olympiad
         [HttpPost]
         [RoleAuthorize("Admin")]
-        public async Task<IActionResult> CreateOlympiadAsync([FromBody] Olympiad olympiad)
+        public async Task<IActionResult> CreateOlympiad([FromBody] Olympiad olympiad)
         {
             try
             {
@@ -62,10 +62,9 @@ namespace OlympiadApi.Controllers
                     return BadRequest(new { message = "Invalid data." });
                 }
 
-                await _olympiadService.AddOlympiadAsync(olympiad);
+                var createdOlympiad = await _olympiadService.AddOlympiadAsync(olympiad);
 
-
-                return CreatedAtAction(nameof(GetOlympiadByIdAsync), new { id = olympiad.OlympiadId }, olympiad);
+                return CreatedAtAction(nameof(GetOlympiadById), new { id = createdOlympiad.OlympiadId }, createdOlympiad);
             }
             catch (Exception ex)
             {

@@ -16,9 +16,6 @@ namespace OlympiadApi.Controllers
             _emailService = emailService;
         }
 
-        //TO DO: check - maybe i need admin or email
-        //here should be made a checking for group - so only with the elsys emails
-
         [HttpPost("send")]
         [RoleAuthorize("Admin")]
         public async Task<IActionResult> SendEmail([FromBody] EmailRequest request)
@@ -29,7 +26,7 @@ namespace OlympiadApi.Controllers
 
         [HttpPost("send-document")]
         [RoleAuthorize("Admin")]
-        public async Task<IActionResult> SendDocumentAsync([FromForm] SendEmailWithDocumentDto request)
+        public async Task<IActionResult> SendDocument([FromForm] SendEmailWithDocumentDto request)
         {
             if (request.Document == null || request.Document.Length == 0)
             {

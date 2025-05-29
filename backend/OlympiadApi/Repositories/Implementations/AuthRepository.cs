@@ -45,7 +45,6 @@ namespace OlympiadApi.Repositories.Interfaces
                 .Where(r => userRoleIds.Contains(r.RoleId))
                 .ToListAsync();
 
-            // Roles and permissions
             return roles.ToDictionary(
                 r => r.RoleName,
                 r => r.Permissions != null

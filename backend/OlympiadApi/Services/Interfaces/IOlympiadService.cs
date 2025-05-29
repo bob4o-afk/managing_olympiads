@@ -6,6 +6,6 @@ namespace OlympiadApi.Services.Interfaces
     {
         Task<IEnumerable<Olympiad>> GetAllOlympiadsAsync();
         Task<Olympiad?> GetOlympiadByIdAsync(int id);
-        Task AddOlympiadAsync(Olympiad olympiad);
+        Task<Olympiad> AddOlympiadAsync(Olympiad olympiad);
     }
 }

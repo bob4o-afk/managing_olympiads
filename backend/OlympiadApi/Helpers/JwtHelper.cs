@@ -60,7 +60,6 @@ namespace OlympiadApi.Helpers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-
         public bool ValidateJwtToken(string token)
         {
             var secretKey = _configuration["JWT_SECRET_KEY"];
