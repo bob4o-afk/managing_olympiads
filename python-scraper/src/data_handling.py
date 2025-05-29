@@ -9,7 +9,6 @@ from src.load_env import load_environment_variables
 
 
 def extract_and_process_text():
-    # Load environment variables from .env file
     load_dotenv()
     _, _, TXT_PATH, OUTPUT_JSON_PATH = load_environment_variables()
 
@@ -21,7 +20,6 @@ def extract_and_process_text():
         for line in file:
             parts = line.split("\t")
             if len(parts) == 1:
-                # If the line has only one part, it's likely a competition level
                 competition_level = parts[0].strip()
                 if competition_level in competition_levels:
                     current_competition_level = competition_levels[competition_level]
@@ -58,10 +56,8 @@ def extract_and_process_text():
             if translated_subject not in olympiad_data:
                 olympiad_data[translated_subject] = {}
 
-            # Parse dates and time
             dates, time = extract_dates_and_time(date_str)
 
-            # Add data under the current competition level
             olympiad_data[translated_subject][current_competition_level] = {
                 "class": classes,
                 "dates": dates
@@ -79,15 +75,14 @@ def clean_date(date_str):
 
 
 def extract_dates_and_time(date_str):
-    # Regular expression for detecting time
+    # For time
     time_match = re.search(r'НАЧАЛО\s+(\d{1,2}:\d{2})\s*Ч\.?', date_str)
     time = time_match.group(1) + " o'clock" if time_match else None
 
-    # Remove time part from date string if time was found
     if time:
         date_str = date_str[:time_match.start()].strip()
 
-    # Regular expression for date range
+    # For date range
     date_range_match = re.search(r'(\d{2}\.\d{2})\s*-\s*(\d{2}\.\d{2})\s*(\d{4})', date_str)
 
     if date_range_match:
@@ -108,7 +103,6 @@ def extract_dates_and_time(date_str):
             single_date = datetime.strptime(date_str, '%d.%m.%Y')
             dates = [single_date.strftime('%d.%m.%Y')]
         except ValueError:
-            # If the date doesn't match the expected format, include it as is
             dates = [date_str]
 
     return dates, time
