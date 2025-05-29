@@ -5,6 +5,8 @@ import { LanguageContext } from "../contexts/LanguageContext";
 import { Button, Input, Typography, notification } from "antd";
 import LoadingPage from "./LoadingPage";
 import "./ui/ResetPassword.css";
+import { defaultFetchOptions } from "../config/apiConfig";
+import { API_ROUTES } from "../config/api";
 
 const { Title } = Typography;
 
@@ -33,14 +35,10 @@ const ResetPassword: React.FC = () => {
     }
 
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/auth/reset-password?token=${token}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ NewPassword: newPassword }),
-        }
-      );
+      const response = await fetch(API_ROUTES.resetPasswordWithToken(token ?? ""), {
+        ...defaultFetchOptions,
+        body: JSON.stringify({ NewPassword: newPassword }),
+      });
 
       if (!response.ok) {
         const { message } = await response.json();
@@ -95,7 +93,9 @@ const ResetPassword: React.FC = () => {
               placeholder={isBG ? "Нова парола" : "New password"}
               iconRender={(visible) =>
                 visible ? (
-                  <EyeInvisibleOutlined style={{ color: "var(--text-color)" }} />
+                  <EyeInvisibleOutlined
+                    style={{ color: "var(--text-color)" }}
+                  />
                 ) : (
                   <EyeOutlined style={{ color: "var(--text-color)" }} />
                 )
@@ -113,7 +113,9 @@ const ResetPassword: React.FC = () => {
               }
               iconRender={(visible) =>
                 visible ? (
-                  <EyeInvisibleOutlined style={{ color: "var(--text-color)" }} />
+                  <EyeInvisibleOutlined
+                    style={{ color: "var(--text-color)" }}
+                  />
                 ) : (
                   <EyeOutlined style={{ color: "var(--text-color)" }} />
                 )

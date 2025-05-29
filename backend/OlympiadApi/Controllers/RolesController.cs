@@ -6,7 +6,7 @@ using OlympiadApi.Services.Interfaces;
 namespace OlympiadApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/roles")]
     public class RoleController : ControllerBase
     {
         private readonly IRoleService _roleService;
@@ -17,7 +17,7 @@ namespace OlympiadApi.Controllers
             _roleService = roleService;
         }
 
-        // GET: api/role
+        // GET: api/roles
         [HttpGet]
         [RoleAuthorize("Admin")]
         public async Task<IActionResult> GetRoles()
@@ -33,7 +33,7 @@ namespace OlympiadApi.Controllers
             }
         }
 
-        // POST: api/role
+        // POST: api/roles
         [HttpPost]
         [RoleAuthorize("Admin")]
         public async Task<IActionResult> CreateRole([FromBody] Role role)
@@ -53,7 +53,7 @@ namespace OlympiadApi.Controllers
                 return StatusCode(500, new { message = "An error occurred while creating the role.", error = ex.Message });
             }
         }
-        // DELETE: api/role/{id}
+        // DELETE: api/roles/{id}
         [HttpDelete("{id}")]
         [RoleAuthorize("Admin")]
         public async Task<IActionResult> DeleteRole(int id)

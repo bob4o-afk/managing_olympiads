@@ -6,7 +6,7 @@ using OlympiadApi.Filters;
 namespace OlympiadApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/academic-years")]
     public class AcademicYearController : ControllerBase
     {
         private readonly IAcademicYearService _academicYearService;
@@ -16,7 +16,7 @@ namespace OlympiadApi.Controllers
             _academicYearService = academicYearService;
         }
 
-        // GET: api/academicyear
+        // GET: api/academic-years
         [HttpGet]
         public async Task<IActionResult> GetAllAcademicYear()
         {
@@ -31,7 +31,7 @@ namespace OlympiadApi.Controllers
             }
         }
 
-        // GET: api/academicyear/{id}
+        // GET: api/academic-years/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAcademicYearById(int id)
         {
@@ -50,7 +50,7 @@ namespace OlympiadApi.Controllers
             }
         }
 
-        // POST: api/academicyear
+        // POST: api/academic-years
         [HttpPost]
         [RoleAuthorize("Admin")]
         public async Task<IActionResult> CreateAcademicYear([FromBody] AcademicYear academicYear)

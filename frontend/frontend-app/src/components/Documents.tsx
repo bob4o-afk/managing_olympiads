@@ -15,6 +15,9 @@ import { Particle } from "./particles/Particle";
 import { spawnParticles } from "./particles/particleUtils";
 import { motion } from "framer-motion";
 
+import { CONFIG } from "../config/config";
+import { decryptSession } from "../utils/encryption";
+import { defaultFetchOptions } from "../config/apiConfig";
 const { Title, Text } = Typography;
 const { Option } = Select;
 
@@ -27,16 +30,20 @@ const Documents: React.FC = () => {
   const { locale } = useContext(LanguageContext);
   const isBG = locale.startsWith("bg");
 
-  const predefinedSchool =
-    'Технологично училище "Електронни системи" към ТУ-София';
+  const predefinedSchool = CONFIG.predefinedSchool;
+
   const [schoolSuggestion, setSchoolSuggestion] = useState("");
 
   useEffect(() => {
     const session = localStorage.getItem("userSession");
     if (session) {
-      const parsed = JSON.parse(session);
-      setEmail(parsed.email);
-      setSessionName(parsed.full_name);
+      try {
+        const parsed = decryptSession(session);
+        setEmail(parsed.email);
+        setSessionName(parsed.full_name);
+      } catch (error) {
+        console.error("Failed to decrypt session:", error);
+      }
     }
 
     const canvas = canvasRef.current;
@@ -107,8 +114,7 @@ const Documents: React.FC = () => {
       const response = await fetch(
         `${process.env.REACT_APP_PYTHON_API_URL}/fill_pdf`,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          ...defaultFetchOptions,
           body: JSON.stringify(data),
         }
       );

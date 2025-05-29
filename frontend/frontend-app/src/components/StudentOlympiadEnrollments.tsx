@@ -12,6 +12,9 @@ import "./ui/StudentOlympiadEnrollments.css";
 import { ColumnType } from "antd/es/table";
 import { UserSession } from "../types/Session";
 import { LanguageContext } from "../contexts/LanguageContext";
+import { decryptSession } from "../utils/encryption";
+import { getAuthDeleteOptions, getAuthGetOptions, getAuthPostOptions } from "../config/apiConfig";
+import { API_ROUTES } from "../config/api";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -44,19 +47,17 @@ const StudentOlympiadEnrollments: React.FC = () => {
         const token = localStorage.getItem("authToken");
         const storedSession = localStorage.getItem("userSession");
         if (storedSession) {
-          const parsedSession = JSON.parse(storedSession);
-          setSession(parsedSession);
+          try {
+            const parsedSession = decryptSession(storedSession);
+            setSession(parsedSession);
+          } catch (error) {
+            console.error("Failed to decrypt session:", error);
+          }
         }
 
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/studentolympiadenrollment`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          API_ROUTES.studentOlympiadEnrollment,
+          getAuthGetOptions(token ?? "")
         );
 
         if (response.ok) {
@@ -154,7 +155,9 @@ const StudentOlympiadEnrollments: React.FC = () => {
       };
 
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/studentolympiadenrollment/${editingEnrollment.enrollmentId}`,
+        API_ROUTES.studentOlympiadEnrollmentById(
+          String(editingEnrollment.enrollmentId)
+        ),
         {
           method: "PUT",
           headers: {
@@ -235,15 +238,8 @@ const StudentOlympiadEnrollments: React.FC = () => {
       };
 
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/email/send`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(emailData),
-        }
+        API_ROUTES.sendEmail,
+        getAuthPostOptions(token ?? "", emailData)
       );
 
       if (response.ok) {
@@ -311,13 +307,8 @@ const StudentOlympiadEnrollments: React.FC = () => {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/studentolympiadenrollment/${enrollmentId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        API_ROUTES.studentOlympiadEnrollmentById(String(enrollmentId)),
+        getAuthDeleteOptions(token ?? "")
       );
 
       if (response.ok) {

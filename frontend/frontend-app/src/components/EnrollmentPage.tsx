@@ -7,6 +7,9 @@ import { AcademicYear } from "../types/AcademicYearTypes";
 import { StudentOlympiadEnrollmentData } from "../types/EnrollmentTypes";
 import LoadingPage from "../components/LoadingPage";
 import { LanguageContext } from "../contexts/LanguageContext";
+import { decryptSession } from "../utils/encryption";
+import { getAuthPostOptions } from "../config/apiConfig";
+import { API_ROUTES } from "../config/api";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -30,15 +33,17 @@ const EnrollmentPage: React.FC = () => {
 
       const storedSession = localStorage.getItem("userSession");
       if (storedSession) {
-        const parsedSession = JSON.parse(storedSession);
-        setEmail(parsedSession.email);
-        setUserId(parsedSession.userId);
+        try {
+          const parsedSession = decryptSession(storedSession);
+          setEmail(parsedSession.email);
+          setUserId(parsedSession.userId);
+        } catch (error) {
+          console.error("Failed to decrypt session:", error);
+        }
       }
 
       try {
-        const olympiadResponse = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/olympiad`
-        );
+        const olympiadResponse = await fetch(API_ROUTES.olympiads);
 
         if (olympiadResponse.ok) {
           const data = await olympiadResponse.json();
@@ -52,9 +57,7 @@ const EnrollmentPage: React.FC = () => {
           });
         }
 
-        const yearResponse = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/academicyear`
-        );
+        const yearResponse = await fetch(API_ROUTES.academicYears);
 
         if (yearResponse.ok) {
           const data = await yearResponse.json();
@@ -139,15 +142,8 @@ const EnrollmentPage: React.FC = () => {
   ) => {
     const token = localStorage.getItem("authToken");
     const response = await fetch(
-      `${process.env.REACT_APP_API_URL}/api/studentolympiadenrollment`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(enrollmentData),
-      }
+      API_ROUTES.studentOlympiadEnrollment,
+      getAuthPostOptions(token ?? "", enrollmentData)
     );
 
     if (!response.ok) {

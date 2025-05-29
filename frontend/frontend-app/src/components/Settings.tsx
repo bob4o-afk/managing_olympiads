@@ -4,6 +4,13 @@ import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { UserSession } from "../types/Session";
 import "./ui/Settings.css";
 import { LanguageContext } from "../contexts/LanguageContext";
+import { decryptSession } from "../utils/encryption";
+import {
+  getAuthGetOptions,
+  getAuthPostOptions,
+  getAuthPostOptionsNoBody,
+} from "../config/apiConfig";
+import { API_ROUTES } from "../config/api";
 
 const { Title, Text } = Typography;
 
@@ -28,18 +35,20 @@ const Settings: React.FC = () => {
     if (storedSession && token) {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/auth/validate-token`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          API_ROUTES.validateToken,
+          getAuthPostOptionsNoBody(token)
         );
 
         if (response.ok) {
-          setSession(JSON.parse(storedSession));
+          try {
+            const parsedSession = decryptSession(storedSession);
+            setSession(parsedSession);
+          } catch (error) {
+            console.error("Failed to decrypt session:", error);
+            localStorage.removeItem("userSession");
+            localStorage.removeItem("authToken");
+            setSession(null);
+          }
         } else {
           localStorage.removeItem("userSession");
           localStorage.removeItem("authToken");
@@ -65,14 +74,8 @@ const Settings: React.FC = () => {
         try {
           const token = localStorage.getItem("authToken");
           const userResponse = await fetch(
-            `${process.env.REACT_APP_API_URL}/api/user/${session.userId}`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
+            API_ROUTES.userById(session.userId),
+            getAuthGetOptions(token ?? "")
           );
 
           if (!userResponse.ok) {
@@ -133,15 +136,8 @@ const Settings: React.FC = () => {
 
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/auth/validate-password`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ password: currentPassword }),
-        }
+        API_ROUTES.validatePassword,
+        getAuthPostOptions(token ?? "", { password: currentPassword })
       );
 
       if (!response.ok) {
@@ -172,14 +168,8 @@ const Settings: React.FC = () => {
 
       if (session) {
         const userResponse = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/user/${session.userId}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          API_ROUTES.userById(session.userId),
+          getAuthGetOptions(token ?? "")
         );
 
         if (!userResponse.ok) {
@@ -218,7 +208,7 @@ const Settings: React.FC = () => {
         };
 
         const updateResponse = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/user/${user.userId}`,
+          API_ROUTES.userById(session.userId),
           {
             method: "PUT",
             headers: {

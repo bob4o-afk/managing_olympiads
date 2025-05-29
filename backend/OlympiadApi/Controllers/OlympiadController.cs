@@ -6,7 +6,7 @@ using OlympiadApi.Filters;
 namespace OlympiadApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/olympiads")]
     public class OlympiadController : ControllerBase
     {
         private readonly IOlympiadService _olympiadService;
@@ -16,7 +16,7 @@ namespace OlympiadApi.Controllers
             _olympiadService = olympiadService;
         }
 
-        // GET: api/olympiad
+        // GET: api/olympiads
         [HttpGet]
         public async Task<IActionResult> GetAllOlympiads()
         {
@@ -31,7 +31,7 @@ namespace OlympiadApi.Controllers
             }
         }
 
-        // GET: api/olympiad/{id}
+        // GET: api/olympiads/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOlympiadById(int id)
         {
@@ -50,7 +50,7 @@ namespace OlympiadApi.Controllers
             }
         }
 
-        // POST: api/olympiad
+        // POST: api/olympiads
         [HttpPost]
         [RoleAuthorize("Admin")]
         public async Task<IActionResult> CreateOlympiad([FromBody] Olympiad olympiad)

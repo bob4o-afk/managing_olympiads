@@ -5,6 +5,9 @@ import "./ui/Login.css";
 import LoadingPage from "./LoadingPage";
 import { Button, Form, Input, Typography } from "antd";
 import { LanguageContext } from "../contexts/LanguageContext";
+import { decryptSession, encryptSession } from "../utils/encryption";
+import { defaultFetchOptions, getAuthGetOptions } from "../config/apiConfig";
+import { API_ROUTES } from "../config/api";
 
 const { Title } = Typography;
 
@@ -36,11 +39,16 @@ const Login: React.FC = () => {
   useEffect(() => {
     const storedSession = localStorage.getItem("userSession");
     if (storedSession) {
-      const parsedSession = JSON.parse(storedSession);
-      if (parsedSession?.email) {
-        setToken(parsedSession.email);
-        navigate("/my-profile");
-      } else {
+      try {
+        const parsedSession = decryptSession(storedSession);
+        if (parsedSession?.email) {
+          setToken(parsedSession.email);
+          navigate("/my-profile");
+        } else {
+          clearStorage();
+        }
+      } catch (error) {
+        console.error("Failed to decrypt session:", error);
         clearStorage();
       }
     } else {
@@ -57,12 +65,9 @@ const Login: React.FC = () => {
 
     try {
       const authResponse = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/auth/login`,
+        API_ROUTES.login,
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          ...defaultFetchOptions,
           body: JSON.stringify({
             usernameOrEmail: values.usernameOrEmail,
             password: values.password,
@@ -86,14 +91,8 @@ const Login: React.FC = () => {
       const userDetails = authData.user;
 
       const roleResponse = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/UserRoleAssignment/`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        API_ROUTES.userRoleAssignment,
+        getAuthGetOptions(token)
       );
 
       if (!roleResponse.ok) {
@@ -119,7 +118,9 @@ const Login: React.FC = () => {
         role: role,
       };
 
-      localStorage.setItem("userSession", JSON.stringify(userSession));
+      const encryptedSession = encryptSession(userSession);
+
+      localStorage.setItem("userSession", encryptedSession);
       navigate("/my-profile");
     } catch (err: unknown) {
       const errorMessage =
@@ -180,7 +181,9 @@ const Login: React.FC = () => {
                 autoComplete="current-password"
                 iconRender={(visible) =>
                   visible ? (
-                    <EyeInvisibleOutlined style={{ color: "var(--text-color)" }} />
+                    <EyeInvisibleOutlined
+                      style={{ color: "var(--text-color)" }}
+                    />
                   ) : (
                     <EyeOutlined style={{ color: "var(--text-color)" }} />
                   )

@@ -5,7 +5,7 @@ using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/user-role-assignments")]
     [ApiController]
     public class UserRoleAssignmentController : ControllerBase
     {

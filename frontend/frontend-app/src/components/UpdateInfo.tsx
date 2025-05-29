@@ -4,6 +4,10 @@ import { Form, Input, Button, Typography, notification, Card } from "antd";
 import "./ui/UpdateInfo.css";
 import LoadingPage from "./LoadingPage";
 import { LanguageContext } from "../contexts/LanguageContext";
+import { UserSession } from "../types/Session";
+import { decryptSession } from "../utils/encryption";
+import { API_ROUTES } from "../config/api";
+import { getAuthPatchOptions } from "../config/apiConfig";
 
 const { Title } = Typography;
 
@@ -11,6 +15,8 @@ const UpdateInfo: React.FC = () => {
   const { locale } = useContext(LanguageContext);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userSession, setUserSession] = useState<UserSession | null>(null);
+
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
@@ -23,7 +29,15 @@ const UpdateInfo: React.FC = () => {
   const handleUpdateInfo = async (values: { name: string; email: string }) => {
     setIsLoading(true);
     const token = localStorage.getItem("authToken");
-    const userSession = JSON.parse(localStorage.getItem("userSession") || "{}");
+    const storedSession = localStorage.getItem("userSession");
+    if (storedSession) {
+      try {
+        const userSession = decryptSession(storedSession);
+        setUserSession(userSession);
+      } catch (error) {
+        console.error("Failed to decrypt session:", error);
+      }
+    }
     const userId = userSession?.userId;
 
     if (!token || !userId) {
@@ -34,18 +48,11 @@ const UpdateInfo: React.FC = () => {
 
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/user/${userId}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            name: values.name,
-            email: values.email,
-          }),
-        }
+        API_ROUTES.userById(userId),
+        getAuthPatchOptions(token, {
+          name: values.name,
+          email: values.email,
+        })
       );
 
       if (!response.ok) {

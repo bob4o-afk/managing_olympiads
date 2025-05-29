@@ -3,6 +3,8 @@ import { LanguageContext } from "../contexts/LanguageContext";
 import { Button, Form, Input, notification, Typography } from "antd";
 import "./ui/RequestPasswordReset.css";
 import LoadingPage from "./LoadingPage";
+import { defaultFetchOptions } from "../config/apiConfig";
+import { API_ROUTES } from "../config/api";
 
 const { Title } = Typography;
 
@@ -18,10 +20,9 @@ const RequestPasswordReset = () => {
 
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/auth/request-password-change`,
+        API_ROUTES.requestPasswordReset,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          ...defaultFetchOptions,
           body: JSON.stringify({ usernameOrEmail }),
         }
       );
@@ -96,11 +97,7 @@ const RequestPasswordReset = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button
-              className="button"
-              htmlType="submit"
-              loading={loading}
-            >
+            <Button className="button" htmlType="submit" loading={loading}>
               {loading
                 ? isBG
                   ? "Изпращане..."

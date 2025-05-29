@@ -6,6 +6,12 @@ import { UserSession } from "../types/Session";
 import "./ui/MyProfile.css";
 import LoadingPage from "./LoadingPage";
 import { LanguageContext } from "../contexts/LanguageContext";
+import { decryptSession } from "../utils/encryption";
+import {
+  getAuthGetOptions,
+  getAuthPostOptionsNoBody,
+} from "../config/apiConfig";
+import { API_ROUTES } from "../config/api";
 
 const { Title, Text } = Typography;
 
@@ -48,14 +54,8 @@ const MyProfile: React.FC = () => {
     if (storedSession && token) {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/auth/validate-token`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          API_ROUTES.validateToken,
+          getAuthPostOptionsNoBody(token)
         );
 
         if (response.ok) {
@@ -73,78 +73,79 @@ const MyProfile: React.FC = () => {
     return false;
   }, [handleLogout, navigate]);
 
-  const fetchEnrolledOlympiads = useCallback(async (userId: number) => {
-    setLoading(true);
-    const token = localStorage.getItem("authToken");
+  const fetchEnrolledOlympiads = useCallback(
+    async (userId: number) => {
+      setLoading(true);
+      const token = localStorage.getItem("authToken");
 
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/StudentOlympiadEnrollment/user/${userId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      try {
+        const response = await fetch(
+          API_ROUTES.userEnrollments(String(userId)),
+          getAuthGetOptions(token ?? "")
+        );
 
-      if (response.ok) {
-        const data = await response.json();
+        if (response.ok) {
+          const data = await response.json();
 
-        const filteredOlympiads = data
-          .filter(
-            (enrollment: any) =>
-              enrollment.enrollmentStatus === "pending" &&
-              enrollment.academicYearId === 2
-          )
-          .sort(
-            (a: any, b: any) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )
-          .slice(0, 3)
-          .map((enrollment: any) => {
-            const dateObj = new Date(enrollment.olympiad.dateOfOlympiad);
-            const rawTime = enrollment.olympiad.startTime;
-            let formattedTime = "N/A";
+          const filteredOlympiads = data
+            .filter(
+              (enrollment: any) =>
+                enrollment.enrollmentStatus === "pending" &&
+                enrollment.academicYearId === 2
+            )
+            .sort(
+              (a: any, b: any) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            )
+            .slice(0, 3)
+            .map((enrollment: any) => {
+              const dateObj = new Date(enrollment.olympiad.dateOfOlympiad);
+              const rawTime = enrollment.olympiad.startTime;
+              let formattedTime = "N/A";
 
-            if (rawTime) {
-              const timeObj = new Date(rawTime);
-              if (!isNaN(timeObj.getTime())) {
-                formattedTime = timeObj.toLocaleTimeString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: false,
-                });
+              if (rawTime) {
+                const timeObj = new Date(rawTime);
+                if (!isNaN(timeObj.getTime())) {
+                  formattedTime = timeObj.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  });
+                }
               }
-            }
 
-            return {
-              name: enrollment.olympiad.subject,
-              status: enrollment.enrollmentStatus,
-              academicYear: enrollment.academicYearId,
-              dateOfOlympiad: dateObj.toLocaleDateString(isBG ? "bg-BG" : "en-US", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              }),
-              round: enrollment.olympiad.round,
-              location: enrollment.olympiad.location,
-              startTime: formattedTime,
-            };
-          });
+              return {
+                name: enrollment.olympiad.subject,
+                status: enrollment.enrollmentStatus,
+                academicYear: enrollment.academicYearId,
+                dateOfOlympiad: dateObj.toLocaleDateString(
+                  isBG ? "bg-BG" : "en-US",
+                  {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }
+                ),
+                round: enrollment.olympiad.round,
+                location: enrollment.olympiad.location,
+                startTime: formattedTime,
+              };
+            });
 
-        setEnrolledOlympiads(filteredOlympiads);
-      } else {
-        console.error("Failed to fetch enrolled Olympiads.");
+          setEnrolledOlympiads(filteredOlympiads);
+        } else {
+          console.error("Failed to fetch enrolled Olympiads.");
+        }
+      } catch (error) {
+        console.error("Error fetching enrolled Olympiads:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching enrolled Olympiads:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [isBG]);
+    },
+    [isBG]
+  );
 
   useEffect(() => {
     const initializeSession = async () => {
@@ -152,10 +153,14 @@ const MyProfile: React.FC = () => {
       if (isValid) {
         const storedSession = localStorage.getItem("userSession");
         if (storedSession) {
-          const parsedSession = JSON.parse(storedSession);
-          setSession(parsedSession);
-          setRole(parsedSession.role);
-          fetchEnrolledOlympiads(parsedSession.userId);
+          try {
+            const parsedSession = decryptSession(storedSession);
+            setSession(parsedSession);
+            setRole(parsedSession.role);
+            fetchEnrolledOlympiads(parsedSession.userId);
+          } catch (error) {
+            console.error("Failed to decrypt session:", error);
+          }
         }
       }
       setLoading(false);
@@ -174,7 +179,8 @@ const MyProfile: React.FC = () => {
               {isBG ? "Моят профил" : "My Profile"}
             </Title>
             <Text className="profile-card-text">
-              <strong>{isBG ? "Име:" : "Name:"}</strong> {session?.full_name || "N/A"}
+              <strong>{isBG ? "Име:" : "Name:"}</strong>{" "}
+              {session?.full_name || "N/A"}
             </Text>
             <br />
             <Text className="profile-card-text">
@@ -182,7 +188,8 @@ const MyProfile: React.FC = () => {
             </Text>
             <br />
             <Text className="profile-card-text">
-              <strong>{isBG ? "Роля:" : "Role:"}</strong> {role || (isBG ? "Зареждане..." : "Loading role...")}
+              <strong>{isBG ? "Роля:" : "Role:"}</strong>{" "}
+              {role || (isBG ? "Зареждане..." : "Loading role...")}
             </Text>
           </Card>
           <Card className="account-card">
@@ -239,7 +246,9 @@ const MyProfile: React.FC = () => {
                 <li key={index} className="olympiad-item">
                   <strong>{olympiad.name}</strong> - {olympiad.status} <br />
                   <Text style={{ color: "var(--text-color)" }}>
-                    <strong>{isBG ? "Учебна година:" : "Academic Year:"}</strong>{" "}
+                    <strong>
+                      {isBG ? "Учебна година:" : "Academic Year:"}
+                    </strong>{" "}
                     {olympiad.academicYear}
                   </Text>
                   <br />
@@ -249,7 +258,8 @@ const MyProfile: React.FC = () => {
                   </Text>
                   <br />
                   <Text style={{ color: "var(--text-color)" }}>
-                    <strong>{isBG ? "Кръг:" : "Round:"}</strong> {olympiad.round}
+                    <strong>{isBG ? "Кръг:" : "Round:"}</strong>{" "}
+                    {olympiad.round}
                   </Text>
                   <br />
                   <Text style={{ color: "var(--text-color)" }}>

@@ -5,7 +5,7 @@ using OlympiadApi.Services.Interfaces;
 
 namespace OlympiadApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/student-olympiad-enrollments")]
     [ApiController]
     public class StudentOlympiadEnrollmentController : ControllerBase
     {

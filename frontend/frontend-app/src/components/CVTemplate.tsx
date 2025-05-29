@@ -13,6 +13,7 @@ import { PieChart, Pie, Tooltip } from "recharts";
 
 import "./ui/CVTemplate.css";
 import { UserSession } from "../types/Session";
+import { decryptSession } from "../utils/encryption";
 
 const { Title, Text } = Typography;
 
@@ -25,10 +26,10 @@ const CVTemplate: React.FC = () => {
       if (!storedSession) return;
 
       try {
-        const parsedSession = JSON.parse(storedSession);
+        const parsedSession = decryptSession(storedSession);
         setSession(parsedSession);
       } catch (error) {
-        console.error("Failed to parse session data:", error);
+        console.error("Failed to decrypt session data:", error);
       }
     };
 
